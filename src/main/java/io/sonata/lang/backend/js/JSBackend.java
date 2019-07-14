@@ -15,9 +15,23 @@ import java.util.stream.Collectors;
 
 public class JSBackend implements Backend {
     private final ByteArrayOutputStream buffer;
+    private int inExpr;
 
     public JSBackend() {
         this.buffer = new ByteArrayOutputStream(180000);
+        this.inExpr = 0;
+    }
+
+    private void pushInExpr() {
+        this.inExpr++;
+    }
+
+    private void popInExpr() {
+        this.inExpr--;
+    }
+
+    private boolean isInExpr() {
+        return this.inExpr > 0;
     }
 
     @Override
@@ -37,11 +51,14 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitAtomExpressionEnd(Atom atom, BackendCodeGenerator generator) {
-
+        if (!isInExpr()) {
+            emit(";");
+        }
     }
 
     @Override
     public void emitSimpleExpressionBegin(SimpleExpression expression, BackendCodeGenerator generator) {
+        pushInExpr();
     }
 
     @Override
@@ -51,6 +68,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitSimpleExpressionEnd(SimpleExpression expression, BackendCodeGenerator generator) {
+        popInExpr();
     }
 
     @Override
@@ -66,6 +84,7 @@ public class JSBackend implements Backend {
     @Override
     public void emitFunctionCallBegin(FunctionCall functionCall, BackendCodeGenerator generator) {
         emit("(");
+        pushInExpr();
     }
 
     @Override
@@ -79,15 +98,22 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitFunctionCallEnd(FunctionCall functionCall, BackendCodeGenerator generator) {
-        emit(")\n");
+        emit(")");
+        popInExpr();
+
+        if (!isInExpr()) {
+            emit(";");
+        }
     }
 
     @Override
     public void emitMethodReferenceBegin(MethodReference methodReference, BackendCodeGenerator generator) {
+        pushInExpr();
     }
 
     @Override
     public void emitMethodReferenceEnd(MethodReference methodReference, BackendCodeGenerator generator) {
+        popInExpr();
     }
 
     @Override

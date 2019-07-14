@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public class Source implements AutoCloseable {
     public enum Type {
@@ -40,7 +41,13 @@ public class Source implements AutoCloseable {
             do {
                 final int readByte = inputStream.read();
                 if (readByte == -1) {
-                    emitter.onNext(new SourceCharacter(position, '\n'));
+                    for (var i = 0; i < 10; i++) {
+                        var nl = System.lineSeparator().getBytes(Charset.defaultCharset());
+                        for (byte c: nl) {
+                            emitter.onNext(new SourceCharacter(position, (char) c));
+                        }
+                    }
+
                     break;
                 }
 
