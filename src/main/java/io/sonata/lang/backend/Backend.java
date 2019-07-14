@@ -17,6 +17,14 @@ public interface Backend {
     void emitSimpleExpressionOperator(String operator, BackendCodeGenerator generator);
     void emitSimpleExpressionEnd(SimpleExpression expression, BackendCodeGenerator generator);
 
+    void emitArrayBegin(LiteralArray array, BackendCodeGenerator generator);
+    void emitArraySeparator(LiteralArray array, boolean isLast, BackendCodeGenerator generator);
+    void emitArrayEnd(LiteralArray array, BackendCodeGenerator generator);
+
+    void emitArrayAccessBegin(ArrayAccess access, BackendCodeGenerator generator);
+    void emitArrayAccessIndex(String index, BackendCodeGenerator generator);
+    void emitArrayAccessEnd(ArrayAccess access, BackendCodeGenerator generator);
+
     void emitPriorityExpressionBegin(PriorityExpression expression, BackendCodeGenerator generator);
     void emitPriorityExpressionEnd(PriorityExpression expression, BackendCodeGenerator generator);
 

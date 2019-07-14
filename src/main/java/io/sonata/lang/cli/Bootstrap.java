@@ -8,7 +8,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 public class Bootstrap {
     public static void main(String[] args) throws ArgumentParserException {
         var parser = ArgumentParsers.newFor("snc").build();
-        parser.addArgument("-i", "--interactive").type(Boolean.class);
+        parser.addArgument("-i", "--interactive").type(Boolean.class).setDefault(false);
         parser.addArgument("input").nargs("*");
         parser.addArgument("-o", "--output");
 

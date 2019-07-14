@@ -20,6 +20,10 @@ public abstract class ComposedExpression implements Expression {
             if (sep.separator.equals(".")) {
                 return new PartialMethodReference(this);
             }
+
+            if (sep.separator.equals("[")) {
+                return PartialArrayAccess.on(this);
+            }
         }
 
         return null;

@@ -72,6 +72,40 @@ public class JSBackend implements Backend {
     }
 
     @Override
+    public void emitArrayBegin(LiteralArray array, BackendCodeGenerator generator) {
+        pushInExpr();
+        emit("[");
+    }
+
+    @Override
+    public void emitArraySeparator(LiteralArray array, boolean isLast, BackendCodeGenerator generator) {
+        if (!isLast) {
+            emit(",");
+        }
+    }
+
+    @Override
+    public void emitArrayEnd(LiteralArray array, BackendCodeGenerator generator) {
+        emit("]");
+        popInExpr();
+    }
+
+    @Override
+    public void emitArrayAccessBegin(ArrayAccess access, BackendCodeGenerator generator) {
+        emit("[");
+    }
+
+    @Override
+    public void emitArrayAccessIndex(String index, BackendCodeGenerator generator) {
+        emit(index);
+    }
+
+    @Override
+    public void emitArrayAccessEnd(ArrayAccess access, BackendCodeGenerator generator) {
+        emit("]");
+    }
+
+    @Override
     public void emitPriorityExpressionBegin(PriorityExpression expression, BackendCodeGenerator generator) {
         emit("(");
     }
@@ -150,8 +184,8 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator) {
-        var conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression);
-        var condString = conditions.map(generator::generateFor).map(String::new).collect(Collectors.joining("&&"));
+        var conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression).collect(Collectors.toList());
+        var condString = conditions.stream().map(generator::generateFor).map(String::new).collect(Collectors.joining("&&"));
 
         emit("if(" + condString + "){return ");
     }

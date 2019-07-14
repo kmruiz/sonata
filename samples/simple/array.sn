@@ -1,0 +1,4 @@
+let sum(a: number[]) = a[0] + sum(a.slice(1))
+let sum(a.length === 0) = 0
+
+console.log(sum([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))

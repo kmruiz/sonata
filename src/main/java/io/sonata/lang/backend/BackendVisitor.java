@@ -10,6 +10,7 @@ import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.source.Source;
 import io.sonata.lang.tokenizer.Tokenizer;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -97,11 +98,29 @@ public class BackendVisitor implements BackendCodeGenerator {
             backend.emitFunctionCallEnd((FunctionCall) node, this);
         }
 
+        if (node instanceof LiteralArray) {
+            backend.emitArrayBegin((LiteralArray) node, this);
+            AtomicInteger len = new AtomicInteger(((LiteralArray) node).expressions.size());
+            ((LiteralArray) node).expressions.forEach(arg -> {
+                len.decrementAndGet();
+                visitTree(arg, backend);
+                backend.emitArraySeparator((LiteralArray) node, len.get() == 0, this);
+            });
+            backend.emitArrayEnd((LiteralArray) node, this);
+        }
+
         if (node instanceof MethodReference) {
             backend.emitMethodReferenceBegin((MethodReference) node, this);
             visitTree(((MethodReference) node).receiver, backend);
             backend.emitMethodReferenceName(((MethodReference) node).methodName, this);
             backend.emitMethodReferenceEnd((MethodReference) node, this);
+        }
+
+        if (node instanceof ArrayAccess) {
+            visitTree(((ArrayAccess) node).receiver, backend);
+            backend.emitArrayAccessBegin((ArrayAccess) node, this);
+            backend.emitArrayAccessIndex(((ArrayAccess) node).index, this);
+            backend.emitArrayAccessEnd((ArrayAccess) node, this);
         }
     }
 
