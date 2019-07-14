@@ -1,0 +1,43 @@
+package io.sonata.lang.backend;
+
+import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.exp.*;
+import io.sonata.lang.parser.ast.let.LetFunction;
+
+import java.util.List;
+
+public interface Backend {
+    void emitScriptBegin(ScriptNode scriptNode, BackendCodeGenerator generator);
+    void emitScriptEnd(ScriptNode scriptNode, BackendCodeGenerator generator);
+
+    void emitAtomExpressionBegin(Atom atom, BackendCodeGenerator generator);
+    void emitAtomExpressionEnd(Atom atom, BackendCodeGenerator generator);
+
+    void emitSimpleExpressionBegin(SimpleExpression expression, BackendCodeGenerator generator);
+    void emitSimpleExpressionOperator(String operator, BackendCodeGenerator generator);
+    void emitSimpleExpressionEnd(SimpleExpression expression, BackendCodeGenerator generator);
+
+    void emitPriorityExpressionBegin(PriorityExpression expression, BackendCodeGenerator generator);
+    void emitPriorityExpressionEnd(PriorityExpression expression, BackendCodeGenerator generator);
+
+    void emitFunctionCallBegin(FunctionCall functionCall, BackendCodeGenerator generator);
+    void emitFunctionCallArgumentBegin(Expression expression, boolean isLast, BackendCodeGenerator generator);
+    void emitFunctionCallArgumentEnd(Expression expression, boolean isLast, BackendCodeGenerator generator);
+    void emitFunctionCallEnd(FunctionCall functionCall, BackendCodeGenerator generator);
+
+    void emitMethodReferenceBegin(MethodReference methodReference, BackendCodeGenerator generator);
+    void emitMethodReferenceEnd(MethodReference methodReference, BackendCodeGenerator generator);
+
+    void emitMethodReferenceName(String name, BackendCodeGenerator generator);
+
+    void emitFunctionDefinitionBegin(List<LetFunction> definition, BackendCodeGenerator generator);
+    void emitFunctionDefinitionEnd(List<LetFunction> definition, BackendCodeGenerator generator);
+
+    void emitBaseFunctionSpecificationBegin(LetFunction base, BackendCodeGenerator generator);
+    void emitBaseFunctionSpecificationEnd(LetFunction base, BackendCodeGenerator generator);
+
+    void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator);
+    void emitFunctionSpecificationEnd(LetFunction spec, BackendCodeGenerator generator);
+
+    byte[] result();
+}
