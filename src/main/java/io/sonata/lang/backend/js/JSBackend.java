@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -201,22 +202,43 @@ public class JSBackend implements Backend {
         var extractions = conditions.stream().filter(e -> e instanceof LiteralArray).map(e -> (LiteralArray) e).collect(Collectors.toList());
         if (!extractions.isEmpty()) {
             var paramIdx = new AtomicInteger(0);
+
             extractions.forEach(param -> {
+                var hasTailExtr = new AtomicBoolean(false);
                 var arrayName = parameterNames.get(paramIdx.getAndIncrement());
-                condArray.add(String.format("%s.length === %s", arrayName, param.expressions.size()));
 
                 var arrayIndex = new AtomicInteger(0);
                 param.expressions.forEach(expr -> {
-                    var name = ((Atom) expr).value;
+                    if (expr instanceof Atom) {
+                        var name = ((Atom) expr).value;
 
-                    emit("var ");
-                    emit(name);
-                    emit("=");
-                    emit(arrayName);
-                    emit("[");
-                    emit(String.valueOf(arrayIndex.getAndIncrement()));
-                    emit("];");
+                        emit("var ");
+                        emit(name);
+                        emit("=");
+                        emit(arrayName);
+                        emit("[");
+                        emit(String.valueOf(arrayIndex.getAndIncrement()));
+                        emit("];");
+                    } else if (expr instanceof TailExtraction) {
+                        var tailExtr = ((TailExtraction) expr);
+
+                        emit("var ");
+                        emit(tailExtr.expression.representation());
+                        emit("=");
+                        emit(arrayName);
+                        emit(".slice(");
+                        emit(String.valueOf(arrayIndex.getAndIncrement()));
+                        emit(");");
+
+                        hasTailExtr.set(true);
+                    }
                 });
+
+                if (hasTailExtr.get()) {
+                    condArray.add(String.format("%s.length >= %s", arrayName, param.expressions.size()));
+                } else {
+                    condArray.add(String.format("%s.length === %s", arrayName, param.expressions.size()));
+                }
             });
         }
 

@@ -1,6 +1,7 @@
 package io.sonata.lang.parser.ast.let.fn;
 
 import io.sonata.lang.parser.ast.exp.Expression;
+import io.sonata.lang.parser.ast.exp.LiteralArray;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class ExpressionParameter implements Parameter {
@@ -21,6 +22,10 @@ public class ExpressionParameter implements Parameter {
         var next = expression.consume(token);
         if (next == null) {
             return new ExpressionParameter(expression, true);
+        }
+
+        if (next instanceof LiteralArray) {
+            return new ExpressionParameter(next, true);
         }
 
         return new ExpressionParameter(next, false);

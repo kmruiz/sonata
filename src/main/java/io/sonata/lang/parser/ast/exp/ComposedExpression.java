@@ -8,6 +8,10 @@ public abstract class ComposedExpression implements Expression {
     @Override
     public Expression consume(Token token) {
         if (token instanceof OperatorToken) {
+            if (token.representation().equals("#")) {
+                return new TailExtraction(this);
+            }
+
             return SimpleExpression.initial(this, token.representation());
         }
 

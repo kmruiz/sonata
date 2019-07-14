@@ -15,6 +15,7 @@ import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNullElse;
 
 public class PartialLetFunction implements Node {
     private enum State {
@@ -56,9 +57,10 @@ public class PartialLetFunction implements Node {
                         var separator = (SeparatorToken) token;
                         switch (separator.separator) {
                             case ",":
-                                return new PartialLetFunction(letName, State.IN_PARAMETER, append(parameters, currentParameter), SimpleParameter.instance(), returnType, body);
+                                return new PartialLetFunction(letName, State.IN_PARAMETER, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(), returnType, body);
                             case ")":
-                                return new PartialLetFunction(letName, State.WAITING_DEFINITION, append(parameters, currentParameter), SimpleParameter.instance(), returnType, body);
+                            case "]":
+                                return new PartialLetFunction(letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(), returnType, body);
                         }
                     }
                 } else {

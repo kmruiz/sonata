@@ -1,5 +1,5 @@
-let sum(x: number[]) = x[0] + sum(x.slice(1))
-let sum([a, b]) = a + b
+let sum(x: number[]) = undefined
+let sum([a, tail#] = a + sum(tail)
 let sum([a]) = a
 let sum([]) = 0
 
