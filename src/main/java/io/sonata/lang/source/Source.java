@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class Source implements AutoCloseable {
     public enum Type {
-        FILE, LITERAL
+        FILE, LITERAL, STREAM
     }
 
     public final String name;
@@ -32,6 +32,10 @@ public class Source implements AutoCloseable {
 
     public static Source fromLiteral(String literal) {
         return new Source(literal, Type.LITERAL, new ByteArrayInputStream(literal.getBytes(Charset.defaultCharset())));
+    }
+
+    public static Source fromStream(String streamName, InputStream stream) {
+        return new Source(streamName, Type.STREAM, stream);
     }
 
     public final Flowable<SourceCharacter> read() {

@@ -109,21 +109,4 @@ public class BackendVisitor implements BackendCodeGenerator {
     public byte[] generateFor(Node node) {
         return new BackendVisitor(backendFactory).generateSourceCode(node);
     }
-
-    public static void main(String[] args) {
-        Source.fromLiteral(
-                "let f(a: integer, mult: boolean) = undefined\n" +
-                "let f(a: integer, mult === true) = a * 2\n" +
-                "let f(a: integer, mult === false) = a\n" +
-                "println(f(1, false))\n" +
-                "println(f(1, true))\n" +
-                "println(f(1))\n" +
-                "\n\n"
-        ).read()
-                .flatMap(new Tokenizer()::process)
-                .reduce(Parser.initial(), Parser::reduce)
-                .map(new BackendVisitor(JSBackend::new)::generateSourceCode)
-                .map(String::new)
-                .subscribe(System.out::println, Throwable::printStackTrace);
-    }
 }

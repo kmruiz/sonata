@@ -10,11 +10,10 @@ import io.sonata.lang.tokenizer.Tokenizer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.List;
 
 public class Compile {
-    public void execute(List<String> files, String output) {
+    public static void execute(List<String> files, String output) {
         BackendVisitor visitor = new BackendVisitor(JSBackend::new);
         Tokenizer tokenizer = new Tokenizer();
 
@@ -26,12 +25,5 @@ public class Compile {
                 .reduce(Parser.initial(), Parser::reduce)
                 .map(visitor::generateSourceCode)
                 .subscribe(bytes -> Files.write(Paths.get(output), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING), Throwable::printStackTrace);
-    }
-
-    public static void main(String[] args) {
-        new Compile().execute(
-                Arrays.asList("samples/fibonacci/fibonacci.sn", "samples/fibonacci/example.sn"),
-                "samples/fibonacci/output.js"
-        );
     }
 }
