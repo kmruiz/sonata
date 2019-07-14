@@ -92,17 +92,19 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitArrayAccessBegin(ArrayAccess access, BackendCodeGenerator generator) {
-        emit("[");
+        pushInExpr();
     }
 
     @Override
     public void emitArrayAccessIndex(String index, BackendCodeGenerator generator) {
+        emit("[");
         emit(index);
+        emit("]");
     }
 
     @Override
     public void emitArrayAccessEnd(ArrayAccess access, BackendCodeGenerator generator) {
-        emit("]");
+        popInExpr();
     }
 
     @Override

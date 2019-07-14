@@ -1,16 +1,11 @@
 package io.sonata.lang.backend;
 
-import io.sonata.lang.backend.js.JSBackend;
-import io.sonata.lang.parser.Parser;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
-import io.sonata.lang.source.Source;
-import io.sonata.lang.tokenizer.Tokenizer;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -117,8 +112,8 @@ public class BackendVisitor implements BackendCodeGenerator {
         }
 
         if (node instanceof ArrayAccess) {
-            visitTree(((ArrayAccess) node).receiver, backend);
             backend.emitArrayAccessBegin((ArrayAccess) node, this);
+            visitTree(((ArrayAccess) node).receiver, backend);
             backend.emitArrayAccessIndex(((ArrayAccess) node).index, this);
             backend.emitArrayAccessEnd((ArrayAccess) node, this);
         }
