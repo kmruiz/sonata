@@ -1,6 +1,7 @@
 package io.sonata.lang.parser.ast.let.fn;
 
 import io.sonata.lang.parser.ast.exp.Atom;
+import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.type.EmptyType;
 import io.sonata.lang.parser.ast.type.Type;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
@@ -39,7 +40,7 @@ public class SimpleParameter implements Parameter {
                     return new SimpleParameter(token.representation(), type, State.WAITING_SEPARATOR);
                 }
 
-                return null;
+                return ExpressionParameter.of(EmptyExpression.instance().consume(token));
             case WAITING_SEPARATOR:
                 if (token instanceof SeparatorToken) {
                     var sep = (SeparatorToken) token;

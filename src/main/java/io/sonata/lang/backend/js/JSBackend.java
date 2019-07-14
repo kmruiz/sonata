@@ -10,16 +10,21 @@ import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JSBackend implements Backend {
     private final ByteArrayOutputStream buffer;
     private int inExpr;
+    private List<String> parameterNames;
 
     public JSBackend() {
         this.buffer = new ByteArrayOutputStream(180000);
         this.inExpr = 0;
+        this.parameterNames = null;
     }
 
     private void pushInExpr() {
@@ -162,9 +167,12 @@ public class JSBackend implements Backend {
     public void emitFunctionDefinitionBegin(List<LetFunction> definition, BackendCodeGenerator generator) {
         var base = definition.get(0);
         var output = "function ";
+
+        this.parameterNames = base.parameters.stream().map(e -> (SimpleParameter) e).map(e -> e.name).collect(Collectors.toList());
+
         output += base.letName;
         output += "(";
-        output += base.parameters.stream().map(e -> (SimpleParameter) e).map(e -> e.name).collect(Collectors.joining(", "));
+        output += String.join(", ", parameterNames);
         output += "){";
         emit(output);
     }
@@ -172,6 +180,7 @@ public class JSBackend implements Backend {
     @Override
     public void emitFunctionDefinitionEnd(List<LetFunction> definition, BackendCodeGenerator generator) {
         emit(";};");
+        this.parameterNames = null;
     }
 
     @Override
@@ -187,7 +196,35 @@ public class JSBackend implements Backend {
     @Override
     public void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator) {
         var conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression).collect(Collectors.toList());
-        var condString = conditions.stream().map(generator::generateFor).map(String::new).collect(Collectors.joining("&&"));
+        var condArray = new ArrayList<String>();
+
+        var extractions = conditions.stream().filter(e -> e instanceof LiteralArray).map(e -> (LiteralArray) e).collect(Collectors.toList());
+        if (!extractions.isEmpty()) {
+            var paramIdx = new AtomicInteger(0);
+            extractions.forEach(param -> {
+                var arrayName = parameterNames.get(paramIdx.getAndIncrement());
+                condArray.add(String.format("%s.length === %s", arrayName, param.expressions.size()));
+
+                var arrayIndex = new AtomicInteger(0);
+                param.expressions.forEach(expr -> {
+                    var name = ((Atom) expr).value;
+
+                    emit("var ");
+                    emit(name);
+                    emit("=");
+                    emit(arrayName);
+                    emit("[");
+                    emit(String.valueOf(arrayIndex.getAndIncrement()));
+                    emit("];");
+                });
+            });
+        }
+
+        var notExtractions = conditions.stream().filter(e -> !(e instanceof LiteralArray));
+        var condString = Stream.concat(
+                condArray.stream(),
+                notExtractions.map(generator::generateFor).map(String::new)
+        ).collect(Collectors.joining("&&"));
 
         emit("if(" + condString + "){return ");
     }

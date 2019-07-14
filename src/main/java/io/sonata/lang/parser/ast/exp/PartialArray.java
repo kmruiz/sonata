@@ -33,6 +33,10 @@ public class PartialArray implements Expression {
                 }
 
                 if (sep.separator.equals("]")) {
+                    if (currentExpression instanceof EmptyExpression) {
+                        return new LiteralArray(expressions);
+                    }
+
                     return new LiteralArray(append(expressions, currentExpression));
                 }
             }

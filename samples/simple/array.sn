@@ -1,4 +1,6 @@
-let sum(a: number[]) = a[0] + sum(a.slice(1))
-let sum(a.length === 1) = a[0]
+let sum(x: number[]) = x[0] + sum(x.slice(1))
+let sum([a, b]) = a + b
+let sum([a]) = a
+let sum([]) = 0
 
 console.log(sum([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
