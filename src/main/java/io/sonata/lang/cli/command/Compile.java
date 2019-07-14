@@ -29,6 +29,9 @@ public class Compile {
     }
 
     public static void main(String[] args) {
-        new Compile().execute(Arrays.asList("samples/fibonacci/f.sn"), "samples/fibonacci/output.js");
+        new Compile().execute(
+                Arrays.asList("samples/fibonacci/fibonacci.sn", "samples/fibonacci/example.sn"),
+                "samples/fibonacci/output.js"
+        );
     }
 }
