@@ -1,0 +1,19 @@
+type maybe[a] = just(a) | nothing
+
+let print(value: maybe[a]) = undefined
+let print(just(a)) = a
+let print(nothing) = ''
+
+console.log(print(just(1)))
+console.log(print(nothing))
+
+type try[s, f, e] = ok(s) | ko(f) | fatal(e)
+
+let out(value: try[s, f, e]) = undefined
+let out(ok(s)) = 'ok ' + s
+let out(ko(f)) = 'ko ' + f
+let out(fatal(e)) = 'FATAL ' + e
+
+console.log(out(ok(1)))
+console.log(out(ko(2)))
+console.log(out(fatal(3)))
