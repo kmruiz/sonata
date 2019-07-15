@@ -210,15 +210,22 @@ public class JSBackend implements Backend {
                 var arrayIndex = new AtomicInteger(0);
                 param.expressions.forEach(expr -> {
                     if (expr instanceof Atom) {
-                        var name = ((Atom) expr).value;
+                        var atom = (Atom) expr;
+                        var name = atom.value;
+                        var index = arrayIndex.getAndIncrement();
 
-                        emit("var ");
-                        emit(name);
-                        emit("=");
-                        emit(arrayName);
-                        emit("[");
-                        emit(String.valueOf(arrayIndex.getAndIncrement()));
-                        emit("];");
+                        if (atom.type == Atom.Type.IDENTIFIER) {
+                            emit("var ");
+                            emit(name);
+                            emit("=");
+                            emit(arrayName);
+                            emit("[");
+                            emit(String.valueOf(index));
+                            emit("];");
+                        } else {
+                            condArray.add(String.format("%s[%d] === %s", arrayName, index, atom.representation()));
+                        }
+
                     } else if (expr instanceof TailExtraction) {
                         var tailExtr = ((TailExtraction) expr);
 
