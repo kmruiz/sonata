@@ -40,6 +40,10 @@ public class SimpleParameter implements Parameter {
                     return new SimpleParameter(token.representation(), type, State.WAITING_SEPARATOR);
                 }
 
+                if (token instanceof SeparatorToken && token.representation().equals(")")) {
+                    return null;
+                }
+
                 return ExpressionParameter.of(EmptyExpression.instance().consume(token));
             case WAITING_SEPARATOR:
                 if (token instanceof SeparatorToken) {

@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 public class Source implements AutoCloseable {
     public enum Type {
@@ -32,6 +31,10 @@ public class Source implements AutoCloseable {
 
     public static Source fromLiteral(String literal) {
         return new Source(literal, Type.LITERAL, new ByteArrayInputStream(literal.getBytes(Charset.defaultCharset())));
+    }
+
+    public static Source endOfProgram() {
+        return fromLiteral("\0");
     }
 
     public static Source fromStream(String streamName, InputStream stream) {

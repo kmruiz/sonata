@@ -2,6 +2,7 @@ package io.sonata.lang.backend.js;
 
 import io.sonata.lang.backend.Backend;
 import io.sonata.lang.backend.BackendCodeGenerator;
+import io.sonata.lang.backend.BackendVisitor;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
@@ -36,8 +37,8 @@ public class JSBackend implements Backend {
         this.inExpr--;
     }
 
-    private boolean isInExpr() {
-        return this.inExpr > 0;
+    private boolean isNotInExpression() {
+        return this.inExpr <= 0;
     }
 
     @Override
@@ -57,7 +58,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitAtomExpressionEnd(Atom atom, BackendCodeGenerator generator) {
-        if (!isInExpr()) {
+        if (isNotInExpression()) {
             emit(";");
         }
     }
@@ -143,7 +144,7 @@ public class JSBackend implements Backend {
         emit(")");
         popInExpr();
 
-        if (!isInExpr()) {
+        if (isNotInExpression()) {
             emit(";");
         }
     }
@@ -261,6 +262,20 @@ public class JSBackend implements Backend {
     @Override
     public void emitFunctionSpecificationEnd(LetFunction spec, BackendCodeGenerator generator) {
         emit("}");
+    }
+
+    @Override
+    public void emitPreFunctionCall(FunctionCall node, BackendVisitor backendVisitor) {
+        pushInExpr();
+    }
+
+    @Override
+    public void emitPostFunctionCall(FunctionCall node, BackendVisitor backendVisitor) {
+        popInExpr();
+
+        if (isNotInExpression()) {
+            emit(";");
+        }
     }
 
     @Override

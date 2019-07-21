@@ -47,5 +47,8 @@ public interface Backend {
     void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator);
     void emitFunctionSpecificationEnd(LetFunction spec, BackendCodeGenerator generator);
 
+    void emitPreFunctionCall(FunctionCall node, BackendVisitor backendVisitor);
+    void emitPostFunctionCall(FunctionCall node, BackendVisitor backendVisitor);
+
     byte[] result();
 }

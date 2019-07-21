@@ -81,6 +81,7 @@ public class BackendVisitor implements BackendCodeGenerator {
         }
 
         if (node instanceof FunctionCall) {
+            backend.emitPreFunctionCall((FunctionCall) node, this);
             visitTree(((FunctionCall) node).receiver, backend);
             backend.emitFunctionCallBegin((FunctionCall) node, this);
             AtomicInteger len = new AtomicInteger(((FunctionCall) node).arguments.size());
@@ -91,6 +92,7 @@ public class BackendVisitor implements BackendCodeGenerator {
                 backend.emitFunctionCallArgumentEnd(arg, len.get() == 0, this);
             });
             backend.emitFunctionCallEnd((FunctionCall) node, this);
+            backend.emitPostFunctionCall((FunctionCall) node, this);
         }
 
         if (node instanceof LiteralArray) {

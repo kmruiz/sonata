@@ -3,6 +3,7 @@ package io.sonata.lang.parser.ast;
 import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.PartialPriorityExpression;
 import io.sonata.lang.parser.ast.let.PartialLet;
+import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
@@ -22,8 +23,12 @@ public class RootNode implements Node {
     @Override
     public Node consume(Token token) {
         if (token instanceof IdentifierToken) {
-            if (((IdentifierToken) token).value.equals("let")) {
+            if (token.representation().equals("let")) {
                 return PartialLet.initial();
+            }
+
+            if (token.representation().equals("requires")) {
+                return PartialRequiresNode.initial();
             }
 
             return new Atom(token.representation());

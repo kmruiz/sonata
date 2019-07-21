@@ -60,7 +60,11 @@ public class PartialLetFunction implements Node {
                                 return new PartialLetFunction(letName, State.IN_PARAMETER, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(), returnType, body);
                             case ")":
                             case "]":
-                                return new PartialLetFunction(letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(), returnType, body);
+                                if (nextParam == null) {
+                                    return new PartialLetFunction(letName, State.WAITING_DEFINITION, parameters, SimpleParameter.instance(), returnType, body);
+                                } else {
+                                    return new PartialLetFunction(letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(), returnType, body);
+                                }
                         }
                     }
                 } else {
