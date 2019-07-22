@@ -1,0 +1,1 @@
+"use strict";function price(amount,currency){var body={};body.class='price';body.amount=amount;body.currency=currency;body.format=function format(){return amount+' '+currency;};return body;};console.log(price(42,'EUR').format());
