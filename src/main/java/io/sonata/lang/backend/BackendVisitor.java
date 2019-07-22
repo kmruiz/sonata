@@ -17,44 +17,22 @@ public class BackendVisitor implements BackendCodeGenerator {
         Backend newBackend();
     }
     public final BackendFactory backendFactory;
-    public final List<LetFunction> funcDefs;
 
     public BackendVisitor(BackendFactory backend) {
         this.backendFactory = backend;
-        this.funcDefs = new ArrayList<>(256);
     }
 
     public byte[] generateSourceCode(Node node) {
         var backend = backendFactory.newBackend();
-        visitTree(node, backend);
+        visitTree(node, backend, new ArrayList<>(256));
         return backend.result();
     }
 
-    private void visitTree(Node node, Backend backend) {
+    private void visitTree(Node node, Backend backend, List<LetFunction> funcDefs) {
         if (node instanceof ScriptNode) {
             backend.emitScriptBegin((ScriptNode) node, this);
-            ((ScriptNode) node).nodes.forEach(e -> visitTree(e, backend));
-
-            var funcMap = funcDefs.stream().collect(Collectors.groupingBy(v -> v.letName));
-            funcMap.values().forEach(letFns -> {
-                var base = letFns.stream().filter(e -> e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).findFirst().get();
-                var rest = letFns.stream().filter(e -> !e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).collect(Collectors.toList());
-
-                backend.emitFunctionDefinitionBegin(letFns, this);
-
-                rest.forEach(spec -> {
-                    backend.emitFunctionSpecificationBegin(spec, this);
-                    visitTree(spec.body, backend);
-                    backend.emitFunctionSpecificationEnd(spec, this);
-                });
-
-                backend.emitBaseFunctionSpecificationBegin(base, this);
-                visitTree(base.body, backend);
-                backend.emitBaseFunctionSpecificationEnd(base, this);
-
-                backend.emitFunctionDefinitionEnd(letFns, this);
-            });
-
+            ((ScriptNode) node).nodes.forEach(e -> visitTree(e, backend, funcDefs));
+            emitFunctionList(backend, funcDefs);
             backend.emitScriptEnd((ScriptNode) node, this);
         }
 
@@ -69,27 +47,27 @@ public class BackendVisitor implements BackendCodeGenerator {
 
         if (node instanceof SimpleExpression) {
             backend.emitSimpleExpressionBegin((SimpleExpression) node, this);
-            visitTree(((SimpleExpression) node).leftSide, backend);
+            visitTree(((SimpleExpression) node).leftSide, backend, funcDefs);
             backend.emitSimpleExpressionOperator(((SimpleExpression) node).operator, this);
-            visitTree(((SimpleExpression) node).rightSide, backend);
+            visitTree(((SimpleExpression) node).rightSide, backend, funcDefs);
             backend.emitSimpleExpressionEnd((SimpleExpression) node, this);
         }
 
         if (node instanceof PriorityExpression) {
             backend.emitPriorityExpressionBegin((PriorityExpression) node, this);
-            visitTree(((PriorityExpression) node).expression, backend);
+            visitTree(((PriorityExpression) node).expression, backend, funcDefs);
             backend.emitPriorityExpressionEnd((PriorityExpression) node, this);
         }
 
         if (node instanceof FunctionCall) {
             backend.emitPreFunctionCall((FunctionCall) node, this);
-            visitTree(((FunctionCall) node).receiver, backend);
+            visitTree(((FunctionCall) node).receiver, backend, funcDefs);
             backend.emitFunctionCallBegin((FunctionCall) node, this);
             AtomicInteger len = new AtomicInteger(((FunctionCall) node).arguments.size());
             ((FunctionCall) node).arguments.forEach(arg -> {
                 len.decrementAndGet();
                 backend.emitFunctionCallArgumentBegin(arg, len.get() == 0, this);
-                visitTree(arg, backend);
+                visitTree(arg, backend, funcDefs);
                 backend.emitFunctionCallArgumentEnd(arg, len.get() == 0, this);
             });
             backend.emitFunctionCallEnd((FunctionCall) node, this);
@@ -105,6 +83,13 @@ public class BackendVisitor implements BackendCodeGenerator {
                 backend.emitValueClassFieldEnd((ValueClass) node, field, len.get() == 0, this);
             });
             backend.emitPostValueClass((ValueClass) node, this);
+            backend.emitValueClassBodyBegin((ValueClass) node, this);
+            ((ValueClass) node).body.forEach(expr -> {
+                var defs = new ArrayList<LetFunction>(256);
+                visitTree(expr, backend, defs);
+                emitFunctionList(backend, defs);
+            });
+            backend.emitValueClassBodyEnd((ValueClass) node, this);
         }
 
         if (node instanceof LiteralArray) {
@@ -112,7 +97,7 @@ public class BackendVisitor implements BackendCodeGenerator {
             AtomicInteger len = new AtomicInteger(((LiteralArray) node).expressions.size());
             ((LiteralArray) node).expressions.forEach(arg -> {
                 len.decrementAndGet();
-                visitTree(arg, backend);
+                visitTree(arg, backend, funcDefs);
                 backend.emitArraySeparator((LiteralArray) node, len.get() == 0, this);
             });
             backend.emitArrayEnd((LiteralArray) node, this);
@@ -120,17 +105,39 @@ public class BackendVisitor implements BackendCodeGenerator {
 
         if (node instanceof MethodReference) {
             backend.emitMethodReferenceBegin((MethodReference) node, this);
-            visitTree(((MethodReference) node).receiver, backend);
+            visitTree(((MethodReference) node).receiver, backend, funcDefs);
             backend.emitMethodReferenceName(((MethodReference) node).methodName, this);
             backend.emitMethodReferenceEnd((MethodReference) node, this);
         }
 
         if (node instanceof ArrayAccess) {
             backend.emitArrayAccessBegin((ArrayAccess) node, this);
-            visitTree(((ArrayAccess) node).receiver, backend);
+            visitTree(((ArrayAccess) node).receiver, backend, funcDefs);
             backend.emitArrayAccessIndex(((ArrayAccess) node).index, this);
             backend.emitArrayAccessEnd((ArrayAccess) node, this);
         }
+    }
+
+    private void emitFunctionList(Backend backend, List<LetFunction> funcDefs) {
+        var funcMap = funcDefs.stream().collect(Collectors.groupingBy(v -> v.letName));
+        funcMap.values().forEach(letFns -> {
+            var base = letFns.stream().filter(e -> e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).findFirst().get();
+            var rest = letFns.stream().filter(e -> !e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).collect(Collectors.toList());
+
+            backend.emitFunctionDefinitionBegin(letFns, this);
+
+            rest.forEach(spec -> {
+                backend.emitFunctionSpecificationBegin(spec, this);
+                visitTree(spec.body, backend, funcDefs);
+                backend.emitFunctionSpecificationEnd(spec, this);
+            });
+
+            backend.emitBaseFunctionSpecificationBegin(base, this);
+            visitTree(base.body, backend, funcDefs);
+            backend.emitBaseFunctionSpecificationEnd(base, this);
+
+            backend.emitFunctionDefinitionEnd(letFns, this);
+        });
     }
 
     @Override

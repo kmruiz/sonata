@@ -24,11 +24,13 @@ public class JSBackend implements Backend {
     private final ByteArrayOutputStream buffer;
     private int inExpr;
     private List<String> parameterNames;
+    private boolean inClass;
 
     public JSBackend() {
         this.buffer = new ByteArrayOutputStream(180000);
         this.inExpr = 0;
         this.parameterNames = null;
+        this.inClass = false;
     }
 
     private void pushInExpr() {
@@ -170,15 +172,21 @@ public class JSBackend implements Backend {
     @Override
     public void emitFunctionDefinitionBegin(List<LetFunction> definition, BackendCodeGenerator generator) {
         var base = definition.get(0);
-        var output = "function ";
+
+        if (inClass) {
+            emit("body.");
+            emit(base.letName);
+            emit("=");
+        }
+
+        emit("function ");
 
         this.parameterNames = base.parameters.stream().map(e -> (SimpleParameter) e).map(e -> e.name).collect(Collectors.toList());
 
-        output += base.letName;
-        output += "(";
-        output += String.join(", ", parameterNames);
-        output += "){";
-        emit(output);
+        emit(base.letName);
+        emit("(");
+        emit(String.join(", ", parameterNames));
+        emit("){");
     }
 
     @Override
@@ -295,6 +303,17 @@ public class JSBackend implements Backend {
     }
 
     @Override
+    public void emitValueClassBodyBegin(ValueClass vc, BackendVisitor backendVisitor) {
+        inClass = true;
+    }
+
+    @Override
+    public void emitValueClassBodyEnd(ValueClass vc, BackendVisitor backendVisitor) {
+        inClass = false;
+        emit("return body;};");
+    }
+
+    @Override
     public void emitPostValueClass(ValueClass vc, BackendVisitor backendVisitor) {
         emit("var body={};");
         emit("body.class='");
@@ -307,7 +326,6 @@ public class JSBackend implements Backend {
             emit(field.name());
             emit(";");
         });
-        emit("return body;};");
     }
 
     @Override

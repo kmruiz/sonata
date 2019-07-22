@@ -55,6 +55,8 @@ public interface Backend {
     void emitPreValueClass(ValueClass vc, BackendVisitor backendVisitor);
     void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor);
     void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor);
+    void emitValueClassBodyBegin(ValueClass vc, BackendVisitor backendVisitor);
+    void emitValueClassBodyEnd(ValueClass vc, BackendVisitor backendVisitor);
     void emitPostValueClass(ValueClass vc, BackendVisitor backendVisitor);
 
     byte[] result();

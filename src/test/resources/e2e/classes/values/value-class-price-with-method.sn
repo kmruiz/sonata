@@ -1,0 +1,5 @@
+value class price(amount: number, currency: string) {
+    let format() = amount + ' ' + currency
+}
+
+console.log(price(42,'EUR').format())
