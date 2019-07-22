@@ -13,6 +13,7 @@ import io.sonata.lang.parser.ast.RxRequiresNodeNotifier;
 import io.sonata.lang.source.Source;
 import io.sonata.lang.tokenizer.Tokenizer;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -32,11 +33,17 @@ public class Compile {
                 .concatWith(Single.fromSupplier(Source::endOfProgram))
                 .forEach(requires::onNext);
 
-        requires.toFlowable(BackpressureStrategy.BUFFER)
+        var bytes = requires.toFlowable(BackpressureStrategy.BUFFER)
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)
                 .reduce(Parser.initial(notifier), Parser::reduce)
                 .map(visitor::generateSourceCode)
-                .subscribe(bytes -> Files.write(Paths.get(output), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
+                .blockingGet();
+
+        try {
+            Files.write(Paths.get(output), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
