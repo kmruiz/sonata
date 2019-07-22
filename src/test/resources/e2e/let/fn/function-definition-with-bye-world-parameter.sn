@@ -1,0 +1,3 @@
+let say(msg: string) = msg
+
+console.log(say('Bye World!'))

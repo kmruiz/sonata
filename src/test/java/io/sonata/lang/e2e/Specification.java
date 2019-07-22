@@ -14,12 +14,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public abstract class Specification {
-    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws IOException, TimeoutException {
+    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws IOException {
         var stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
         var script = new BufferedReader(new InputStreamReader(stream))
                 .lines().collect(Collectors.joining("\n"));
@@ -27,12 +27,14 @@ public abstract class Specification {
         assertScriptOutputs(expectedOutput, script);
     }
 
-    protected final void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException, TimeoutException {
+    protected final void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException {
         var waitingConsumer = new WaitingConsumer();
         var container = executeScript(literalScript);
 
         container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
-        waitingConsumer.waitUntil(outputFrame -> outputFrame.getUtf8String().contains(expectedOutput.trim()), 5, TimeUnit.SECONDS);
+        waitingConsumer.waitUntilEnd();
+
+        assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
     }
 
     private GenericContainer executeScript(String literalScript) throws IOException {
