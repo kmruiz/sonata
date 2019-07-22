@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 public class ValueClassDefinitionSpecification extends Specification {
     @Test
-    public void definitionOfClassWithoutParameters() throws Exception {
-        assertResourceScriptOutputs("{class:'price',amount:42,currency:'EUR'}", "classes/values/value-class-price");
+    public void definitionOfBasicValueClass() throws Exception {
+        assertResourceScriptOutputs("{ class: 'price', amount: 42, currency: 'EUR' }", "classes/values/value-class-price");
     }
 }

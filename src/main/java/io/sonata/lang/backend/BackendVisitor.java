@@ -2,6 +2,7 @@ package io.sonata.lang.backend;
 
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
@@ -93,6 +94,17 @@ public class BackendVisitor implements BackendCodeGenerator {
             });
             backend.emitFunctionCallEnd((FunctionCall) node, this);
             backend.emitPostFunctionCall((FunctionCall) node, this);
+        }
+
+        if (node instanceof ValueClass) {
+            backend.emitPreValueClass((ValueClass) node, this);
+            AtomicInteger len = new AtomicInteger(((ValueClass) node).definedFields.size());
+            ((ValueClass) node).definedFields.forEach(field -> {
+                len.decrementAndGet();
+                backend.emitValueClassFieldBegin((ValueClass) node, field, len.get() == 0, this);
+                backend.emitValueClassFieldEnd((ValueClass) node, field, len.get() == 0, this);
+            });
+            backend.emitPostValueClass((ValueClass) node, this);
         }
 
         if (node instanceof LiteralArray) {

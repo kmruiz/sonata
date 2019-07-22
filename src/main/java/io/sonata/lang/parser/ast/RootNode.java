@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast;
 
+import io.sonata.lang.parser.ast.classes.values.PartialValueClass;
 import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.PartialPriorityExpression;
 import io.sonata.lang.parser.ast.let.PartialLet;
@@ -23,12 +24,13 @@ public class RootNode implements Node {
     @Override
     public Node consume(Token token) {
         if (token instanceof IdentifierToken) {
-            if (token.representation().equals("let")) {
-                return PartialLet.initial();
-            }
-
-            if (token.representation().equals("requires")) {
-                return PartialRequiresNode.initial();
+            switch (token.representation()) {
+                case "let":
+                    return PartialLet.initial();
+                case "requires":
+                    return PartialRequiresNode.initial();
+                case "value":
+                    return PartialValueClass.initial();
             }
 
             return new Atom(token.representation());

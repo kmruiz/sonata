@@ -4,6 +4,8 @@ import io.sonata.lang.backend.Backend;
 import io.sonata.lang.backend.BackendCodeGenerator;
 import io.sonata.lang.backend.BackendVisitor;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.fields.Field;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
@@ -269,6 +271,43 @@ public class JSBackend implements Backend {
     @Override
     public void emitPreFunctionCall(FunctionCall node, BackendVisitor backendVisitor) {
         pushInExpr();
+    }
+
+    @Override
+    public void emitPreValueClass(ValueClass vc, BackendVisitor backendVisitor) {
+        emit("function ");
+        emit(vc.name);
+        emit("(");
+    }
+
+    @Override
+    public void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor) {
+        emit(field.name());
+    }
+
+    @Override
+    public void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor) {
+        if (isLast) {
+            emit("){");
+        } else {
+            emit(",");
+        }
+    }
+
+    @Override
+    public void emitPostValueClass(ValueClass vc, BackendVisitor backendVisitor) {
+        emit("var body={};");
+        emit("body.class='");
+        emit(vc.name);
+        emit("';");
+        vc.definedFields.forEach(field -> {
+            emit("body.");
+            emit(field.name());
+            emit("=");
+            emit(field.name());
+            emit(";");
+        });
+        emit("return body;};");
     }
 
     @Override

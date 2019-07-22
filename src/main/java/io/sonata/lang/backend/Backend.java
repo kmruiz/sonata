@@ -1,6 +1,8 @@
 package io.sonata.lang.backend;
 
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.fields.Field;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
 
@@ -49,6 +51,11 @@ public interface Backend {
 
     void emitPreFunctionCall(FunctionCall node, BackendVisitor backendVisitor);
     void emitPostFunctionCall(FunctionCall node, BackendVisitor backendVisitor);
+
+    void emitPreValueClass(ValueClass vc, BackendVisitor backendVisitor);
+    void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor);
+    void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor);
+    void emitPostValueClass(ValueClass vc, BackendVisitor backendVisitor);
 
     byte[] result();
 }
