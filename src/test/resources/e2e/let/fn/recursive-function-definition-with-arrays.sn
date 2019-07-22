@@ -1,0 +1,8 @@
+let _zero() = 0
+
+let sum(numberList: number[]) = _zero()
+let sum([a, tail#]) = a + sum(tail)
+let sum([a]) = a
+let sum([]) = _zero()
+
+console.log(sum([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))

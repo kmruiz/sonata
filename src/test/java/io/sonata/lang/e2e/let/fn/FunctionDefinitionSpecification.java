@@ -18,4 +18,9 @@ public class FunctionDefinitionSpecification extends Specification {
     public void functionDefinitionWithSingleParameterAndConstantOverload() throws Exception {
         assertResourceScriptOutputs("Hey!\nNope!", "let/fn/function-definition-with-single-overloaded-parameter");
     }
+
+    @Test
+    public void recursiveFunctionDefinitionWithArrays() throws Exception {
+        assertResourceScriptOutputs("55", "let/fn/recursive-function-definition-with-arrays");
+    }
 }
