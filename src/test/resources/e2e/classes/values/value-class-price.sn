@@ -1,0 +1,3 @@
+value class price(amount: number, currency: string)
+
+console.log(price(42,'EUR'))
