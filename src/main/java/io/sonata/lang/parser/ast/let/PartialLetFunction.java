@@ -73,6 +73,8 @@ public class PartialLetFunction implements Node {
             case WAITING_DEFINITION:
                 if (token instanceof OperatorToken) {
                     return new PartialLetFunction(letName, State.IN_BODY, parameters, currentParameter, returnType, body);
+                } else if (token instanceof SeparatorToken && token.representation().equals("\n")) {
+                    return new LetFunction(letName, parameters, returnType, null);
                 } else if (token instanceof SeparatorToken && returnType instanceof EmptyType) {
                     return new PartialLetFunction(letName, State.IN_RETURN_TYPE, parameters, currentParameter, returnType, body);
                 }

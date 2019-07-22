@@ -187,7 +187,9 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitBaseFunctionSpecificationBegin(LetFunction base, BackendCodeGenerator generator) {
-        emit("return ");
+        if (base.body != null) {
+            emit("return ");
+        }
     }
 
     @Override
