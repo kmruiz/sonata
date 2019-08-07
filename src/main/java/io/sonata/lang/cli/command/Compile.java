@@ -27,7 +27,7 @@ public class Compile {
         Subject<Source> requires = ReplaySubject.create();
         RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(requires);
 
-        Flowable.fromIterable(files)
+        var disposable = Flowable.fromIterable(files)
                 .map(Paths::get)
                 .map(Source::fromPath)
                 .concatWith(Single.fromSupplier(Source::endOfProgram))
@@ -44,6 +44,8 @@ public class Compile {
             Files.write(Paths.get(output), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        } finally {
+            disposable.dispose();
         }
     }
 }

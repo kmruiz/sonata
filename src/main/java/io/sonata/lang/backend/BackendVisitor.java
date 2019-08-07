@@ -16,7 +16,8 @@ public class BackendVisitor implements BackendCodeGenerator {
     public interface BackendFactory {
         Backend newBackend();
     }
-    public final BackendFactory backendFactory;
+
+    private final BackendFactory backendFactory;
 
     public BackendVisitor(BackendFactory backend) {
         this.backendFactory = backend;
