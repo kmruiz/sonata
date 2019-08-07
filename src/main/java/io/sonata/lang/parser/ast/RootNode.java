@@ -29,6 +29,7 @@ public class RootNode implements Node {
                     return PartialLet.initial();
                 case "requires":
                     return PartialRequiresNode.initial();
+                case "entity":
                 case "value":
                     return PartialValueClass.initial();
             }

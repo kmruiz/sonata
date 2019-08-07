@@ -1,0 +1,4 @@
+entity class person(id: string, name: string)
+
+console.log(person('id', 'John'))
+
