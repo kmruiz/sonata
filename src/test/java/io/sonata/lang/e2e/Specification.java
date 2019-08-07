@@ -1,6 +1,7 @@
 package io.sonata.lang.e2e;
 
 import io.sonata.lang.cli.command.Compile;
+import org.opentest4j.AssertionFailedError;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
@@ -34,11 +35,18 @@ public abstract class Specification {
         container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
         waitingConsumer.waitUntilEnd();
 
-        assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
+        try {
+            assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
+        } catch (AssertionFailedError ex) {
+            System.err.println("Generated script:\n" + literalScript);
+            throw ex;
+        }
     }
 
     private GenericContainer executeScript(String literalScript) throws IOException {
         String compiledVersion = compileToTemporalPath(literalScript);
+        System.out.println(">> Source Code:\n" + literalScript);
+        System.out.println(">> JavaScript:\n" + Files.readString(Path.of(compiledVersion)));
 
         var container = new GenericContainer("node:12-alpine")
                 .withCopyFileToContainer(MountableFile.forHostPath(compiledVersion), "./script.js")

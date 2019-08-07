@@ -13,4 +13,9 @@ public class ValueClassDefinitionSpecification extends Specification {
     public void definitionOfBasicValueClassWithAMethod() throws Exception {
         assertResourceScriptOutputs("42 EUR", "classes/values/value-class-price-with-method");
     }
+
+    @Test
+    public void definitionOfBasicValueClassWithAMethodWithParameters() throws Exception {
+        assertResourceScriptOutputs("John: Hello Bob", "classes/values/value-class-method-with-parameters");
+    }
 }

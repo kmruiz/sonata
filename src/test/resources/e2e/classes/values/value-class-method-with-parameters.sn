@@ -1,0 +1,5 @@
+value class person(name: string) {
+    let salute(whom: person) = name + ': Hello ' + whom.name
+}
+
+console.log(person('John').salute(person('Bob')))
