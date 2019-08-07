@@ -45,7 +45,7 @@ public class PartialValueClassWithBody implements Node {
                 return new ValueClass(name, definedFields, append(declarations, current));
             }
 
-            return new PartialValueClassWithBody(name, definedFields, append(declarations, current), RootNode.instance());
+            return new PartialValueClassWithBody(name, definedFields, append(declarations, current), RootNode.instance().consume(token));
         }
 
         return new PartialValueClassWithBody(name, definedFields, declarations, nextExpr);

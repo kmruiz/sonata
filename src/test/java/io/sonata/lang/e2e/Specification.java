@@ -35,12 +35,7 @@ public abstract class Specification {
         container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
         waitingConsumer.waitUntilEnd();
 
-        try {
-            assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
-        } catch (AssertionFailedError ex) {
-            System.err.println("Generated script:\n" + literalScript);
-            throw ex;
-        }
+        assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
     }
 
     private GenericContainer executeScript(String literalScript) throws IOException {

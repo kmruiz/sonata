@@ -84,11 +84,11 @@ public class BackendVisitor implements BackendCodeGenerator {
             });
             backend.emitPostValueClass((ValueClass) node, this);
             backend.emitValueClassBodyBegin((ValueClass) node, this);
+            var defs = new ArrayList<LetFunction>(256);
             ((ValueClass) node).body.forEach(expr -> {
-                var defs = new ArrayList<LetFunction>(256);
                 visitTree(expr, backend, defs);
-                emitFunctionList(backend, defs);
             });
+            emitFunctionList(backend, defs);
             backend.emitValueClassBodyEnd((ValueClass) node, this);
         }
 
