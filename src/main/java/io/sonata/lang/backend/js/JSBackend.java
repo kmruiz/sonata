@@ -191,7 +191,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitFunctionDefinitionEnd(List<LetFunction> definition, BackendCodeGenerator generator) {
-        emit(";};");
+        emit("};");
         this.parameterNames = null;
     }
 
