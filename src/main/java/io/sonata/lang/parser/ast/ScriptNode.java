@@ -15,7 +15,7 @@ public class ScriptNode implements Node {
     public final Node currentNode;
     public final RequiresNodeNotifier requiresNotifier;
 
-    private ScriptNode(List<Node> nodes, Node currentNode, RequiresNodeNotifier requiresNotifier) {
+    public ScriptNode(List<Node> nodes, Node currentNode, RequiresNodeNotifier requiresNotifier) {
         this.nodes = nodes;
         this.currentNode = currentNode;
         this.requiresNotifier = requiresNotifier;

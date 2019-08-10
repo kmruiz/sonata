@@ -1,0 +1,7 @@
+value class price(amount: number, currency: string)
+
+let print(price(amount, currency)) = amount + currency
+let print(price(amount, '$')) = currency + amount
+
+console.log(print(price(42, '€')))
+console.log(print(price(42, '$')))
