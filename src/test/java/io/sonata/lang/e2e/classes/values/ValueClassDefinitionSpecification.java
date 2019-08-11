@@ -26,6 +26,6 @@ public class ValueClassDefinitionSpecification extends Specification {
 
     @Test
     public void destructuringValueClassInLetFunction() throws Exception {
-        assertResourceScriptOutputs("42€\n$42", "classes/values/value-class-destructuring");
+        assertResourceScriptOutputs("42E\n$42", "classes/values/value-class-destructuring");
     }
 }

@@ -9,7 +9,7 @@ public class SimpleExpression implements Expression {
     public final String operator;
     public final Expression rightSide;
 
-    private SimpleExpression(Expression leftSide, String operator, Expression rightSide) {
+    public SimpleExpression(Expression leftSide, String operator, Expression rightSide) {
         this.leftSide = leftSide;
         this.operator = operator;
         this.rightSide = rightSide;

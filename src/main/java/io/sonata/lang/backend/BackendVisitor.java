@@ -4,6 +4,7 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
+import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
@@ -58,6 +59,41 @@ public class BackendVisitor implements BackendCodeGenerator {
             backend.emitPriorityExpressionBegin((PriorityExpression) node, this);
             visitTree(((PriorityExpression) node).expression, backend, funcDefs);
             backend.emitPriorityExpressionEnd((PriorityExpression) node, this);
+        }
+
+        if (node instanceof BlockExpression) {
+            backend.emitBlockExpressionBegin((BlockExpression) node, this);
+            AtomicInteger len = new AtomicInteger(((BlockExpression) node).expressions.size());
+            ((BlockExpression) node).expressions.forEach(expr -> {
+                len.decrementAndGet();
+                backend.emitBlockExpressionExpressionBegin(expr, len.get() == 0, this);
+                visitTree(expr, backend, funcDefs);
+                backend.emitBlockExpressionExpressionEnd(expr, len.get() == 0, this);
+            });
+            backend.emitBlockExpressionEnd((BlockExpression) node, this);
+        }
+
+        if (node instanceof LetConstant) {
+            LetConstant constant = (LetConstant) node;
+            backend.emitLetConstantBegin(constant.letName, constant.returnType, this);
+            visitTree(constant.body, backend, funcDefs);
+            backend.emitLetConstantEnd(constant.letName, constant.returnType, this);
+        }
+
+        if (node instanceof IfElse) {
+            IfElse ifElse = (IfElse) node;
+            backend.emitIfBegin(ifElse, this);
+            backend.emitIfConditionBegin(ifElse, this);
+            visitTree(ifElse.condition, backend, funcDefs);
+            backend.emitIfConditionEnd(ifElse, this);
+            backend.emitIfBodyBegin(ifElse, this);
+            visitTree(ifElse.whenTrue, backend, funcDefs);
+            backend.emitIfBodyEnd(ifElse, this);
+            if (ifElse.whenFalse != null) {
+                backend.emitElseBegin(ifElse, this);
+                visitTree(ifElse.whenFalse, backend, funcDefs);
+                backend.emitElseEnd(ifElse, this);
+            }
         }
 
         if (node instanceof FunctionCall) {

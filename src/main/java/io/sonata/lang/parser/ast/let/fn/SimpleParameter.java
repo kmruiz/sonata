@@ -9,11 +9,11 @@ import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class SimpleParameter implements Parameter {
-    enum State {
+    public enum State {
         WAITING_NAME, WAITING_SEPARATOR, WAITING_TYPE, END
     }
 
-    private SimpleParameter(String name, Type type, State state) {
+    public SimpleParameter(String name, Type type, State state) {
         this.name = name;
         this.type = type;
         this.state = state;

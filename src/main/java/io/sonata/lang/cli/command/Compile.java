@@ -6,6 +6,7 @@ import io.reactivex.Single;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
+import io.sonata.lang.analyzer.destructuring.ValueClassDestructuringProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.backend.BackendVisitor;
 import io.sonata.lang.backend.js.JSBackend;
@@ -27,7 +28,10 @@ public class Compile {
         SymbolMap symbolMap = new SymbolMap(new HashMap<>());
         BackendVisitor visitor = new BackendVisitor(JSBackend::new);
         Tokenizer tokenizer = new Tokenizer();
-        Analyzer analyzer = new Analyzer(symbolMap);
+        Analyzer analyzer = new Analyzer(
+                symbolMap,
+                new ValueClassDestructuringProcessor(symbolMap)
+        );
 
         Subject<Source> requires = ReplaySubject.create();
         RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(requires);
@@ -49,8 +53,6 @@ public class Compile {
 
             Files.write(Paths.get(output), bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } catch (RuntimeException e) {
             throw new IllegalStateException(e);
         }
     }

@@ -2,7 +2,8 @@ package io.sonata.lang.backend.js;
 
 import io.sonata.lang.backend.Backend;
 import io.sonata.lang.backend.BackendCodeGenerator;
-import io.sonata.lang.backend.BackendVisitor;
+import io.sonata.lang.backend.BackendCodeGenerator;
+import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
@@ -10,6 +11,7 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.type.Type;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
@@ -277,24 +279,24 @@ public class JSBackend implements Backend {
     }
 
     @Override
-    public void emitPreFunctionCall(FunctionCall node, BackendVisitor backendVisitor) {
+    public void emitPreFunctionCall(FunctionCall node, BackendCodeGenerator generator) {
         pushInExpr();
     }
 
     @Override
-    public void emitPreValueClass(ValueClass vc, BackendVisitor backendVisitor) {
+    public void emitPreValueClass(ValueClass vc, BackendCodeGenerator generator) {
         emit("function ");
         emit(vc.name);
         emit("(");
     }
 
     @Override
-    public void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor) {
+    public void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator) {
         emit(field.name());
     }
 
     @Override
-    public void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor) {
+    public void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator) {
         if (isLast) {
             emit("){");
         } else {
@@ -303,18 +305,18 @@ public class JSBackend implements Backend {
     }
 
     @Override
-    public void emitValueClassBodyBegin(ValueClass vc, BackendVisitor backendVisitor) {
+    public void emitValueClassBodyBegin(ValueClass vc, BackendCodeGenerator generator) {
         inClass = true;
     }
 
     @Override
-    public void emitValueClassBodyEnd(ValueClass vc, BackendVisitor backendVisitor) {
+    public void emitValueClassBodyEnd(ValueClass vc, BackendCodeGenerator generator) {
         inClass = false;
         emit("return body;};");
     }
 
     @Override
-    public void emitPostValueClass(ValueClass vc, BackendVisitor backendVisitor) {
+    public void emitPostValueClass(ValueClass vc, BackendCodeGenerator generator) {
         emit("var body={};");
         emit("body.class='");
         emit(vc.name);
@@ -329,12 +331,84 @@ public class JSBackend implements Backend {
     }
 
     @Override
-    public void emitPostFunctionCall(FunctionCall node, BackendVisitor backendVisitor) {
+    public void emitPostFunctionCall(FunctionCall node, BackendCodeGenerator generator) {
         popInExpr();
 
         if (isNotInExpression()) {
             emit(";");
         }
+    }
+
+    @Override
+    public void emitLetConstantBegin(String letName, Type returnType, BackendCodeGenerator generator) {
+        emit("var ");
+        emit(letName);
+        emit("=");
+        pushInExpr();
+    }
+
+    @Override
+    public void emitLetConstantEnd(String letName, Type returnType, BackendCodeGenerator generator) {
+        emit(";");
+        popInExpr();
+    }
+
+    @Override
+    public void emitBlockExpressionBegin(BlockExpression blockExpression, BackendCodeGenerator generator) {
+        emit("(function () {");
+    }
+
+    @Override
+    public void emitBlockExpressionExpressionBegin(Node expr, boolean isLast, BackendCodeGenerator generator) {
+        if (isLast) {
+            emit("return ");
+        }
+    }
+
+    @Override
+    public void emitBlockExpressionExpressionEnd(Node expr, boolean isLast, BackendCodeGenerator generator) {
+    }
+
+    @Override
+    public void emitBlockExpressionEnd(BlockExpression blockExpression, BackendCodeGenerator generator) {
+        emit("})();");
+    }
+
+    @Override
+    public void emitIfBegin(IfElse ifElse, BackendCodeGenerator generator) {
+        emit("if");
+    }
+
+    @Override
+    public void emitIfConditionBegin(IfElse ifElse, BackendCodeGenerator generator) {
+        emit("(");
+        pushInExpr();
+    }
+
+    @Override
+    public void emitIfConditionEnd(IfElse ifElse, BackendCodeGenerator generator) {
+        emit(")");
+        popInExpr();
+    }
+
+    @Override
+    public void emitIfBodyBegin(IfElse ifElse, BackendCodeGenerator generator) {
+        emit("{return ");
+    }
+
+    @Override
+    public void emitIfBodyEnd(IfElse ifElse, BackendCodeGenerator generator) {
+        emit("}");
+    }
+
+    @Override
+    public void emitElseBegin(IfElse ifElse, BackendCodeGenerator generator) {
+        emit("else{");
+    }
+
+    @Override
+    public void emitElseEnd(IfElse ifElse, BackendCodeGenerator generator) {
+        emit("}");
     }
 
     @Override

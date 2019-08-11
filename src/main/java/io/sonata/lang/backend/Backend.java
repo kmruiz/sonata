@@ -1,10 +1,12 @@
 package io.sonata.lang.backend;
 
+import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.type.Type;
 
 import java.util.List;
 
@@ -35,10 +37,18 @@ public interface Backend {
     void emitFunctionCallArgumentEnd(Expression expression, boolean isLast, BackendCodeGenerator generator);
     void emitFunctionCallEnd(FunctionCall functionCall, BackendCodeGenerator generator);
 
+    void emitLetConstantBegin(String letName, Type returnType, BackendCodeGenerator generator);
+    void emitLetConstantEnd(String letName, Type returnType, BackendCodeGenerator generator);
+
     void emitMethodReferenceBegin(MethodReference methodReference, BackendCodeGenerator generator);
     void emitMethodReferenceEnd(MethodReference methodReference, BackendCodeGenerator generator);
 
     void emitMethodReferenceName(String name, BackendCodeGenerator generator);
+
+    void emitBlockExpressionBegin(BlockExpression blockExpression, BackendCodeGenerator generator);
+    void emitBlockExpressionExpressionBegin(Node expr, boolean isLast, BackendCodeGenerator generator);
+    void emitBlockExpressionExpressionEnd(Node expr, boolean isLast, BackendCodeGenerator generator);
+    void emitBlockExpressionEnd(BlockExpression blockExpression, BackendCodeGenerator generator);
 
     void emitFunctionDefinitionBegin(List<LetFunction> definition, BackendCodeGenerator generator);
     void emitFunctionDefinitionEnd(List<LetFunction> definition, BackendCodeGenerator generator);
@@ -49,15 +59,24 @@ public interface Backend {
     void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator);
     void emitFunctionSpecificationEnd(LetFunction spec, BackendCodeGenerator generator);
 
-    void emitPreFunctionCall(FunctionCall node, BackendVisitor backendVisitor);
-    void emitPostFunctionCall(FunctionCall node, BackendVisitor backendVisitor);
+    void emitPreFunctionCall(FunctionCall node, BackendCodeGenerator generator);
+    void emitPostFunctionCall(FunctionCall node, BackendCodeGenerator generator);
 
-    void emitPreValueClass(ValueClass vc, BackendVisitor backendVisitor);
-    void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor);
-    void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendVisitor backendVisitor);
-    void emitValueClassBodyBegin(ValueClass vc, BackendVisitor backendVisitor);
-    void emitValueClassBodyEnd(ValueClass vc, BackendVisitor backendVisitor);
-    void emitPostValueClass(ValueClass vc, BackendVisitor backendVisitor);
+    void emitPreValueClass(ValueClass vc, BackendCodeGenerator generator);
+    void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
+    void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
+    void emitValueClassBodyBegin(ValueClass vc, BackendCodeGenerator generator);
+    void emitValueClassBodyEnd(ValueClass vc, BackendCodeGenerator generator);
+    void emitPostValueClass(ValueClass vc, BackendCodeGenerator generator);
+
+    void emitIfBegin(IfElse ifElse, BackendCodeGenerator generator);
+    void emitIfConditionBegin(IfElse ifElse, BackendCodeGenerator generator);
+    void emitIfConditionEnd(IfElse ifElse, BackendCodeGenerator generator);
+    void emitIfBodyBegin(IfElse ifElse, BackendCodeGenerator generator);
+    void emitIfBodyEnd(IfElse ifElse, BackendCodeGenerator generator);
+    void emitElseBegin(IfElse ifElse, BackendCodeGenerator generator);
+    void emitElseEnd(IfElse ifElse, BackendCodeGenerator generator);
+
 
     byte[] result();
 }

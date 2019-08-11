@@ -4,9 +4,9 @@ import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.let.LetFunction;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class SymbolMap implements Processor, SymbolResolver {
     private final Map<String, SymbolDeclaration> dictionary;
@@ -27,11 +27,16 @@ public class SymbolMap implements Processor, SymbolResolver {
     }
 
     @Override
-    public boolean isValueClass(String symbol) {
-        return isSymbolRegisteredWithType(symbol, ValueClass.class);
+    public <T extends Node> T resolve(String symbol, Class<T> nodeClass) {
+        if (!isSymbolOfType(symbol, nodeClass)) {
+            throw new NoSuchElementException(symbol + " of type " + nodeClass.getSimpleName());
+        }
+
+        return (T) dictionary.get(symbol).node;
     }
 
-    private boolean isSymbolRegisteredWithType(String symbol, Class<? extends Node> nodeClass) {
+    @Override
+    public boolean isSymbolOfType(String symbol, Class<? extends Node> nodeClass) {
         var declaration = dictionary.get(symbol);
         if (declaration == null) {
             return false;
@@ -40,7 +45,7 @@ public class SymbolMap implements Processor, SymbolResolver {
         return nodeClass.isAssignableFrom(declaration.node.getClass());
     }
 
-    private SymbolDeclaration registerValueClass(ValueClass node) {
-        return dictionary.put(node.name, new SymbolDeclaration(node.name, node));
+    private void registerValueClass(ValueClass node) {
+        dictionary.put(node.name, new SymbolDeclaration(node.name, node));
     }
 }
