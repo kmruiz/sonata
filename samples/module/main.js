@@ -1,1 +1,1 @@
-"use strict";console.log(sum([1,2,3,4,5,6,7,8,9,10]));function _zero(){return 0;};function sum(numberList){return (function () {var a=numberList[0];var tail=numberList.slice(1);var a=numberList[0];if(a&&numberList.length>=2){return a+sum(tail)}if(a){return a;}_zero();return _zero();})();};
+"use strict";console.log(sum([1,2,3,4,5,6,7,8,9,10]));function _zero(){return 0;};function sum(numberList){return (function () {let tail=numberList.slice(1);let a=numberList[0];if(a&&numberList.length>=2){return a+sum(tail)}if(a){return a;}_zero();return _zero();})();};
