@@ -17,6 +17,9 @@ public interface Backend {
     void emitAtomExpressionBegin(Atom atom, BackendCodeGenerator generator);
     void emitAtomExpressionEnd(Atom atom, BackendCodeGenerator generator);
 
+    void emitTailExtractionBegin(TailExtraction tailExtraction, BackendCodeGenerator generator);
+    void emitTailExtractionEnd(TailExtraction tailExtraction, BackendCodeGenerator generator);
+
     void emitSimpleExpressionBegin(SimpleExpression expression, BackendCodeGenerator generator);
     void emitSimpleExpressionOperator(String operator, BackendCodeGenerator generator);
     void emitSimpleExpressionEnd(SimpleExpression expression, BackendCodeGenerator generator);

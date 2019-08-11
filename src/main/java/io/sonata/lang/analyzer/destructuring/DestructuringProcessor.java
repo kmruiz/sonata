@@ -62,7 +62,7 @@ public class DestructuringProcessor implements Processor {
         var destructuringExpressions = fns.stream().flatMap(e -> e.parameters.stream()).map(e -> expressionParsers.createDestructuringExpression(parameterNameOf(master, idx.getAndIncrement()), e)).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull).collect(Collectors.toList());
         var parameters = master.parameters.stream().map(e -> expressionParsers.normalizeParameter(paramDeclaration(e), e)).collect(Collectors.toList());
 
-        List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted((a, b) -> a instanceof IfElse ? -1 : 1).collect(Collectors.toList());
+        List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted(IfElse::weightedComparison).collect(Collectors.toList());
 
         return new LetFunction(master.letName, parameters, master.returnType, new BlockExpression(append(destructuringExpressions, all).stream().filter(Objects::nonNull).collect(Collectors.toList())));
     }
@@ -72,7 +72,7 @@ public class DestructuringProcessor implements Processor {
 
         var guardCondition = overload.parameters.stream()
                 .map(e -> expressionParsers.generateGuardCondition(parameterNameOf(master, idx.getAndIncrement()), e)).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull)
-                .distinct()
+                .sorted(IfElse::weightedComparison)
                 .reduce((a, b) -> new SimpleExpression(a, "&&", b));
 
         if (guardCondition.isPresent()) {

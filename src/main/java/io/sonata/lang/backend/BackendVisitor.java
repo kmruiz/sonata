@@ -47,6 +47,12 @@ public class BackendVisitor implements BackendCodeGenerator {
             backend.emitAtomExpressionEnd((Atom) node, this);
         }
 
+        if (node instanceof TailExtraction) {
+            backend.emitTailExtractionBegin((TailExtraction) node, this);
+            visitTree(((TailExtraction) node).expression, backend, funcDefs);
+            backend.emitTailExtractionEnd((TailExtraction) node, this);
+        }
+
         if (node instanceof SimpleExpression) {
             backend.emitSimpleExpressionBegin((SimpleExpression) node, this);
             visitTree(((SimpleExpression) node).leftSide, backend, funcDefs);

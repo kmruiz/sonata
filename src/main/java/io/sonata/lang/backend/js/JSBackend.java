@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -64,6 +65,23 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitAtomExpressionEnd(Atom atom, BackendCodeGenerator generator) {
+        if (isNotInExpression()) {
+            emit(";");
+        }
+    }
+
+    @Override
+    public void emitTailExtractionBegin(TailExtraction tailExtraction, BackendCodeGenerator generator) {
+        pushInExpr();
+    }
+
+    @Override
+    public void emitTailExtractionEnd(TailExtraction tailExtraction, BackendCodeGenerator generator) {
+        popInExpr();
+        emit(".slice(");
+        emit(String.valueOf(Objects.requireNonNullElse(tailExtraction.fromIndex, 0)));
+        emit(")");
+
         if (isNotInExpression()) {
             emit(";");
         }

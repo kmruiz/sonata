@@ -28,10 +28,14 @@ public class ArrayDestructuringExpressionParser implements DestructuringExpressi
     @Override
     public Stream<Node> createDestructuringExpression(String parameterName, Parameter parameter) {
         var argIdx = new AtomicInteger(0);
-        return whenIsArrayParameter(parameterName, parameter, tp -> tp.literalArray.expressions.stream().map(e -> {
+        return whenIsArrayParameter(parameterName, parameter, tp -> tp.literalArray.expressions.stream().map(arg -> {
             var idx = argIdx.getAndIncrement();
-            var value = (e instanceof Atom && ((Atom) e).type == Atom.Type.IDENTIFIER) ? e.representation() : identifierFor(idx);
-            return new LetConstant(value, null, new ArrayAccess(new Atom(tp.arrayName), String.valueOf(idx)));
+            var value = (arg instanceof Atom && ((Atom) arg).type == Atom.Type.IDENTIFIER) ? arg.representation() : identifierFor(idx);
+            if (arg instanceof TailExtraction) {
+                return new LetConstant(((TailExtraction) arg).expression.representation(), null, new TailExtraction(new Atom(tp.arrayName), idx));
+            } else {
+                return new LetConstant(value, null, new ArrayAccess(new Atom(tp.arrayName), String.valueOf(idx)));
+            }
         }));
     }
 
@@ -57,7 +61,11 @@ public class ArrayDestructuringExpressionParser implements DestructuringExpressi
                 var atom = ((Atom) arg);
                 if (atom.type != Atom.Type.IDENTIFIER) {
                     return new SimpleExpression(new Atom(value), "===", arg);
+                } else {
+                    return new Atom(value);
                 }
+            } else if (arg instanceof TailExtraction) {
+                return new SimpleExpression(new MethodReference(new Atom(parameterName), "length"), ">=", new Atom(String.valueOf(tp.literalArray.expressions.size())));
             } else if (arg instanceof Expression) {
                 return arg;
             }

@@ -11,7 +11,7 @@ public abstract class ComposedExpression implements Expression {
     public Expression consume(Token token) {
         if (token instanceof OperatorToken) {
             if (token.representation().equals("#")) {
-                return new TailExtraction(this);
+                return new TailExtraction(this, 0);
             }
 
             return SimpleExpression.initial(this, token.representation());
@@ -33,15 +33,5 @@ public abstract class ComposedExpression implements Expression {
         }
 
         return null;
-    }
-
-    @Override
-    public int hashCode() {
-        return representation().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return (obj != null) && Objects.equals(obj.hashCode(), hashCode());
     }
 }
