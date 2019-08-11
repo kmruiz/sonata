@@ -60,7 +60,19 @@ public class DestructuringProcessor implements Processor {
         var idx = new AtomicInteger(0);
         var master = fns.stream().filter(e -> e.parameters.stream().allMatch(p -> p instanceof SimpleParameter)).findAny().orElse(fns.get(0));
 
-        var destructuringExpressions = fns.stream().flatMap(e -> e.parameters.stream()).map(e -> expressionParsers.createDestructuringExpression(parameterNameOf(master, idx.getAndIncrement()), e)).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull).collect(Collectors.toList());
+        var destructuringExpressions = fns
+                .stream()
+                .flatMap(e -> e.parameters.stream())
+                .map(e -> expressionParsers.createDestructuringExpression(parameterNameOf(master, idx.getAndIncrement()), e))
+                .filter(Objects::nonNull)
+                .flatMap(e -> e)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(Node::representation))
+                .values()
+                .stream()
+                .flatMap(list -> list.stream().limit(1))
+                .collect(Collectors.toList());
+
         var parameters = master.parameters.stream().map(e -> expressionParsers.normalizeParameter(paramDeclaration(e), e)).collect(Collectors.toList());
 
         List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted(IfElse::weightedComparison).collect(Collectors.toList());

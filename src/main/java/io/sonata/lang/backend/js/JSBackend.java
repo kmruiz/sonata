@@ -275,7 +275,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitPostValueClass(ValueClass vc, BackendCodeGenerator generator) {
-        emit("var body={};");
+        emit("let body={};");
         emit("body.class='");
         emit(vc.name);
         emit("';");
@@ -299,7 +299,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitLetConstantBegin(String letName, Type returnType, BackendCodeGenerator generator) {
-        emit("var ");
+        emit("let ");
         emit(letName);
         emit("=");
         pushInExpr();

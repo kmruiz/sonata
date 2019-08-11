@@ -18,7 +18,7 @@ public class LetConstant implements Node {
 
     @Override
     public String representation() {
-        return "let " + letName + ":" + returnType.representation() + " = " + body.representation();
+        return "let " + letName + ":" + (returnType != null ? returnType.representation() : "?") + " = " + body.representation();
     }
 
     @Override
