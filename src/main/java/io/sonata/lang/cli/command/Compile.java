@@ -6,7 +6,7 @@ import io.reactivex.Single;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
-import io.sonata.lang.analyzer.destructuring.ValueClassDestructuringProcessor;
+import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.backend.BackendVisitor;
 import io.sonata.lang.backend.js.JSBackend;
@@ -30,7 +30,7 @@ public class Compile {
         Tokenizer tokenizer = new Tokenizer();
         Analyzer analyzer = new Analyzer(
                 symbolMap,
-                new ValueClassDestructuringProcessor(symbolMap)
+                new DestructuringProcessor(symbolMap)
         );
 
         Subject<Source> requires = ReplaySubject.create();
