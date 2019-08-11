@@ -1,5 +1,5 @@
 let sum(x: number[])
-let sum([a, tail#] = a + sum(tail)
+let sum([a, tail#]) = a + sum(tail)
 let sum([a]) = a
 let sum([]) = 0
 
