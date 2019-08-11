@@ -4,6 +4,8 @@ import io.sonata.lang.tokenizer.token.OperatorToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
+import java.util.Objects;
+
 public abstract class ComposedExpression implements Expression {
     @Override
     public Expression consume(Token token) {
@@ -31,5 +33,15 @@ public abstract class ComposedExpression implements Expression {
         }
 
         return null;
+    }
+
+    @Override
+    public int hashCode() {
+        return representation().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj != null) && Objects.equals(obj.hashCode(), hashCode());
     }
 }

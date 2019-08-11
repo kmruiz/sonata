@@ -1,1 +1,19 @@
-"use strict";console.log(sum([1,2,3,4,5,6,7,8,9,10]));console.log(reverse([1,2,3,4]));console.log(say(['hello','John']));console.log(say(['bye','Doe']));function say(command){var whom=command[1];if(command[0] === 'hello'&&command.length === 2){return 'Hello '+whom+'!'}var whom=command[1];if(command[0] === 'bye'&&command.length === 2){return 'Bye '+whom+'. I am really sad.'}return undefined;};function sum(x){var a=x[0];var tail=x.slice(1);if(x.length >= 2){return a+sum(tail)}var a=x[0];if(x.length === 1){return a;}if(x.length === 0){return 0;}return undefined;};function reverse(x){var a=x[0];var tail=x.slice(1);if(x.length >= 2){return reverse(tail).concat(a);}var a=x[0];if(x.length === 1){return [a]}if(x.length === 0){return []}return undefined;};
+"use strict";
+console.log(say(['hello', 'John']));
+console.log(say(['bye', 'Doe']));
+
+function say(command) {
+    return (function () {
+        var a = command[0];
+        var whom = command[1];
+        var a = command[0];
+        var whom = command[1];
+        if (a === 'bye') {
+            return 'Bye ' + whom + '. I am really sad.'
+        }
+        if (a === 'hello') {
+            return 'Hello ' + whom + '!'
+        }
+        return undefined;
+    })();
+};

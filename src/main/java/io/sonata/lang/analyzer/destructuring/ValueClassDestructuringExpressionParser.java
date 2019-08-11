@@ -11,12 +11,13 @@ import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.type.BasicType;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class ValueClassDestructuringExpressionParser {
+public class ValueClassDestructuringExpressionParser implements DestructuringExpressionParser {
     private final SymbolResolver resolver;
 
     public ValueClassDestructuringExpressionParser(SymbolResolver resolver) {
@@ -33,7 +34,7 @@ public class ValueClassDestructuringExpressionParser {
 
     }
 
-    public Stream<Node> createDestructuringExpression(Parameter parameter) {
+    public Stream<Node> createDestructuringExpression(String parameterName, Parameter parameter) {
         var argIdx = new AtomicInteger(-1);
         return whenIsValueClassParameter(parameter, tp -> tp.functionCall.arguments.stream().map(arg -> {
             var field = argIdx.incrementAndGet();
@@ -43,16 +44,7 @@ public class ValueClassDestructuringExpressionParser {
         }));
     }
 
-    public Expression generateGuardedBody(LetFunction overload) {
-        var guardCondition = overload.parameters.stream().map(this::generateGuardCondition).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull).reduce((a, b) -> new SimpleExpression(a, "&&", b));
-        if (guardCondition.isPresent()) {
-            return new IfElse(guardCondition.get(), overload.body, null);
-        }
-
-        return overload.body;
-    }
-
-    public Parameter normalizeParameter(Parameter parameter) {
+    public Parameter normalizeParameter(String parameterName, Parameter parameter) {
         Parameter newParam = whenIsValueClassParameter(parameter, tp -> new SimpleParameter(tp.valueClass.name, new BasicType(tp.valueClass.name), SimpleParameter.State.END));
         if (newParam != null) {
             return newParam;
@@ -61,7 +53,7 @@ public class ValueClassDestructuringExpressionParser {
         return parameter;
     }
 
-    private Stream<Expression> generateGuardCondition(Parameter parameter) {
+    public Stream<Expression> generateGuardCondition(String parameterName, Parameter parameter) {
         var argIdx = new AtomicInteger(-1);
         return whenIsValueClassParameter(parameter, tp -> tp.functionCall.arguments.stream().map(arg -> {
             var field = argIdx.incrementAndGet();

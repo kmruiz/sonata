@@ -5,13 +5,14 @@ import io.sonata.lang.analyzer.symbols.SymbolResolver;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.exp.BlockExpression;
+import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.exp.IfElse;
+import io.sonata.lang.parser.ast.exp.SimpleExpression;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.let.fn.Parameter;
+import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,10 +20,13 @@ import java.util.stream.Stream;
 import static io.sonata.lang.javaext.Lists.append;
 
 public class DestructuringProcessor implements Processor {
-    private final ValueClassDestructuringExpressionParser valueClassParser;
+    private final DestructuringExpressionParser expressionParsers;
 
     public DestructuringProcessor(SymbolResolver resolver) {
-        this.valueClassParser = new ValueClassDestructuringExpressionParser(resolver);
+        this.expressionParsers = new ComposedDestructuringExpressionParser(
+                new ValueClassDestructuringExpressionParser(resolver),
+                new ArrayDestructuringExpressionParser()
+        );
     }
 
     @Override
@@ -52,12 +56,41 @@ public class DestructuringProcessor implements Processor {
     }
 
     private LetFunction reduceFunctionList(List<LetFunction> fns) {
-        var master = fns.get(0);
-        var destructuringExpressions = master.parameters.stream().map(valueClassParser::createDestructuringExpression).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull).collect(Collectors.toList());
-        var parameters = master.parameters.stream().map(valueClassParser::normalizeParameter).collect(Collectors.toList());
+        var idx = new AtomicInteger(0);
+        var master = fns.stream().filter(e -> e.parameters.stream().allMatch(p -> p instanceof SimpleParameter)).findAny().orElse(fns.get(0));
 
-        List<Node> all = fns.stream().map(valueClassParser::generateGuardedBody).sorted((a, b) -> a instanceof IfElse ? -1 : 1).collect(Collectors.toList());
+        var destructuringExpressions = fns.stream().flatMap(e -> e.parameters.stream()).map(e -> expressionParsers.createDestructuringExpression(parameterNameOf(master, idx.getAndIncrement()), e)).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull).collect(Collectors.toList());
+        var parameters = master.parameters.stream().map(e -> expressionParsers.normalizeParameter(paramDeclaration(e), e)).collect(Collectors.toList());
+
+        List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted((a, b) -> a instanceof IfElse ? -1 : 1).collect(Collectors.toList());
 
         return new LetFunction(master.letName, parameters, master.returnType, new BlockExpression(append(destructuringExpressions, all).stream().filter(Objects::nonNull).collect(Collectors.toList())));
+    }
+
+    private Expression generateGuardedBody(LetFunction master, LetFunction overload) {
+        var idx = new AtomicInteger(0);
+
+        var guardCondition = overload.parameters.stream()
+                .map(e -> expressionParsers.generateGuardCondition(parameterNameOf(master, idx.getAndIncrement()), e)).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull)
+                .distinct()
+                .reduce((a, b) -> new SimpleExpression(a, "&&", b));
+
+        if (guardCondition.isPresent()) {
+            return new IfElse(guardCondition.get(), overload.body, null);
+        }
+
+        return overload.body;
+    }
+
+    private String parameterNameOf(LetFunction master, int idx) {
+        return paramDeclaration(master.parameters.get(idx % master.parameters.size()));
+    }
+
+    private String paramDeclaration(Parameter p) {
+        if (p instanceof SimpleParameter) {
+            return ((SimpleParameter) p).name;
+        }
+
+        return null;
     }
 }

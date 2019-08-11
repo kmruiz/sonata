@@ -1,0 +1,6 @@
+let sum(x: number[]) = undefined
+let sum([a, tail#] = a + sum(tail)
+let sum([a]) = a
+let sum([]) = 0
+
+console.log(sum([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
