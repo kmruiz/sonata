@@ -2,7 +2,6 @@ package io.sonata.lang.backend.js;
 
 import io.sonata.lang.backend.Backend;
 import io.sonata.lang.backend.BackendCodeGenerator;
-import io.sonata.lang.backend.BackendCodeGenerator;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.fields.Field;
@@ -230,63 +229,8 @@ public class JSBackend implements Backend {
     @Override
     public void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator) {
         var conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression).collect(Collectors.toList());
-        var condArray = new ArrayList<String>();
-
-        var extractions = conditions.stream().filter(e -> e instanceof LiteralArray).map(e -> (LiteralArray) e).collect(Collectors.toList());
-        if (!extractions.isEmpty()) {
-            var paramIdx = new AtomicInteger(0);
-
-            extractions.forEach(param -> {
-                var hasTailExtr = new AtomicBoolean(false);
-                var arrayName = parameterNames.get(paramIdx.getAndIncrement());
-
-                var arrayIndex = new AtomicInteger(0);
-                param.expressions.forEach(expr -> {
-                    if (expr instanceof Atom) {
-                        var atom = (Atom) expr;
-                        var name = atom.value;
-                        var index = arrayIndex.getAndIncrement();
-
-                        if (atom.type == Atom.Type.IDENTIFIER) {
-                            emit("var ");
-                            emit(name);
-                            emit("=");
-                            emit(arrayName);
-                            emit("[");
-                            emit(String.valueOf(index));
-                            emit("];");
-                        } else {
-                            condArray.add(String.format("%s[%d] === %s", arrayName, index, atom.representation()));
-                        }
-
-                    } else if (expr instanceof TailExtraction) {
-                        var tailExtr = ((TailExtraction) expr);
-
-                        emit("var ");
-                        emit(tailExtr.expression.representation());
-                        emit("=");
-                        emit(arrayName);
-                        emit(".slice(");
-                        emit(String.valueOf(arrayIndex.getAndIncrement()));
-                        emit(");");
-
-                        hasTailExtr.set(true);
-                    }
-                });
-
-                if (hasTailExtr.get()) {
-                    condArray.add(String.format("%s.length >= %s", arrayName, param.expressions.size()));
-                } else {
-                    condArray.add(String.format("%s.length === %s", arrayName, param.expressions.size()));
-                }
-            });
-        }
-
         var notExtractions = conditions.stream().filter(e -> !(e instanceof LiteralArray));
-        var condString = Stream.concat(
-                condArray.stream(),
-                notExtractions.map(generator::generateFor).map(String::new)
-        ).collect(Collectors.joining("&&"));
+        var condString = notExtractions.map(generator::generateFor).map(String::new).collect(Collectors.joining("&&"));
 
         emit("if(" + condString + "){return ");
     }
