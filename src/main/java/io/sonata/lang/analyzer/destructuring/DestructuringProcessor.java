@@ -25,7 +25,8 @@ public class DestructuringProcessor implements Processor {
     public DestructuringProcessor(SymbolResolver resolver) {
         this.expressionParsers = new ComposedDestructuringExpressionParser(
                 new ValueClassDestructuringExpressionParser(resolver),
-                new ArrayDestructuringExpressionParser()
+                new ArrayDestructuringExpressionParser(),
+                new FunctionOverloadExpressionParser(resolver)
         );
     }
 
