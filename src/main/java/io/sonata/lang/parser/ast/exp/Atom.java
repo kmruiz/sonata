@@ -4,11 +4,16 @@ public class Atom extends ComposedExpression implements Expression {
     public enum Type {
         NUMERIC,
         STRING,
-        IDENTIFIER
+        IDENTIFIER,
+        UNKNOWN
     }
 
     public final String value;
     public final Type type;
+
+    public static Atom unknown() {
+        return new Atom("?");
+    }
 
     public Atom(String value) {
         this.value = value;
@@ -17,6 +22,8 @@ public class Atom extends ComposedExpression implements Expression {
             type = Type.NUMERIC;
         } else if (value.startsWith("'") && value.endsWith("'")) {
             type = Type.STRING;
+        } else if (value.equals("?")) {
+            type = Type.UNKNOWN;
         } else {
             type = Type.IDENTIFIER;
         }

@@ -19,6 +19,10 @@ public class EmptyExpression implements Expression {
             return PartialArray.initial();
         }
 
+        if (token.representation().equals("?")) {
+            return Atom.unknown();
+        }
+
         if (token instanceof SeparatorToken) {
             return null;
         }

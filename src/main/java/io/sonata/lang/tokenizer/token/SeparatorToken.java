@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class SeparatorToken implements Token {
     private static final Set<Character> SEPARATORS = Set.of(
-            '(', ')', '[', ']', '{', '}', ':', ',', ';', '.', '\n', '\0'
+            '(', ')', '[', ']', '{', '}', ':', ',', ';', '.', '?', '\n', '\0'
     );
 
     public static boolean isSeparator(char c) {

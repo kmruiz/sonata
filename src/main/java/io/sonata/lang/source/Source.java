@@ -12,7 +12,7 @@ import java.nio.file.Path;
 
 public class Source implements AutoCloseable {
     public enum Type {
-        FILE, LITERAL, STREAM
+        FILE, LITERAL
     }
 
     public final String name;
@@ -35,10 +35,6 @@ public class Source implements AutoCloseable {
 
     public static Source endOfProgram() {
         return fromLiteral("\0");
-    }
-
-    public static Source fromStream(String streamName, InputStream stream) {
-        return new Source(streamName, Type.STREAM, stream);
     }
 
     public final Flowable<SourceCharacter> read() {

@@ -37,6 +37,6 @@ public class PartialLet implements Node {
             }
         }
 
-        return null;
+        return PartialLetConstant.initial(letName).consume(token);
     }
 }
