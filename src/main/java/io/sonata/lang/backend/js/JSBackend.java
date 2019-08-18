@@ -370,6 +370,29 @@ public class JSBackend implements Backend {
     }
 
     @Override
+    public void emitLambdaDefinitionBegin(Lambda lambda, BackendCodeGenerator generator) {
+        var params = lambda.parameters.stream().map(e -> e.name).collect(Collectors.joining(","));
+        emit("function (");
+        emit(params);
+        emit(")");
+    }
+
+    @Override
+    public void emitLambdaDefinitionEnd(Lambda lambda, BackendCodeGenerator generator) {
+
+    }
+
+    @Override
+    public void emitLambdaBodyBegin(Lambda lambda, BackendCodeGenerator generator) {
+        emit("{ return ");
+    }
+
+    @Override
+    public void emitLambdaBodyEnd(Lambda lambda, BackendCodeGenerator generator) {
+        emit("}");
+    }
+
+    @Override
     public byte[] result() {
         return buffer.toByteArray();
     }

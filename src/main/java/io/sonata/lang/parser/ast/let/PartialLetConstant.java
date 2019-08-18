@@ -40,7 +40,7 @@ public class PartialLetConstant implements Node {
                 if (token.representation().equals(":")) {
                     return new PartialLetConstant(letName, type, State.IN_TYPE, value);
                 } else if (token.representation().equals("=")) {
-                    return new PartialLetConstant(letName, null, State.WAITING_EQUALS, value);
+                    return new PartialLetConstant(letName, null, State.IN_BODY, value);
                 }
                 break;
             case IN_TYPE:

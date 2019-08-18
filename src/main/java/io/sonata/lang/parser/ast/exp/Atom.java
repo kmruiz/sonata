@@ -1,5 +1,7 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.Node;
+
 public class Atom extends ComposedExpression implements Expression {
     public enum Type {
         NUMERIC,
@@ -13,6 +15,10 @@ public class Atom extends ComposedExpression implements Expression {
 
     public static Atom unknown() {
         return new Atom("?");
+    }
+
+    public static boolean isUnknownAtom(Node node) {
+        return node instanceof Atom && ((Atom) node).type == Type.UNKNOWN;
     }
 
     public Atom(String value) {

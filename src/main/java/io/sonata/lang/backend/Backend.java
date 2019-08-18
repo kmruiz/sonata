@@ -80,6 +80,10 @@ public interface Backend {
     void emitElseBegin(IfElse ifElse, BackendCodeGenerator generator);
     void emitElseEnd(IfElse ifElse, BackendCodeGenerator generator);
 
+    void emitLambdaDefinitionBegin(Lambda lambda, BackendCodeGenerator generator);
+    void emitLambdaDefinitionEnd(Lambda lambda, BackendCodeGenerator generator);
+    void emitLambdaBodyBegin(Lambda lambda, BackendCodeGenerator generator);
+    void emitLambdaBodyEnd(Lambda lambda, BackendCodeGenerator generator);
 
     byte[] result();
 }

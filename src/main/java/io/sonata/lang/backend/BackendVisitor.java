@@ -146,6 +146,15 @@ public class BackendVisitor implements BackendCodeGenerator {
             backend.emitArrayEnd((LiteralArray) node, this);
         }
 
+        if (node instanceof Lambda) {
+            var lambda = (Lambda) node;
+            backend.emitLambdaDefinitionBegin(lambda, this);
+            backend.emitLambdaBodyBegin(lambda, this);
+            visitTree(lambda.body, backend, funcDefs);
+            backend.emitLambdaBodyEnd(lambda, this);
+            backend.emitLambdaDefinitionEnd(lambda, this);
+        }
+
         if (node instanceof MethodReference) {
             backend.emitMethodReferenceBegin((MethodReference) node, this);
             visitTree(((MethodReference) node).receiver, backend, funcDefs);
