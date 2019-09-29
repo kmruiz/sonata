@@ -27,7 +27,7 @@ public abstract class E2ETest {
         assertScriptOutputs(expectedOutput, script);
     }
 
-    private final void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException {
+    private void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException {
         var waitingConsumer = new WaitingConsumer();
         var container = executeScript(literalScript);
 
