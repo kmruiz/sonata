@@ -27,7 +27,7 @@ public abstract class E2ETest {
         assertScriptOutputs(expectedOutput, script);
     }
 
-    protected final void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException {
+    private final void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException {
         var waitingConsumer = new WaitingConsumer();
         var container = executeScript(literalScript);
 
@@ -54,7 +54,7 @@ public abstract class E2ETest {
         var file = File.createTempFile("io.sonata.lang.e2e", ".input.sn").getAbsolutePath();
         var output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
 
-        Files.write(Path.of(file), literalScript.getBytes(Charset.defaultCharset()));
+        Files.writeString(Path.of(file), literalScript, Charset.defaultCharset());
         Compile.execute(Collections.singletonList(file), output);
         return output;
     }
