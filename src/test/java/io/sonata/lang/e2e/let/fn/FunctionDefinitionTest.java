@@ -1,9 +1,9 @@
 package io.sonata.lang.e2e.let.fn;
 
-import io.sonata.lang.e2e.Specification;
+import io.sonata.lang.e2e.E2ETest;
 import org.junit.jupiter.api.Test;
 
-public class FunctionDefinitionSpecification extends Specification {
+public class FunctionDefinitionTest extends E2ETest {
     @Test
     public void functionDefinitionWithoutParameters() throws Exception {
         assertResourceScriptOutputs("Hello World!", "let/fn/function-definition-without-parameters");

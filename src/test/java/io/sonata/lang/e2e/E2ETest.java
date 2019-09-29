@@ -1,7 +1,6 @@
 package io.sonata.lang.e2e;
 
 import io.sonata.lang.cli.command.Compile;
-import org.opentest4j.AssertionFailedError;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class Specification {
+public abstract class E2ETest {
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws IOException {
         var stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
         var script = new BufferedReader(new InputStreamReader(stream))
