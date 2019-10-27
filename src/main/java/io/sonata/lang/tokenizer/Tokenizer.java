@@ -13,13 +13,13 @@ public final class Tokenizer {
     }
 
     public Flowable<Token> process(SourceCharacter character) {
-        var nextToken = token.nextToken(character.character);
+        var nextToken = token.nextToken(character);
         if (nextToken.isPresent()) {
             token = nextToken.get();
             return Flowable.empty();
         } else {
             Token toSend = token;
-            token = RootToken.instance().nextToken(character.character).orElse(RootToken.instance());
+            token = RootToken.instance().nextToken(character).orElse(RootToken.instance());
             return Flowable.fromArray(toSend);
         }
     }

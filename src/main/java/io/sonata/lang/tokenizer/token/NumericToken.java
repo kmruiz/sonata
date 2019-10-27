@@ -1,5 +1,8 @@
 package io.sonata.lang.tokenizer.token;
 
+import io.sonata.lang.source.SourceCharacter;
+import io.sonata.lang.source.SourcePosition;
+
 import java.util.Optional;
 
 public class NumericToken implements Token {
@@ -7,11 +10,13 @@ public class NumericToken implements Token {
         return Character.isDigit(c);
     }
 
-    public NumericToken(String value) {
+    public final String value;
+    public final SourcePosition sourcePosition;
+
+    public NumericToken(SourcePosition sourcePosition, String value) {
+        this.sourcePosition = sourcePosition;
         this.value = value;
     }
-
-    public final String value;
 
     @Override
     public String representation() {
@@ -19,15 +24,20 @@ public class NumericToken implements Token {
     }
 
     @Override
-    public Optional<Token> nextToken(char character) {
-        if (isNumeric(character) || character == '_') {
-            return Optional.of(new NumericToken(value + character));
+    public Optional<Token> nextToken(SourceCharacter character) {
+        if (isNumeric(character.character) || character.character == '_') {
+            return Optional.of(new NumericToken(sourcePosition, value + character.character));
         }
 
-        if (character == '.' && !value.contains(".")) {
-            return Optional.of(new NumericToken(value + character));
+        if (character.character == '.' && !value.contains(".")) {
+            return Optional.of(new NumericToken(sourcePosition, value + character.character));
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public SourcePosition sourcePosition() {
+        return sourcePosition;
     }
 }

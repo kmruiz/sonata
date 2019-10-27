@@ -1,5 +1,8 @@
 package io.sonata.lang.tokenizer.token;
 
+import io.sonata.lang.source.SourceCharacter;
+import io.sonata.lang.source.SourcePosition;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,8 +16,10 @@ public class SeparatorToken implements Token {
     }
 
     public final String separator;
+    public final SourcePosition sourcePosition;
 
-    public SeparatorToken(String separator) {
+    public SeparatorToken(SourcePosition sourcePosition, String separator) {
+        this.sourcePosition = sourcePosition;
         this.separator = separator;
     }
 
@@ -24,7 +29,12 @@ public class SeparatorToken implements Token {
     }
 
     @Override
-    public Optional<Token> nextToken(char character) {
+    public Optional<Token> nextToken(SourceCharacter character) {
         return Optional.empty();
+    }
+
+    @Override
+    public SourcePosition sourcePosition() {
+        return sourcePosition;
     }
 }

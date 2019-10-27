@@ -1,5 +1,9 @@
 package io.sonata.lang.tokenizer.token;
 
+import io.sonata.lang.source.Source;
+import io.sonata.lang.source.SourceCharacter;
+import io.sonata.lang.source.SourcePosition;
+
 import java.util.Optional;
 
 public class RootToken implements Token {
@@ -15,28 +19,34 @@ public class RootToken implements Token {
     }
 
     @Override
-    public Optional<Token> nextToken(char character) {
-        if (IdentifierToken.isIdentifier(character)) {
-            return Optional.of(new IdentifierToken(String.valueOf(character)));
+    public Optional<Token> nextToken(SourceCharacter character) {
+        String initial = String.valueOf(character.character);
+
+        if (IdentifierToken.isIdentifier(character.character)) {
+            return Optional.of(new IdentifierToken(character.position, initial));
         }
 
-        if (SeparatorToken.isSeparator(character)) {
-            return Optional.of(new SeparatorToken(String.valueOf(character)));
+        if (SeparatorToken.isSeparator(character.character)) {
+            return Optional.of(new SeparatorToken(character.position, initial));
         }
 
-        if (OperatorToken.isOperator(character)) {
-            return Optional.of(new OperatorToken(String.valueOf(character)));
+        if (OperatorToken.isOperator(character.character)) {
+            return Optional.of(new OperatorToken(character.position, initial));
         }
 
-        if (NumericToken.isNumeric(character)) {
-            return Optional.of(new NumericToken(String.valueOf(character)));
+        if (NumericToken.isNumeric(character.character)) {
+            return Optional.of(new NumericToken(character.position, initial));
         }
 
-        if (StringToken.isStringStart(character)) {
-            return Optional.of(new StringToken(String.valueOf(character), false, false));
+        if (StringToken.isStringStart(character.character)) {
+            return Optional.of(new StringToken(character.position, initial, false, false));
         }
 
         return Optional.of(this);
     }
 
+    @Override
+    public SourcePosition sourcePosition() {
+        return SourcePosition.initial(Source.fromLiteral("<RootToken>"));
+    }
 }
