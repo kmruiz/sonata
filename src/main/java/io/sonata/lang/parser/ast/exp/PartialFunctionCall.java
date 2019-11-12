@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -26,7 +27,7 @@ public class PartialFunctionCall implements Expression {
     @Override
     public Expression consume(Token token) {
         Expression next = currentExpression.consume(token);
-        if (next == null) {
+        if (next == null || next instanceof LetFunction) {
             if (token instanceof SeparatorToken) {
                 var sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {

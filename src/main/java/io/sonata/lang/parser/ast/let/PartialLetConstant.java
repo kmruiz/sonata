@@ -7,7 +7,7 @@ import io.sonata.lang.parser.ast.type.EmptyType;
 import io.sonata.lang.parser.ast.type.Type;
 import io.sonata.lang.tokenizer.token.Token;
 
-public class PartialLetConstant implements Node {
+public class PartialLetConstant implements Expression {
     private final String letName;
     private final Type type;
     private final State state;
@@ -17,7 +17,7 @@ public class PartialLetConstant implements Node {
         WAITING_TYPE, IN_TYPE, WAITING_EQUALS, IN_BODY
     }
 
-    public static Node initial(String letName) {
+    public static Expression initial(String letName) {
         return new PartialLetConstant(letName, EmptyType.instance(), State.WAITING_TYPE, RootNode.instance());
     }
 
@@ -34,7 +34,7 @@ public class PartialLetConstant implements Node {
     }
 
     @Override
-    public Node consume(Token token) {
+    public Expression consume(Token token) {
         switch (state) {
             case WAITING_TYPE:
                 if (token.representation().equals(":")) {

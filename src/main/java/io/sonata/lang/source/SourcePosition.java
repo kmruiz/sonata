@@ -12,7 +12,7 @@ public class SourcePosition {
     }
 
     public static SourcePosition initial(Source source) {
-        return new SourcePosition(source, 1, 1);
+        return new SourcePosition(source, 1, 0);
     }
 
     public final SourcePosition next(char byChar) {
@@ -24,6 +24,6 @@ public class SourcePosition {
 
     @Override
     public String toString() {
-        return String.format("[%s:%d%d]", source.name, line, column);
+        return String.format("[%s:%d:%d]", source.name, line, column);
     }
 }

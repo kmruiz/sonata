@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -21,6 +22,10 @@ public class EmptyExpression implements Expression {
 
         if (token.representation().equals("?")) {
             return Atom.unknown();
+        }
+
+        if (token.representation().equals("let")) {
+            return PartialLet.initial();
         }
 
         if (token instanceof SeparatorToken) {

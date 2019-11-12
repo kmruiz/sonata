@@ -1,6 +1,5 @@
 package io.sonata.lang.parser.ast.let;
 
-import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
@@ -17,7 +16,7 @@ import static io.sonata.lang.javaext.Lists.append;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNullElse;
 
-public class PartialLetFunction implements Node {
+public class PartialLetFunction implements Expression {
     private enum State {
         IN_PARAMETER, WAITING_DEFINITION, IN_RETURN_TYPE, IN_BODY
     }
@@ -38,6 +37,10 @@ public class PartialLetFunction implements Node {
     public final Type returnType;
     public final Expression body;
 
+    public static PartialLetFunction anonymous() {
+        return new PartialLetFunction("", State.IN_PARAMETER, emptyList(), SimpleParameter.instance(), EmptyType.instance(), EmptyExpression.instance());
+    }
+
     public static PartialLetFunction initial(String letName) {
         return new PartialLetFunction(letName, State.IN_PARAMETER, emptyList(), SimpleParameter.instance(), EmptyType.instance(), EmptyExpression.instance());
     }
@@ -48,7 +51,7 @@ public class PartialLetFunction implements Node {
     }
 
     @Override
-    public Node consume(Token token) {
+    public Expression consume(Token token) {
         switch (state) {
             case IN_PARAMETER:
                 var nextParam = currentParameter.consume(token);

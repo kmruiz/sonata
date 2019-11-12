@@ -1,6 +1,5 @@
 package io.sonata.lang.parser.ast.let;
 
-import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.type.Type;
@@ -9,7 +8,7 @@ import io.sonata.lang.tokenizer.token.Token;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LetFunction implements Node {
+public class LetFunction implements Expression {
     public final String letName;
     public final List<Parameter> parameters;
     public final Type returnType;
@@ -28,7 +27,7 @@ public class LetFunction implements Node {
     }
 
     @Override
-    public Node consume(Token token) {
+    public Expression consume(Token token) {
         return null;
     }
 }
