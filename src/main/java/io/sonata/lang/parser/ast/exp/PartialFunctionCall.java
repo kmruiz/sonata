@@ -1,6 +1,5 @@
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -8,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
+import static java.util.Objects.requireNonNullElse;
 
 public class PartialFunctionCall implements Expression {
     public final Expression receiver;
@@ -27,15 +27,15 @@ public class PartialFunctionCall implements Expression {
     @Override
     public Expression consume(Token token) {
         Expression next = currentExpression.consume(token);
-        if (next == null || next instanceof LetFunction) {
+        if (next == null || next instanceof Lambda) {
             if (token instanceof SeparatorToken) {
                 var sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {
-                    return new PartialFunctionCall(receiver, append(arguments, currentExpression), EmptyExpression.instance());
+                    return new PartialFunctionCall(receiver, append(arguments, requireNonNullElse(next, currentExpression)), EmptyExpression.instance());
                 }
 
                 if (sep.separator.equals(")")) {
-                    return new FunctionCall(receiver, append(arguments, currentExpression));
+                    return new FunctionCall(receiver, append(arguments, requireNonNullElse(next, currentExpression)));
                 }
             }
         }

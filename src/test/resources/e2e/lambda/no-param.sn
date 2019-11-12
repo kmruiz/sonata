@@ -1,4 +1,3 @@
-let provide(a: string) = a
+let provide(a: string) = a()
 
 console.log(provide(let() = 'Hello'))
-console.log(provide('Hello'))

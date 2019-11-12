@@ -6,6 +6,6 @@ import org.junit.jupiter.api.Test;
 public class LambdaTest extends E2ETest {
     @Test
     public void basicUsageOfLambda() throws Exception {
-        assertResourceScriptOutputs("Hello\nHello", "lambda/no-param");
+        assertResourceScriptOutputs("Hello", "lambda/no-param");
     }
 }

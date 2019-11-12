@@ -2,6 +2,7 @@ package io.sonata.lang.parser.ast.let;
 
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.Expression;
+import io.sonata.lang.parser.ast.exp.Lambda;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.type.EmptyType;
@@ -92,7 +93,11 @@ public class PartialLetFunction implements Expression {
             case IN_BODY:
                 var nextBody = body.consume(token);
                 if (nextBody == null) {
-                    return new LetFunction(letName, parameters, returnType, body);
+                    if (letName.equals("")) {
+                        return Lambda.synthetic((List) parameters, body);
+                    } else {
+                        return new LetFunction(letName, parameters, returnType, body);
+                    }
                 }
 
                 return new PartialLetFunction(letName, state, parameters, currentParameter, returnType, nextBody);
