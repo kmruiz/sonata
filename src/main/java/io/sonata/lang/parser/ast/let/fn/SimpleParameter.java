@@ -3,10 +3,13 @@ package io.sonata.lang.parser.ast.let.fn;
 import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.type.EmptyType;
+import io.sonata.lang.parser.ast.type.FunctionType;
 import io.sonata.lang.parser.ast.type.Type;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
+
+import java.util.Objects;
 
 public class SimpleParameter implements Parameter {
     public enum State {
@@ -56,8 +59,8 @@ public class SimpleParameter implements Parameter {
                 return ExpressionParameter.of(new Atom(name).consume(token));
             case WAITING_TYPE:
                 var next = type.consume(token);
-                if (next == null) {
-                    return new SimpleParameter(name, type, State.END);
+                if (next == null || next instanceof FunctionType) {
+                    return new SimpleParameter(name, Objects.requireNonNullElse(next, type), State.END);
                 }
 
                 return new SimpleParameter(name, next, State.WAITING_TYPE);
