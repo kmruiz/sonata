@@ -8,4 +8,14 @@ public class LambdaTest extends E2ETest {
     public void basicUsageOfLambda() throws Exception {
         assertResourceScriptOutputs("Hello", "lambda/no-param");
     }
+
+    @Test
+    public void lambdaWithQuestionMark() throws Exception {
+        assertResourceScriptOutputs("[ 10, 20, 30, 40, 50 ]", "lambda/implicit-lambda-with-question-mark");
+    }
+
+    @Test
+    public void lambdaWithMultipleQuestionMarks() throws Exception {
+        assertResourceScriptOutputs("15", "lambda/implicit-lambda-with-multiple-question-marks");
+    }
 }

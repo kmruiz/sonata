@@ -49,16 +49,19 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
 
         return Lambda.synthetic(lambdaParams, newExpression);
     }
-
     private Expression parseExpressionForLambda(Expression expression, Supplier<String> paramNameSupplier) {
         if (expression instanceof SimpleExpression) {
             var se = (SimpleExpression) expression;
 
-            if (Atom.isUnknownAtom(se.leftSide)) {
-                return new SimpleExpression(new Atom(paramNameSupplier.get()), se.operator, parseExpressionForLambda(se.rightSide, paramNameSupplier));
-            }
+            var left = parseExpressionForLambda(se.leftSide, paramNameSupplier);
+            var operator = se.operator;
+            var right = parseExpressionForLambda(se.rightSide, paramNameSupplier);
 
-            return new SimpleExpression(parseExpressionForLambda(se.leftSide, paramNameSupplier), se.operator, parseExpressionForLambda(se.rightSide, paramNameSupplier));
+            return new SimpleExpression(left, operator, right);
+        } else if (expression instanceof Atom) {
+            if (Atom.isUnknownAtom(expression)) {
+                return new Atom(paramNameSupplier.get());
+            }
         }
 
         return expression;

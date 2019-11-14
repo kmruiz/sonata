@@ -23,9 +23,4 @@ public class FunctionDefinitionTest extends E2ETest {
     public void recursiveFunctionDefinitionWithArrays() throws Exception {
         assertResourceScriptOutputs("55", "let/fn/recursive-function-definition-with-arrays");
     }
-
-    @Test
-    public void lambdaWithQuestionMark() throws Exception {
-        assertResourceScriptOutputs("[ 10, 20, 30, 40, 50 ]", "let/fn/implicit-lambda-with-question-mark");
-    }
 }
