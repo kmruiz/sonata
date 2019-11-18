@@ -1,7 +1,14 @@
-FROM oracle/graalvm-ce:latest AS build-env
+# Generate fat-jar
+FROM maven AS maven
+WORKDIR /home/compiler
+ADD ./src ./src
+ADD ./pom.xml ./pom.xml
+RUN mvn -DskipTests -Dmaven.test.skip=true install
 
+# Generate a native-image
+FROM oracle/graalvm-ce:latest AS graalvm
 RUN gu install native-image
-ADD target/lang-1.0-SNAPSHOT-jar-with-dependencies.jar snc.jar
+COPY --from=maven /home/compiler/target/lang-1.0-SNAPSHOT-jar-with-dependencies.jar ./snc.jar
 
 RUN native-image \
     -H:IncludeResourceBundles=net.sourceforge.argparse4j.internal.ArgumentParserImpl \
@@ -9,8 +16,9 @@ RUN native-image \
     -jar snc.jar \
     snc
 
+# Package into a scratch image
 FROM scratch
 WORKDIR /usr/bin
-COPY --from=build-env snc ./
+COPY --from=graalvm snc ./
 
 CMD snc
