@@ -1,6 +1,7 @@
 package io.sonata.lang.analyzer;
 
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.sonata.lang.parser.ast.Node;
 
 import java.util.Arrays;
@@ -13,9 +14,8 @@ public class Analyzer {
         this.processors = Arrays.asList(processors);
     }
 
-    public Node apply(Node node) {
+    public Single<Node> apply(Node node) {
         return Flowable.fromIterable(processors)
-                .reduce(node, (current, processor) -> processor.apply(current))
-                .blockingGet();
+                .reduce(node, (current, processor) -> processor.apply(current));
     }
 }

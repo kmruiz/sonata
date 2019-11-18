@@ -1,5 +1,6 @@
 package io.sonata.lang.backend;
 
+import io.reactivex.Single;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
@@ -24,10 +25,10 @@ public class BackendVisitor implements BackendCodeGenerator {
         this.backendFactory = backend;
     }
 
-    public byte[] generateSourceCode(Node node) {
+    public Single<byte[]> generateSourceCode(Node node) {
         var backend = backendFactory.newBackend();
         visitTree(node, backend, new ArrayList<>(256));
-        return backend.result();
+        return Single.fromSupplier(backend::result);
     }
 
     private void visitTree(Node node, Backend backend, List<LetFunction> funcDefs) {
@@ -193,7 +194,7 @@ public class BackendVisitor implements BackendCodeGenerator {
     }
 
     @Override
-    public byte[] generateFor(Node node) {
+    public Single<byte[]> generateFor(Node node) {
         return new BackendVisitor(backendFactory).generateSourceCode(node);
     }
 }

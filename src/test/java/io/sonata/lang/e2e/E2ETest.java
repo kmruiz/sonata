@@ -8,7 +8,6 @@ import org.testcontainers.utility.MountableFile;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class E2ETest {
-    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws IOException {
+    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
         var stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
         var script = new BufferedReader(new InputStreamReader(stream))
                 .lines().collect(Collectors.joining("\n"));
@@ -27,7 +26,7 @@ public abstract class E2ETest {
         assertScriptOutputs(expectedOutput, script);
     }
 
-    private void assertScriptOutputs(String expectedOutput, String literalScript) throws IOException {
+    private void assertScriptOutputs(String expectedOutput, String literalScript) throws Exception {
         var waitingConsumer = new WaitingConsumer();
         var container = executeScript(literalScript);
 
@@ -37,7 +36,7 @@ public abstract class E2ETest {
         assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
     }
 
-    private GenericContainer executeScript(String literalScript) throws IOException {
+    private GenericContainer executeScript(String literalScript) throws Exception {
         String compiledVersion = compileToTemporalPath(literalScript);
         System.out.println(">> Source Code:\n" + literalScript);
         System.out.println(">> JavaScript:\n" + Files.readString(Path.of(compiledVersion)));
@@ -50,7 +49,7 @@ public abstract class E2ETest {
         return container;
     }
 
-    private String compileToTemporalPath(String literalScript) throws IOException {
+    private String compileToTemporalPath(String literalScript) throws Exception {
         var file = File.createTempFile("io.sonata.lang.e2e", ".input.sn").getAbsolutePath();
         var output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
 
