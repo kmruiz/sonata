@@ -3,7 +3,7 @@ FROM maven AS maven
 WORKDIR /home/compiler
 ADD ./src ./src
 ADD ./pom.xml ./pom.xml
-RUN mvn -DskipTests -Dmaven.test.skip=true install
+RUN mvn install
 
 # Generate a native-image
 FROM oracle/graalvm-ce:latest AS graalvm

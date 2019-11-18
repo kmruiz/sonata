@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class ValueClassDefinitionTest extends E2ETest {
     @Test
     public void definitionOfBasicValueClass() throws Exception {
-        assertResourceScriptOutputs("{ class: 'price', amount: 42, currency: 'EUR' }", "classes/values/value-class-price");
+        assertResourceScriptOutputs("{\"class\":\"price\",\"amount\":42,\"currency\":\"EUR\"}", "classes/values/value-class-price");
     }
 
     @Test

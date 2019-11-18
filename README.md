@@ -20,10 +20,15 @@ $> <snc or java -jar> fibonacci.sn -o fibonacci.js
 Running the Tests
 -----------------
 
-Most Sonata tests are E2E, they get a source file, the compile to a javascript file, run a docker container with
-the generated javascript file, and check the output. Tests are in the `io.sonata.lang.e2e` package.
-
-You only need Docker to run the test suite.
+Most Sonata tests are E2E:
+ 
+* Read a source file
+* Compile to a minified javascript file
+* Create a GraalVM context
+* Run the compiled script into the GraalVM context
+* Check the output.
+ 
+Tests are in the `io.sonata.lang.e2e` package.
 
 Architecture
 ------------
