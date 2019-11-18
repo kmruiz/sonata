@@ -4,6 +4,7 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.type.EmptyType;
+import io.sonata.lang.parser.ast.type.FunctionType;
 import io.sonata.lang.parser.ast.type.Type;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -47,6 +48,10 @@ public class PartialLetConstant implements Expression {
                 var nextType = type.consume(token);
                 if (nextType == null) {
                     return new PartialLetConstant(letName, type, State.WAITING_EQUALS, value).consume(token);
+                }
+
+                if (nextType instanceof FunctionType) {
+                    return new PartialLetConstant(letName, nextType, State.IN_BODY, value);
                 }
 
                 return new PartialLetConstant(letName, nextType, state, value);
