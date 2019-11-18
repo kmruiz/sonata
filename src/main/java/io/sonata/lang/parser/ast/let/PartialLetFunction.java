@@ -79,10 +79,10 @@ public class PartialLetFunction implements Expression {
                     return new PartialLetFunction(letName, State.IN_BODY, parameters, currentParameter, returnType, body);
                 } else if (token instanceof SeparatorToken && token.representation().equals("\n")) {
                     return new LetFunction(letName, parameters, returnType, null);
-                } else if (token instanceof SeparatorToken && returnType instanceof EmptyType) {
+                } else if (token instanceof SeparatorToken && token.representation().equals(":") && returnType instanceof EmptyType) {
                     return new PartialLetFunction(letName, State.IN_RETURN_TYPE, parameters, currentParameter, returnType, body);
                 }
-                break;
+                return this;
             case IN_RETURN_TYPE:
                 var nextType = returnType.consume(token);
                 if (nextType == null) {
