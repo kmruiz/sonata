@@ -14,8 +14,11 @@ public class Analyzer {
         this.processors = Arrays.asList(processors);
     }
 
+    private static Node applyProcessor(Node current, Processor processor) {
+        return processor.apply(current);
+    }
+
     public Single<Node> apply(Node node) {
-        return Flowable.fromIterable(processors)
-                .reduce(node, (current, processor) -> processor.apply(current));
+        return Flowable.fromIterable(processors).reduce(node, Analyzer::applyProcessor);
     }
 }
