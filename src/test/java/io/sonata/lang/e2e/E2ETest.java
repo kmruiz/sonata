@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,9 @@ public abstract class E2ETest {
 
         GenericContainer container = new GenericContainer("node:12-alpine")
                 .withCopyFileToContainer(MountableFile.forHostPath(compiledVersion), "./script.js")
-                .withCommand("node script.js");
+                .withCommand("node script.js")
+                .withStartupAttempts(1)
+                .withStartupTimeout(Duration.ofSeconds(10));
 
         container.start();
         return container;
