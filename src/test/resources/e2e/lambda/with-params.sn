@@ -1,0 +1,4 @@
+let add(a: number, b: number) = a + b
+let apply(fn: (number, number) -> number, a: number, b: number) = fn(a, b)
+
+console.log(apply(add, 5, 10))

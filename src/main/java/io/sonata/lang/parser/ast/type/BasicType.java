@@ -7,6 +7,10 @@ public class BasicType extends ComposedType implements Type {
         this.name = name;
     }
 
+    public static BasicType named(String name) {
+        return new BasicType(name);
+    }
+
     @Override
     public String representation() {
         return name;

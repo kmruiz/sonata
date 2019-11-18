@@ -2,6 +2,7 @@ package io.sonata.lang.parser.ast.type;
 
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.OperatorToken;
+import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class EmptyType implements Type {
@@ -14,7 +15,11 @@ public class EmptyType implements Type {
     @Override
     public Type consume(Token token) {
         if (token instanceof IdentifierToken) {
-            return new BasicType(token.representation());
+            return BasicType.named(token.representation());
+        }
+
+        if (token instanceof SeparatorToken) {
+            return PartialFunctionType.inParameterList();
         }
 
         if (token instanceof OperatorToken) {
