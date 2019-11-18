@@ -15,6 +15,9 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class E2ETest {
+    private final ByteArrayOutputStream proxyOutput = new ByteArrayOutputStream();
+    private final Context jsContext = Context.newBuilder("js").out(proxyOutput).build();
+
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
         InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
         String script = new BufferedReader(new InputStreamReader(stream)).lines().collect(joining("\n"));
@@ -32,15 +35,9 @@ public abstract class E2ETest {
         System.out.println(">> Source Code:\n" + literalScript);
         System.out.println(">> JavaScript:\n" + compiledVersion);
 
-        ByteArrayOutputStream proxyOutput = new ByteArrayOutputStream();
-        try (
-                Context jsContext = Context.newBuilder("js")
-                        .out(proxyOutput)
-                        .build()
-        ) {
-            jsContext.eval("js", compiledVersion);
-            return new String(proxyOutput.toByteArray());
-        }
+        proxyOutput.reset();
+        jsContext.eval("js", compiledVersion);
+        return new String(proxyOutput.toByteArray());
     }
 
     private String compileToString(String literalScript) throws Exception {
