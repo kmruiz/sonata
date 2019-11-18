@@ -18,11 +18,11 @@ public class EmptyType implements Type {
             return BasicType.named(token.representation());
         }
 
-        if (token instanceof SeparatorToken) {
+        if (token instanceof SeparatorToken && token.representation().equals("(")) {
             return PartialFunctionType.inParameterList();
         }
 
-        if (token instanceof OperatorToken) {
+        if (token instanceof OperatorToken && token.representation().equals("->")) {
             return PartialFunctionType.withoutParameters();
         }
 
