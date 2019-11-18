@@ -48,9 +48,9 @@ public class FunctionOverloadExpressionParser implements DestructuringExpression
 
     private <T> T whenIsExpressionParameter(Parameter parameter, Function<ExpressionParameterTouchPoint, T> fn) {
         if (parameter instanceof ExpressionParameter) {
-            var expr = ((ExpressionParameter) parameter).expression;
-            var isArray = (expr instanceof LiteralArray);
-            var isValueClass = (expr instanceof FunctionCall) && resolver.isSymbolOfType(((FunctionCall) expr).receiver.representation(), ValueClass.class);
+            Expression expr = ((ExpressionParameter) parameter).expression;
+            boolean isArray = (expr instanceof LiteralArray);
+            boolean isValueClass = (expr instanceof FunctionCall) && resolver.isSymbolOfType(((FunctionCall) expr).receiver.representation(), ValueClass.class);
 
             if (!isArray && !isValueClass) {
                 return fn.apply(new ExpressionParameterTouchPoint(expr));

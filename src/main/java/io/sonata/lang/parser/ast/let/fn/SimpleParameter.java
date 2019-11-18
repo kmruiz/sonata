@@ -9,7 +9,7 @@ import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
-import java.util.Objects;
+import static io.sonata.lang.javaext.Objects.requireNonNullElse;
 
 public class SimpleParameter implements Parameter {
     public enum State {
@@ -50,7 +50,7 @@ public class SimpleParameter implements Parameter {
                 return ExpressionParameter.of(EmptyExpression.instance().consume(token));
             case WAITING_SEPARATOR:
                 if (token instanceof SeparatorToken) {
-                    var sep = (SeparatorToken) token;
+                    SeparatorToken sep = (SeparatorToken) token;
                     if (sep.separator.equals(":")) {
                         return new SimpleParameter(name, type, State.WAITING_TYPE);
                     }
@@ -58,9 +58,9 @@ public class SimpleParameter implements Parameter {
 
                 return ExpressionParameter.of(new Atom(name).consume(token));
             case WAITING_TYPE:
-                var next = type.consume(token);
+                Type next = type.consume(token);
                 if (next == null || next instanceof FunctionType) {
-                    return new SimpleParameter(name, Objects.requireNonNullElse(next, type), State.END);
+                    return new SimpleParameter(name, requireNonNullElse(next, type), State.END);
                 }
 
                 return new SimpleParameter(name, next, State.WAITING_TYPE);

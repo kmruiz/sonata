@@ -45,7 +45,7 @@ public class PartialLetConstant implements Expression {
                 }
                 break;
             case IN_TYPE:
-                var nextType = type.consume(token);
+                Type nextType = type.consume(token);
                 if (nextType == null) {
                     return new PartialLetConstant(letName, type, State.WAITING_EQUALS, value).consume(token);
                 }
@@ -61,7 +61,7 @@ public class PartialLetConstant implements Expression {
                 }
                 break;
             case IN_BODY:
-                var nextBody = value.consume(token);
+                Node nextBody = value.consume(token);
                 if (nextBody == null) {
                     return new LetConstant(letName, type, (Expression) value);
                 }

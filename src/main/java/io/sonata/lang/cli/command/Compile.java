@@ -43,7 +43,7 @@ public class Compile {
         Subject<Source> requires = ReplaySubject.create();
         RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(requires);
 
-        var byteCode = Flowable.fromIterable(files)
+        byte[] byteCode = Flowable.fromIterable(files)
                 .map(Paths::get)
                 .map(Source::fromPath)
                 .concatWith(Single.fromSupplier(Source::endOfProgram))

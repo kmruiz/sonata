@@ -3,16 +3,16 @@ package io.sonata.lang.analyzer.destructuring;
 import io.sonata.lang.analyzer.symbols.SymbolResolver;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.exp.*;
+import io.sonata.lang.parser.ast.exp.Atom;
+import io.sonata.lang.parser.ast.exp.Expression;
+import io.sonata.lang.parser.ast.exp.FunctionCall;
+import io.sonata.lang.parser.ast.exp.SimpleExpression;
 import io.sonata.lang.parser.ast.let.LetConstant;
-import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.type.BasicType;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -35,10 +35,10 @@ public class ValueClassDestructuringExpressionParser implements DestructuringExp
     }
 
     public Stream<Node> createDestructuringExpression(String parameterName, Parameter parameter) {
-        var argIdx = new AtomicInteger(-1);
+        AtomicInteger argIdx = new AtomicInteger(-1);
         return whenIsValueClassParameter(parameter, tp -> tp.functionCall.arguments.stream().map(arg -> {
-            var field = argIdx.incrementAndGet();
-            var fieldName = tp.valueClass.definedFields.get(field).name();
+            int field = argIdx.incrementAndGet();
+            String fieldName = tp.valueClass.definedFields.get(field).name();
 
             return new LetConstant(fieldName, null, new SimpleExpression(new Atom(tp.valueClass.name), ".", new Atom(fieldName)));
         }));
@@ -54,12 +54,12 @@ public class ValueClassDestructuringExpressionParser implements DestructuringExp
     }
 
     public Stream<Expression> generateGuardCondition(String parameterName, Parameter parameter) {
-        var argIdx = new AtomicInteger(-1);
+        AtomicInteger argIdx = new AtomicInteger(-1);
         return whenIsValueClassParameter(parameter, tp -> tp.functionCall.arguments.stream().map(arg -> {
-            var field = argIdx.incrementAndGet();
+            int field = argIdx.incrementAndGet();
 
             if (arg instanceof Atom) {
-                var atom = ((Atom) arg);
+                Atom atom = ((Atom) arg);
                 if (atom.type != Atom.Type.IDENTIFIER) {
                     return new SimpleExpression(new Atom(tp.valueClass.definedFields.get(field).name()), "===", arg);
                 }
@@ -74,9 +74,9 @@ public class ValueClassDestructuringExpressionParser implements DestructuringExp
     private <T> T whenIsValueClassParameter(Parameter parameter, Function<ValueClassParameterTouchPoint, T> fn) {
         if (parameter instanceof ExpressionParameter) {
             if (((ExpressionParameter) parameter).expression instanceof FunctionCall) {
-                var receiver = ((FunctionCall) ((ExpressionParameter) parameter).expression).receiver;
+                Expression receiver = ((FunctionCall) ((ExpressionParameter) parameter).expression).receiver;
                 if (receiver instanceof Atom) {
-                    var receiverName = ((Atom) receiver).value;
+                    String receiverName = ((Atom) receiver).value;
                     if (resolver.isSymbolOfType(receiverName, ValueClass.class)) {
                         return fn.apply(new ValueClassParameterTouchPoint(
                                 (FunctionCall) ((ExpressionParameter) parameter).expression,

@@ -46,7 +46,7 @@ public class PartialValueClass implements Node {
             case WAITING_FIELDS:
                 return new PartialValueClass(name, emptyList(), SimpleField.instance(), State.IN_FIELDS);
             case IN_FIELDS:
-                var nextField = currentField.consume(token);
+                Field nextField = currentField.consume(token);
                 if (nextField == null) {
                     return finalization(token, currentField);
                 }

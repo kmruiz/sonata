@@ -14,10 +14,13 @@ import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.type.Type;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static io.sonata.lang.javaext.Objects.requireNonNullElse;
 
 public class JSBackend implements Backend {
     private final ByteArrayOutputStream buffer;
@@ -75,7 +78,7 @@ public class JSBackend implements Backend {
     public void emitTailExtractionEnd(TailExtraction tailExtraction, BackendCodeGenerator generator) {
         popInExpr();
         emit(".slice(");
-        emit(String.valueOf(Objects.requireNonNullElse(tailExtraction.fromIndex, 0)));
+        emit(String.valueOf(requireNonNullElse(tailExtraction.fromIndex, 0)));
         emit(")");
 
         if (isNotInExpression()) {
@@ -187,7 +190,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitFunctionDefinitionBegin(List<LetFunction> definition, BackendCodeGenerator generator) {
-        var base = definition.get(0);
+        LetFunction base = definition.get(0);
 
         if (inClass) {
             emit("body.");
@@ -225,9 +228,9 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator) {
-        var conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression).collect(Collectors.toList());
-        var notExtractions = conditions.stream().filter(e -> !(e instanceof LiteralArray));
-        var condString = notExtractions.map(generator::generateFor).map(Single::blockingGet).map(String::new).collect(Collectors.joining("&&"));
+        List<Expression> conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression).collect(Collectors.toList());
+        Stream<Expression> notExtractions = conditions.stream().filter(e -> !(e instanceof LiteralArray));
+        String condString = notExtractions.map(generator::generateFor).map(Single::blockingGet).map(String::new).collect(Collectors.joining("&&"));
 
         emit("if(" + condString + "){return ");
     }
@@ -372,7 +375,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitLambdaDefinitionBegin(Lambda lambda, BackendCodeGenerator generator) {
-        var params = lambda.parameters.stream().map(e -> e.name).collect(Collectors.joining(","));
+        String params = lambda.parameters.stream().map(e -> e.name).collect(Collectors.joining(","));
         emit("function (");
         emit(params);
         emit(")");
@@ -399,6 +402,10 @@ public class JSBackend implements Backend {
     }
 
     private void emit(String script) {
-        buffer.writeBytes(script.getBytes(Charset.defaultCharset()));
+        try {
+            buffer.write(script.getBytes(Charset.defaultCharset()));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

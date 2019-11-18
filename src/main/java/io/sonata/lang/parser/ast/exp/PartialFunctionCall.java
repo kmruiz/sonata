@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
-import static java.util.Objects.requireNonNullElse;
+import static io.sonata.lang.javaext.Objects.requireNonNullElse;
 
 public class PartialFunctionCall implements Expression {
     public final Expression receiver;
@@ -29,7 +29,7 @@ public class PartialFunctionCall implements Expression {
         Expression next = currentExpression.consume(token);
         if (next == null || next instanceof Lambda) {
             if (token instanceof SeparatorToken) {
-                var sep = (SeparatorToken) token;
+                SeparatorToken sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {
                     return new PartialFunctionCall(receiver, append(arguments, requireNonNullElse(next, currentExpression)), EmptyExpression.instance());
                 }

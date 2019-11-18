@@ -6,29 +6,29 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class E2ETest {
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
-        var stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
-        var script = new BufferedReader(new InputStreamReader(stream))
+        InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
+        String script = new BufferedReader(new InputStreamReader(stream))
                 .lines().collect(Collectors.joining("\n"));
 
         assertScriptOutputs(expectedOutput, script);
     }
 
     private void assertScriptOutputs(String expectedOutput, String literalScript) throws Exception {
-        var waitingConsumer = new WaitingConsumer();
-        var container = executeScript(literalScript);
+        WaitingConsumer waitingConsumer = new WaitingConsumer();
+        GenericContainer container = executeScript(literalScript);
 
         container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
         waitingConsumer.waitUntilEnd();
@@ -39,9 +39,9 @@ public abstract class E2ETest {
     private GenericContainer executeScript(String literalScript) throws Exception {
         String compiledVersion = compileToTemporalPath(literalScript);
         System.out.println(">> Source Code:\n" + literalScript);
-        System.out.println(">> JavaScript:\n" + Files.readString(Path.of(compiledVersion)));
+        System.out.println(">> JavaScript:\n" + readString(Paths.get(compiledVersion)));
 
-        var container = new GenericContainer("node:12-alpine")
+        GenericContainer container = new GenericContainer("node:12-alpine")
                 .withCopyFileToContainer(MountableFile.forHostPath(compiledVersion), "./script.js")
                 .withCommand("node script.js");
 
@@ -50,11 +50,15 @@ public abstract class E2ETest {
     }
 
     private String compileToTemporalPath(String literalScript) throws Exception {
-        var file = File.createTempFile("io.sonata.lang.e2e", ".input.sn").getAbsolutePath();
-        var output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
+        String file = File.createTempFile("io.sonata.lang.e2e", ".input.sn").getAbsolutePath();
+        String output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
 
-        Files.writeString(Path.of(file), literalScript, Charset.defaultCharset());
+        Files.write(Paths.get(file), literalScript.getBytes(), CREATE, TRUNCATE_EXISTING);
         Compile.execute(Collections.singletonList(file), output);
         return output;
+    }
+
+    private String readString(Path path) throws IOException {
+        return new String(Files.readAllBytes(path));
     }
 }

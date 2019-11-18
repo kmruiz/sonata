@@ -21,10 +21,10 @@ public class PartialPriorityExpression implements Expression {
 
     @Override
     public Expression consume(Token token) {
-        var next = expression.consume(token);
+        Expression next = expression.consume(token);
         if (next == null) {
             if (token instanceof SeparatorToken) {
-                var sep = (SeparatorToken) token;
+                SeparatorToken sep = (SeparatorToken) token;
                 if (sep.separator.equals(")")) {
                     return new PriorityExpression(expression);
                 }

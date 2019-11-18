@@ -39,13 +39,13 @@ public class Source implements AutoCloseable {
 
     public final Flowable<SourceCharacter> read() {
         return Flowable.create(emitter -> {
-            var position = SourcePosition.initial(this);
+            SourcePosition position = SourcePosition.initial(this);
 
             do {
                 final int readByte = inputStream.read();
                 if (readByte == -1) {
-                    for (var i = 0; i < 10; i++) {
-                        var nl = System.lineSeparator().getBytes(Charset.defaultCharset());
+                    for (int i = 0; i < 10; i++) {
+                        byte[] nl = System.lineSeparator().getBytes(Charset.defaultCharset());
                         for (byte c: nl) {
                             emitter.onNext(new SourceCharacter(position, (char) c));
                         }

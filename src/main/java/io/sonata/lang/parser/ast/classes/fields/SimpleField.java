@@ -1,9 +1,5 @@
 package io.sonata.lang.parser.ast.classes.fields;
 
-import io.sonata.lang.parser.ast.exp.Atom;
-import io.sonata.lang.parser.ast.exp.EmptyExpression;
-import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
-import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.type.EmptyType;
 import io.sonata.lang.parser.ast.type.Type;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
@@ -45,7 +41,7 @@ public class SimpleField implements Field {
                 return null;
             case WAITING_SEPARATOR:
                 if (token instanceof SeparatorToken) {
-                    var sep = (SeparatorToken) token;
+                    SeparatorToken sep = (SeparatorToken) token;
                     if (sep.separator.equals(":")) {
                         return new SimpleField(name, type, State.WAITING_TYPE);
                     }
@@ -53,7 +49,7 @@ public class SimpleField implements Field {
 
                 return null;
             case WAITING_TYPE:
-                var next = type.consume(token);
+                Type next = type.consume(token);
                 if (next == null) {
                     return new SimpleField(name, type, State.END);
                 }

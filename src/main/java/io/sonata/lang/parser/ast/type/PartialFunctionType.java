@@ -35,7 +35,7 @@ public class PartialFunctionType implements Type {
     public Type consume(Token token) {
         switch (state) {
             case IN_PARAMETERS:
-                var nextParam = currentParameterType.consume(token);
+                Type nextParam = currentParameterType.consume(token);
                 if (nextParam == null) {
                     if (token instanceof SeparatorToken) {
                         switch (token.representation()) {
@@ -57,7 +57,7 @@ public class PartialFunctionType implements Type {
 
                 return null;
             case IN_RETURN_TYPE:
-                var nextRetType = returnType.consume(token);
+                Type nextRetType = returnType.consume(token);
                 if (nextRetType == null) {
                     return new FunctionType(parameters, returnType);
                 }

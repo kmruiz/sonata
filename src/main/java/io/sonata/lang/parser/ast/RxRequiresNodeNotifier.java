@@ -5,6 +5,7 @@ import io.sonata.lang.source.Source;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
     private final Subject<Source> sources;
@@ -27,6 +28,6 @@ public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
     }
 
     private Path resolveModule(String module) {
-        return Path.of(module.replace('.', '/') + ".sn");
+        return Paths.get(module.replace('.', '/') + ".sn");
     }
 }

@@ -39,7 +39,7 @@ public class PartialValueClassWithBody implements Node {
 
     @Override
     public Node consume(Token token) {
-        var nextExpr = current.consume(token);
+        Node nextExpr = current.consume(token);
         if (nextExpr == null) {
             if (token.representation().equals("}")) {
                 return new ValueClass(name, definedFields, append(declarations, current));

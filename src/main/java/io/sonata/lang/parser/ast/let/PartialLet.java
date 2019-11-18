@@ -29,7 +29,7 @@ public class PartialLet implements Expression {
             }
 
             if (token instanceof SeparatorToken) {
-                var sep = (SeparatorToken) token;
+                SeparatorToken sep = (SeparatorToken) token;
 
                 if (sep.separator.equals("(")) {
                     return PartialLetFunction.anonymous();
@@ -37,7 +37,7 @@ public class PartialLet implements Expression {
             }
         } else {
             if (token instanceof SeparatorToken) {
-                var sep = (SeparatorToken) token;
+                SeparatorToken sep = (SeparatorToken) token;
 
                 if (sep.separator.equals("(")) {
                     return PartialLetFunction.initial(letName);

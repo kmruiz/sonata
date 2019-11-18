@@ -17,7 +17,7 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
     @Override
     public Node apply(Node node) {
         if (node instanceof ScriptNode) {
-            var script = (ScriptNode) node;
+            ScriptNode script = (ScriptNode) node;
             return new ScriptNode(script.nodes.stream().map(this::apply).collect(Collectors.toList()), script.currentNode, script.requiresNotifier);
         }
 
@@ -26,7 +26,7 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
         }
 
         if (node instanceof LetConstant) {
-            var let = (LetConstant) node;
+            LetConstant let = (LetConstant) node;
             return new LetConstant(let.letName, let.returnType, (Expression) apply(let.body));
         }
 
@@ -38,13 +38,13 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
     }
 
     private Node processAnonymousParametersOnFunctionCall(FunctionCall fc) {
-        var args = fc.arguments.stream().map(this::buildLambdaIfNeeded).collect(Collectors.toList());
+        List<Expression> args = fc.arguments.stream().map(this::buildLambdaIfNeeded).collect(Collectors.toList());
         return new FunctionCall(fc.receiver, args);
     }
 
     private Expression buildLambdaIfNeeded(Expression expression) {
-        var lambdaParams = new ArrayList<SimpleParameter>(4);
-        var paramNameSupplier = scopedLambdaParameterNameSupplier(lambdaParams);
+        ArrayList<SimpleParameter> lambdaParams = new ArrayList<SimpleParameter>(4);
+        Supplier<String> paramNameSupplier = scopedLambdaParameterNameSupplier(lambdaParams);
         Expression newExpression = parseExpressionForLambda(expression, paramNameSupplier);
 
         if (lambdaParams.isEmpty()) {
@@ -55,11 +55,11 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
     }
     private Expression parseExpressionForLambda(Expression expression, Supplier<String> paramNameSupplier) {
         if (expression instanceof SimpleExpression) {
-            var se = (SimpleExpression) expression;
+            SimpleExpression se = (SimpleExpression) expression;
 
-            var left = parseExpressionForLambda(se.leftSide, paramNameSupplier);
-            var operator = se.operator;
-            var right = parseExpressionForLambda(se.rightSide, paramNameSupplier);
+            Expression left = parseExpressionForLambda(se.leftSide, paramNameSupplier);
+            String operator = se.operator;
+            Expression right = parseExpressionForLambda(se.rightSide, paramNameSupplier);
 
             return new SimpleExpression(left, operator, right);
         } else if (expression instanceof Atom) {
@@ -76,7 +76,7 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
         char base = 'a';
 
         return () -> {
-            var name = String.valueOf((char) (base + counter.getAndIncrement()));
+            String name = String.valueOf((char) (base + counter.getAndIncrement()));
             lambdaParams.add(new SimpleParameter(name, null, SimpleParameter.State.END));
 
             return name;

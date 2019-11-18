@@ -5,6 +5,8 @@ import io.sonata.lang.source.SourceCharacter;
 import io.sonata.lang.tokenizer.token.RootToken;
 import io.sonata.lang.tokenizer.token.Token;
 
+import java.util.Optional;
+
 public final class Tokenizer {
     private Token token;
 
@@ -13,7 +15,7 @@ public final class Tokenizer {
     }
 
     public Flowable<Token> process(SourceCharacter character) {
-        var nextToken = token.nextToken(character);
+        Optional<Token> nextToken = token.nextToken(character);
         if (nextToken.isPresent()) {
             token = nextToken.get();
             return Flowable.empty();

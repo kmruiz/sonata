@@ -25,10 +25,10 @@ public class PartialGenericType implements Type {
 
     @Override
     public Type consume(Token token) {
-        var next = current.consume(token);
+        Type next = current.consume(token);
         if (next == null) {
             if (token instanceof SeparatorToken) {
-                var sep = (SeparatorToken) token;
+                SeparatorToken sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {
                     return new PartialGenericType(base, append(parameters, current), EmptyType.instance());
                 }

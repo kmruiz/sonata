@@ -14,8 +14,8 @@ import io.sonata.lang.tokenizer.token.Token;
 import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
+import static io.sonata.lang.javaext.Objects.requireNonNullElse;
 import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNullElse;
 
 public class PartialLetFunction implements Expression {
     private enum State {
@@ -55,10 +55,10 @@ public class PartialLetFunction implements Expression {
     public Expression consume(Token token) {
         switch (state) {
             case IN_PARAMETER:
-                var nextParam = currentParameter.consume(token);
+                Parameter nextParam = currentParameter.consume(token);
                 if (nextParam == null || nextParam.isDone()) {
                     if (token instanceof SeparatorToken) {
-                        var separator = (SeparatorToken) token;
+                        SeparatorToken separator = (SeparatorToken) token;
                         switch (separator.separator) {
                             case ",":
                                 return new PartialLetFunction(letName, State.IN_PARAMETER, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(), returnType, body);
@@ -84,14 +84,14 @@ public class PartialLetFunction implements Expression {
                 }
                 return this;
             case IN_RETURN_TYPE:
-                var nextType = returnType.consume(token);
+                Type nextType = returnType.consume(token);
                 if (nextType == null) {
                     return new PartialLetFunction(letName, State.IN_BODY, parameters, currentParameter, returnType, body);
                 }
 
                 return new PartialLetFunction(letName, state, parameters, currentParameter, nextType, body);
             case IN_BODY:
-                var nextBody = body.consume(token);
+                Expression nextBody = body.consume(token);
                 if (nextBody == null) {
                     if (letName.equals("")) {
                         return Lambda.synthetic((List) parameters, body);

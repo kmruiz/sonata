@@ -19,7 +19,7 @@ public class ExpressionParameter implements Parameter {
 
     @Override
     public Parameter consume(Token token) {
-        var next = expression.consume(token);
+        Expression next = expression.consume(token);
         if (next == null) {
             return new ExpressionParameter(expression, true);
         }

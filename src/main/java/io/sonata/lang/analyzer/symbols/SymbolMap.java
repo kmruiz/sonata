@@ -27,6 +27,7 @@ public class SymbolMap implements Processor, SymbolResolver {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends Node> T resolve(String symbol, Class<T> nodeClass) {
         if (!isSymbolOfType(symbol, nodeClass)) {
             throw new NoSuchElementException(symbol + " of type " + nodeClass.getSimpleName());
@@ -37,7 +38,7 @@ public class SymbolMap implements Processor, SymbolResolver {
 
     @Override
     public boolean isSymbolOfType(String symbol, Class<? extends Node> nodeClass) {
-        var declaration = dictionary.get(symbol);
+        SymbolDeclaration declaration = dictionary.get(symbol);
         if (declaration == null) {
             return false;
         }

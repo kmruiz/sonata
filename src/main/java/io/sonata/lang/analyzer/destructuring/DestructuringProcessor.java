@@ -44,8 +44,8 @@ public class DestructuringProcessor implements Processor {
     }
 
     private Stream<Node> reduceFunctionsIfAny(List<Node> nodes) {
-        var currentOrder = new AtomicInteger(0);
-        var groupedNodes = nodes.stream().collect(Collectors.groupingBy(node -> (node instanceof LetFunction) ? ((LetFunction) node).letName : String.valueOf(currentOrder.incrementAndGet())));
+        AtomicInteger currentOrder = new AtomicInteger(0);
+        Map<String, List<Node>> groupedNodes = nodes.stream().collect(Collectors.groupingBy(node -> (node instanceof LetFunction) ? ((LetFunction) node).letName : String.valueOf(currentOrder.incrementAndGet())));
 
         return groupedNodes.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).map(Map.Entry::getValue).map(children -> {
             if (children.size() > 1) {
@@ -57,10 +57,10 @@ public class DestructuringProcessor implements Processor {
     }
 
     private LetFunction reduceFunctionList(List<LetFunction> fns) {
-        var idx = new AtomicInteger(0);
-        var master = fns.stream().filter(e -> e.parameters.stream().allMatch(p -> p instanceof SimpleParameter)).findAny().orElse(fns.get(0));
+        AtomicInteger idx = new AtomicInteger(0);
+        LetFunction master = fns.stream().filter(e -> e.parameters.stream().allMatch(p -> p instanceof SimpleParameter)).findAny().orElse(fns.get(0));
 
-        var destructuringExpressions = fns
+        List<Node> destructuringExpressions = fns
                 .stream()
                 .flatMap(e -> e.parameters.stream())
                 .map(e -> expressionParsers.createDestructuringExpression(parameterNameOf(master, idx.getAndIncrement()), e))
@@ -73,7 +73,7 @@ public class DestructuringProcessor implements Processor {
                 .flatMap(list -> list.stream().limit(1))
                 .collect(Collectors.toList());
 
-        var parameters = master.parameters.stream().map(e -> expressionParsers.normalizeParameter(paramDeclaration(e), e)).collect(Collectors.toList());
+        List<Parameter> parameters = master.parameters.stream().map(e -> expressionParsers.normalizeParameter(paramDeclaration(e), e)).collect(Collectors.toList());
 
         List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted(IfElse::weightedComparison).collect(Collectors.toList());
 
@@ -81,9 +81,9 @@ public class DestructuringProcessor implements Processor {
     }
 
     private Expression generateGuardedBody(LetFunction master, LetFunction overload) {
-        var idx = new AtomicInteger(0);
+        AtomicInteger idx = new AtomicInteger(0);
 
-        var guardCondition = overload.parameters.stream()
+        Optional<Expression> guardCondition = overload.parameters.stream()
                 .map(e -> expressionParsers.generateGuardCondition(parameterNameOf(master, idx.getAndIncrement()), e)).filter(Objects::nonNull).flatMap(e -> e).filter(Objects::nonNull)
                 .sorted(IfElse::weightedComparison)
                 .reduce((a, b) -> new SimpleExpression(a, "&&", b));

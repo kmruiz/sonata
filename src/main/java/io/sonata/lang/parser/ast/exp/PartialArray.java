@@ -24,10 +24,10 @@ public class PartialArray implements Expression {
 
     @Override
     public Expression consume(Token token) {
-        var next = currentExpression.consume(token);
+        Expression next = currentExpression.consume(token);
         if (next == null) {
             if (token instanceof SeparatorToken) {
-                var sep = (SeparatorToken) token;
+                SeparatorToken sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {
                     return new PartialArray(append(expressions, currentExpression), EmptyExpression.instance());
                 }

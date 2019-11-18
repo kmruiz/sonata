@@ -4,8 +4,6 @@ import io.sonata.lang.tokenizer.token.OperatorToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
-import java.util.Objects;
-
 public abstract class ComposedExpression implements Expression {
     @Override
     public Expression consume(Token token) {
@@ -18,7 +16,7 @@ public abstract class ComposedExpression implements Expression {
         }
 
         if (token instanceof SeparatorToken) {
-            var sep = (SeparatorToken) token;
+            SeparatorToken sep = (SeparatorToken) token;
             if (sep.separator.equals("(")) {
                 return PartialFunctionCall.on(this);
             }

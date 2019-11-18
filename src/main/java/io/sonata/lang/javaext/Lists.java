@@ -7,14 +7,14 @@ import java.util.List;
 public final class Lists {
     @SafeVarargs
     public static <T> List<T> append(List<T> l, T... v) {
-        var result = new ArrayList<>(List.copyOf(l));
+        ArrayList<T> result = new ArrayList<>(l);
         result.addAll(Arrays.asList(v));
 
         return result;
     }
 
     public static <T> List<T> append(List<T> l, List<T> v) {
-        var result = new ArrayList<>(List.copyOf(l));
+        ArrayList<T> result = new ArrayList<>(l);
         result.addAll(v);
 
         return result;

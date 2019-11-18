@@ -11,6 +11,7 @@ import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class BackendVisitor implements BackendCodeGenerator {
     }
 
     public Single<byte[]> generateSourceCode(Node node) {
-        var backend = backendFactory.newBackend();
+        Backend backend = backendFactory.newBackend();
         visitTree(node, backend, new ArrayList<>(256));
         return Single.fromSupplier(backend::result);
     }
@@ -128,7 +129,7 @@ public class BackendVisitor implements BackendCodeGenerator {
             });
             backend.emitPostValueClass((ValueClass) node, this);
             backend.emitValueClassBodyBegin((ValueClass) node, this);
-            var defs = new ArrayList<LetFunction>(256);
+            ArrayList<LetFunction> defs = new ArrayList<LetFunction>(256);
             ((ValueClass) node).body.forEach(expr -> {
                 visitTree(expr, backend, defs);
             });
@@ -148,7 +149,7 @@ public class BackendVisitor implements BackendCodeGenerator {
         }
 
         if (node instanceof Lambda) {
-            var lambda = (Lambda) node;
+            Lambda lambda = (Lambda) node;
             backend.emitLambdaDefinitionBegin(lambda, this);
             backend.emitLambdaBodyBegin(lambda, this);
             visitTree(lambda.body, backend, funcDefs);
@@ -172,10 +173,10 @@ public class BackendVisitor implements BackendCodeGenerator {
     }
 
     private void emitFunctionList(Backend backend, List<LetFunction> funcDefs) {
-        var funcMap = funcDefs.stream().collect(Collectors.groupingBy(v -> v.letName));
+        Map<String, List<LetFunction>> funcMap = funcDefs.stream().collect(Collectors.groupingBy(v -> v.letName));
         funcMap.values().forEach(letFns -> {
-            var base = letFns.stream().filter(e -> e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).findFirst().get();
-            var rest = letFns.stream().filter(e -> !e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).collect(Collectors.toList());
+            LetFunction base = letFns.stream().filter(e -> e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).findFirst().get();
+            List<LetFunction> rest = letFns.stream().filter(e -> !e.parameters.stream().allMatch(x -> x instanceof SimpleParameter)).collect(Collectors.toList());
 
             backend.emitFunctionDefinitionBegin(letFns, this);
 
