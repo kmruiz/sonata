@@ -23,4 +23,9 @@ public class LambdaTest extends E2ETest {
     public void lambdaWithMultipleQuestionMarks() throws Exception {
         assertResourceScriptOutputs("15", "lambda/implicit-lambda-with-multiple-question-marks");
     }
+
+    @Test
+    public void lambdaWithMultipleQuestionMarksAndReference() throws Exception {
+        assertResourceScriptOutputs("15", "lambda/implicit-lambda-as-reference");
+    }
 }

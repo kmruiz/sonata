@@ -30,6 +30,10 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
             return new LetConstant(let.letName, let.returnType, (Expression) apply(let.body));
         }
 
+        if (node instanceof Expression) {
+            return buildLambdaIfNeeded((Expression) node);
+        }
+
         return node;
     }
 

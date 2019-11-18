@@ -1,0 +1,5 @@
+let numbers: number[] = [1, 2, 3, 4, 5]
+let add = ? + ?
+let sum = numbers.reduce(add, 0)
+
+console.log(sum)
