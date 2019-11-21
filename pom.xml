@@ -92,7 +92,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>io.sonata.lang.cli.Bootstrap</mainClass>
+                            <mainClass>io.sonata.lang.Bootstrap</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

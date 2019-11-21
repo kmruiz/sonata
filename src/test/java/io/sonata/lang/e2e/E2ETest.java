@@ -1,16 +1,15 @@
 package io.sonata.lang.e2e;
 
-import io.sonata.lang.cli.command.Compile;
+import io.sonata.lang.cli.Sonata;
+import io.sonata.lang.source.Source;
 import org.graalvm.polyglot.Context;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -41,15 +40,7 @@ public abstract class E2ETest {
     }
 
     private String compileToString(String literalScript) throws Exception {
-        String file = File.createTempFile("io.sonata.lang.e2e", ".input.sn").getAbsolutePath();
-        String output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
-
-        Files.write(Paths.get(file), literalScript.getBytes(), CREATE, TRUNCATE_EXISTING);
-        Compile.execute(Collections.singletonList(file), output);
-        return readString(Paths.get(output));
-    }
-
-    private String readString(Path path) throws IOException {
-        return new String(Files.readAllBytes(path));
+        Source literalSource = Source.fromLiteral(literalScript);
+        return Sonata.compile(singletonList(literalSource)).map(String::new).blockingGet();
     }
 }

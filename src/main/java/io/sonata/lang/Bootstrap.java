@@ -1,4 +1,4 @@
-package io.sonata.lang.cli;
+package io.sonata.lang;
 
 import io.sonata.lang.cli.command.Compile;
 import net.sourceforge.argparse4j.ArgumentParsers;

@@ -4,7 +4,7 @@ sonata
 How to compile
 --------------
 
-To compile you will need a fat-jar or running the io.sonata.lang.cli.Bootstrap class from your IDE with the following
+To compile you will need a fat-jar or running the io.sonata.lang.Bootstrap class from your IDE with the following
 parameters:
 
 ```sh
