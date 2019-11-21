@@ -17,19 +17,19 @@ public abstract class E2ETest {
     private final ByteArrayOutputStream proxyOutput = new ByteArrayOutputStream();
     private final Context jsContext = Context.newBuilder("js").out(proxyOutput).build();
 
-    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
+    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) {
         InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
         String script = new BufferedReader(new InputStreamReader(stream)).lines().collect(joining("\n"));
 
         assertScriptOutputs(expectedOutput, script);
     }
 
-    private void assertScriptOutputs(String expectedOutput, String literalScript) throws Exception {
+    private void assertScriptOutputs(String expectedOutput, String literalScript) {
         String output = executeScript(literalScript);
         assertEquals(expectedOutput.trim(), output.trim().replaceAll("\\n{2,}", "\n"));
     }
 
-    private String executeScript(String literalScript) throws Exception {
+    private String executeScript(String literalScript) {
         String compiledVersion = compileToString(literalScript);
         System.out.println(">> Source Code:\n" + literalScript);
         System.out.println(">> JavaScript:\n" + compiledVersion);
@@ -39,7 +39,7 @@ public abstract class E2ETest {
         return new String(proxyOutput.toByteArray());
     }
 
-    private String compileToString(String literalScript) throws Exception {
+    private String compileToString(String literalScript) {
         Source literalSource = Source.fromLiteral(literalScript);
         return Sonata.compile(singletonList(literalSource)).map(String::new).blockingGet();
     }
