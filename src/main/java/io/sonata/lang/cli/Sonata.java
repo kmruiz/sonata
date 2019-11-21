@@ -9,7 +9,6 @@ import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.backend.BackendVisitor;
-import io.sonata.lang.backend.js.JSBackend;
 import io.sonata.lang.parser.Parser;
 import io.sonata.lang.parser.ast.RequiresNodeNotifier;
 import io.sonata.lang.parser.ast.RxRequiresNodeNotifier;
@@ -22,9 +21,9 @@ import java.util.List;
 import static io.reactivex.BackpressureStrategy.BUFFER;
 
 public class Sonata {
-    public static Single<byte[]> compile(List<Source> sources) {
+    public static Single<byte[]> compile(List<Source> sources, BackendVisitor.BackendFactory backend) {
         SymbolMap symbolMap = new SymbolMap(new HashMap<>());
-        BackendVisitor visitor = new BackendVisitor(JSBackend::new);
+        BackendVisitor visitor = new BackendVisitor(backend);
         Tokenizer tokenizer = new Tokenizer();
         Analyzer analyzer = new Analyzer(
                 symbolMap,

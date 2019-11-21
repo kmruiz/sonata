@@ -1,6 +1,7 @@
 package io.sonata.lang.cli.command;
 
 import io.reactivex.Flowable;
+import io.sonata.lang.backend.js.JSBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.source.Source;
 
@@ -23,7 +24,7 @@ public class Compile {
                 .toList()
                 .blockingGet();
 
-        byte[] result = Sonata.compile(sources).blockingGet();
+        byte[] result = Sonata.compile(sources, JSBackend::new).blockingGet();
         Files.write(Paths.get(output), result, CREATE, TRUNCATE_EXISTING);
 
         Instant endingTime = Instant.now();

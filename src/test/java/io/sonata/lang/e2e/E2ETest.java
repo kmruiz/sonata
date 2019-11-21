@@ -1,5 +1,6 @@
 package io.sonata.lang.e2e;
 
+import io.sonata.lang.backend.js.JSBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.source.Source;
 import org.graalvm.polyglot.Context;
@@ -41,6 +42,6 @@ public abstract class E2ETest {
 
     private String compileToString(String literalScript) {
         Source literalSource = Source.fromLiteral(literalScript);
-        return Sonata.compile(singletonList(literalSource)).map(String::new).blockingGet();
+        return Sonata.compile(singletonList(literalSource), JSBackend::new).map(String::new).blockingGet();
     }
 }
