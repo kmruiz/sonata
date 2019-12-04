@@ -15,4 +15,16 @@ public class Bootstrap {
 
         Compile.execute(namespace.getList("input"), namespace.getString("output"));
     }
+
+//    public static void main(String[] args) throws Exception {
+//        final String line = "console.log('Hello World!')";
+//        final StringBuilder builder = new StringBuilder(500000);
+//        for (int i = 0; i < 1000000; i++) {
+//            builder.append(line).append('\n');
+//        }
+//
+//        Path path = Paths.get("big-file.sn");
+//        System.out.println("Printing");
+//        Files.write(path, builder.toString().getBytes());
+//    }
 }

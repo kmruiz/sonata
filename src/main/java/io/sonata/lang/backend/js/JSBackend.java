@@ -1,6 +1,6 @@
 package io.sonata.lang.backend.js;
 
-import io.reactivex.Single;
+import io.reactivex.Flowable;
 import io.sonata.lang.backend.Backend;
 import io.sonata.lang.backend.BackendCodeGenerator;
 import io.sonata.lang.parser.ast.Node;
@@ -230,7 +230,7 @@ public class JSBackend implements Backend {
     public void emitFunctionSpecificationBegin(LetFunction spec, BackendCodeGenerator generator) {
         List<Expression> conditions = spec.parameters.stream().filter(e -> e instanceof ExpressionParameter).map(e -> (ExpressionParameter) e).map(e -> e.expression).collect(Collectors.toList());
         Stream<Expression> notExtractions = conditions.stream().filter(e -> !(e instanceof LiteralArray));
-        String condString = notExtractions.map(generator::generateFor).map(Single::blockingGet).map(String::new).collect(Collectors.joining("&&"));
+        String condString = notExtractions.map(generator::generateFor).map(Flowable::blockingSingle).map(String::new).collect(Collectors.joining("&&"));
 
         emit("if(" + condString + "){return ");
     }

@@ -40,7 +40,10 @@ public class Sonata {
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)
                 .reduce(Parser.initial(notifier), Parser::reduce)
+                .toFlowable()
                 .flatMap(analyzer::apply)
-                .flatMap(visitor::generateSourceCode);
+                .flatMap(visitor::generateSourceCode)
+                .firstElement()
+                .toSingle();
     }
 }

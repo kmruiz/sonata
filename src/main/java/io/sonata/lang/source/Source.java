@@ -2,7 +2,9 @@ package io.sonata.lang.source;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +28,7 @@ public class Source implements AutoCloseable {
     }
 
     public static Source fromPath(Path path) throws IOException {
-        return new Source(path.toString(), Type.FILE, Files.newInputStream(path));
+        return new Source(path.toString(), Type.FILE, new BufferedInputStream(Files.newInputStream(path)));
     }
 
     public static Source fromLiteral(String literal) {
@@ -44,13 +46,7 @@ public class Source implements AutoCloseable {
             do {
                 final int readByte = inputStream.read();
                 if (readByte == -1) {
-                    for (int i = 0; i < 10; i++) {
-                        byte[] nl = System.lineSeparator().getBytes(Charset.defaultCharset());
-                        for (byte c: nl) {
-                            emitter.onNext(new SourceCharacter(position, (char) c));
-                        }
-                    }
-
+                    emitEof(emitter, position);
                     break;
                 }
 
@@ -68,5 +64,14 @@ public class Source implements AutoCloseable {
     @Override
     public void close() throws Exception {
         inputStream.close();
+    }
+
+    private void emitEof(FlowableEmitter<SourceCharacter> emitter, SourcePosition position) {
+        byte[] lineSeparator = System.lineSeparator().getBytes(Charset.defaultCharset());
+        for (int i = 0; i < 10; i++) {
+            for (byte c : lineSeparator) {
+                emitter.onNext(new SourceCharacter(position, (char) c));
+            }
+        }
     }
 }
