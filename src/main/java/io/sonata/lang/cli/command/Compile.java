@@ -11,21 +11,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-
 public class Compile {
     public static void execute(List<String> files, String output) throws Exception {
         Instant startingTime = Instant.now();
 
-        List<Source> sources = Flowable.fromIterable(files)
+        Flowable<Source> sources = Flowable.fromIterable(files)
                 .map(Paths::get)
-                .map(Source::fromPath)
-                .toList()
-                .blockingGet();
+                .map(Source::fromPath);
 
         byte[] result = Sonata.compile(sources, JSBackend::new).blockingGet();
-        Files.write(Paths.get(output), result, CREATE, TRUNCATE_EXISTING);
+        Files.write(Paths.get(output), result);
 
         Instant endingTime = Instant.now();
         String duration = Duration.between(startingTime, endingTime).toString();

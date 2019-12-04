@@ -1,5 +1,6 @@
 package io.sonata.lang.e2e;
 
+import io.reactivex.Flowable;
 import io.sonata.lang.backend.js.JSBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.source.Source;
@@ -10,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -42,6 +42,6 @@ public abstract class E2ETest {
 
     private String compileToString(String literalScript) {
         Source literalSource = Source.fromLiteral(literalScript);
-        return Sonata.compile(singletonList(literalSource), JSBackend::new).map(String::new).blockingGet();
+        return Sonata.compile(Flowable.just(literalSource), JSBackend::new).map(String::new).blockingGet();
     }
 }

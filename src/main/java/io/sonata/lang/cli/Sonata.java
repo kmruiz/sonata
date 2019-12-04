@@ -16,12 +16,11 @@ import io.sonata.lang.source.Source;
 import io.sonata.lang.tokenizer.Tokenizer;
 
 import java.util.HashMap;
-import java.util.List;
 
 import static io.reactivex.BackpressureStrategy.BUFFER;
 
 public class Sonata {
-    public static Single<byte[]> compile(List<Source> sources, BackendVisitor.BackendFactory backend) {
+    public static Single<byte[]> compile(Flowable<Source> sources, BackendVisitor.BackendFactory backend) {
         SymbolMap symbolMap = new SymbolMap(new HashMap<>());
         BackendVisitor visitor = new BackendVisitor(backend);
         Tokenizer tokenizer = new Tokenizer();
@@ -34,7 +33,7 @@ public class Sonata {
         Subject<Source> requires = ReplaySubject.create();
         RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(requires);
 
-        return Flowable.fromIterable(sources)
+        return sources
                 .concatWith(Single.fromSupplier(Source::endOfProgram))
                 .concatWith(requires.toFlowable(BUFFER))
                 .flatMap(Source::read)
