@@ -13,6 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Source implements AutoCloseable {
+    private static final int BUFFER_SIZE = 2048;
+    private static final byte[] EOL = System.lineSeparator().getBytes(Charset.defaultCharset());
+
     public enum Type {
         FILE, LITERAL
     }
@@ -40,20 +43,24 @@ public class Source implements AutoCloseable {
     }
 
     public final Flowable<SourceCharacter> read() {
+        final byte[] buffer = new byte[BUFFER_SIZE];
+
         return Flowable.create(emitter -> {
             SourcePosition position = SourcePosition.initial(this);
 
             do {
-                final int readByte = inputStream.read();
+                final int readByte = inputStream.read(buffer);
                 if (readByte == -1) {
                     emitEof(emitter, position);
                     break;
                 }
 
-                final char toEmit = (char) readByte;
-                position = position.next(toEmit);
+                for (int i = 0; i < readByte; i++) {
+                    final char toEmit = (char) buffer[i];
+                    position = position.next(toEmit);
 
-                emitter.onNext(new SourceCharacter(position, toEmit));
+                    emitter.onNext(new SourceCharacter(position, toEmit));
+                }
             } while (true);
 
             emitter.onComplete();
@@ -67,11 +74,8 @@ public class Source implements AutoCloseable {
     }
 
     private void emitEof(FlowableEmitter<SourceCharacter> emitter, SourcePosition position) {
-        byte[] lineSeparator = System.lineSeparator().getBytes(Charset.defaultCharset());
-        for (int i = 0; i < 10; i++) {
-            for (byte c : lineSeparator) {
-                emitter.onNext(new SourceCharacter(position, (char) c));
-            }
+        for (byte c : EOL) {
+            emitter.onNext(new SourceCharacter(position, (char) c));
         }
     }
 }

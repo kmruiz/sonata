@@ -22,7 +22,7 @@ public final class Tokenizer {
         } else {
             Token toSend = token;
             token = RootToken.instance().nextToken(character).orElse(RootToken.instance());
-            return Flowable.fromArray(toSend);
+            return Flowable.just(toSend);
         }
     }
 }
