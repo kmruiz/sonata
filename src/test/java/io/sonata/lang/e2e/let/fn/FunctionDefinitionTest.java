@@ -23,4 +23,9 @@ public class FunctionDefinitionTest extends E2ETest {
     public void recursiveFunctionDefinitionWithArrays() throws Exception {
         assertResourceScriptOutputs("55", "let/fn/recursive-function-definition-with-arrays");
     }
+
+    @Test
+    public void functionWithBlockBody() throws Exception {
+        assertResourceScriptOutputs("a\nb", "let/fn/function-with-block");
+    }
 }

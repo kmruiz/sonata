@@ -28,6 +28,10 @@ public class EmptyExpression implements Expression {
             return PartialLet.initial();
         }
 
+        if (token.representation().equals("{")) {
+            return PartialBlockExpression.initial();
+        }
+
         if (token instanceof SeparatorToken) {
             return null;
         }

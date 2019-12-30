@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.let;
 
+import io.sonata.lang.parser.ast.exp.BlockExpression;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.exp.Lambda;
@@ -92,11 +93,11 @@ public class PartialLetFunction implements Expression {
                 return new PartialLetFunction(letName, state, parameters, currentParameter, nextType, body);
             case IN_BODY:
                 Expression nextBody = body.consume(token);
-                if (nextBody == null) {
+                if (nextBody == null || nextBody instanceof BlockExpression) {
                     if (letName.equals("")) {
                         return Lambda.synthetic((List) parameters, body);
                     } else {
-                        return new LetFunction(letName, parameters, returnType, body);
+                        return new LetFunction(letName, parameters, returnType, requireNonNullElse(nextBody, body));
                     }
                 }
 

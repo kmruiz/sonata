@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class BlockExpression implements Expression {
-    public final List<Node> expressions;
+    public final List<Expression> expressions;
 
-    public BlockExpression(List<Node> expressions) {
+    public BlockExpression(List<Expression> expressions) {
         this.expressions = expressions;
     }
 

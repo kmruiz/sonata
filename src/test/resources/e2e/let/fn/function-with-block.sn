@@ -1,0 +1,6 @@
+let multiplePrint() = {
+    console.log('a')
+    console.log('b')
+}
+
+multiplePrint()
