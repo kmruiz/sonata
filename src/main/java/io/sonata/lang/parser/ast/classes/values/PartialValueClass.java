@@ -66,7 +66,11 @@ public class PartialValueClass implements Node {
             case ",":
                 return new PartialValueClass(name, append(definedFields, currentField), SimpleField.instance(), state);
             case ")":
-                return new ValueClass(name, append(definedFields, currentField));
+                if (!currentField.isDone()) {
+                    return new ValueClass(name, definedFields);
+                } else {
+                    return new ValueClass(name, append(definedFields, currentField));
+                }
         }
         return null;
     }

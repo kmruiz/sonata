@@ -193,7 +193,7 @@ public class JSBackend implements Backend {
         LetFunction base = definition.get(0);
 
         if (inClass) {
-            emit("body.");
+            emit("self.");
             emit(base.letName);
             emit("=");
         }
@@ -267,6 +267,11 @@ public class JSBackend implements Backend {
     }
 
     @Override
+    public void emitValueClassFieldless(ValueClass vc, BackendCodeGenerator generator) {
+        emit("){");
+    }
+
+    @Override
     public void emitValueClassBodyBegin(ValueClass vc, BackendCodeGenerator generator) {
         inClass = true;
     }
@@ -274,17 +279,17 @@ public class JSBackend implements Backend {
     @Override
     public void emitValueClassBodyEnd(ValueClass vc, BackendCodeGenerator generator) {
         inClass = false;
-        emit("return body;};");
+        emit("return self;};");
     }
 
     @Override
     public void emitPostValueClass(ValueClass vc, BackendCodeGenerator generator) {
-        emit("let body={};");
-        emit("body.class='");
+        emit("let self={};");
+        emit("self.class='");
         emit(vc.name);
         emit("';");
         vc.definedFields.forEach(field -> {
-            emit("body.");
+            emit("self.");
             emit(field.name());
             emit("=");
             emit(field.name());

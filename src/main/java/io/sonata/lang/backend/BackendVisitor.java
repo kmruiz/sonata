@@ -122,11 +122,16 @@ public class BackendVisitor implements BackendCodeGenerator {
         if (node instanceof ValueClass) {
             backend.emitPreValueClass((ValueClass) node, this);
             AtomicInteger len = new AtomicInteger(((ValueClass) node).definedFields.size());
-            ((ValueClass) node).definedFields.forEach(field -> {
-                len.decrementAndGet();
-                backend.emitValueClassFieldBegin((ValueClass) node, field, len.get() == 0, this);
-                backend.emitValueClassFieldEnd((ValueClass) node, field, len.get() == 0, this);
-            });
+            if (len.get() == 0) {
+                backend.emitValueClassFieldless((ValueClass) node, this);
+            } else {
+                ((ValueClass) node).definedFields.forEach(field -> {
+                    len.decrementAndGet();
+                    backend.emitValueClassFieldBegin((ValueClass) node, field, len.get() == 0, this);
+                    backend.emitValueClassFieldEnd((ValueClass) node, field, len.get() == 0, this);
+                });
+            }
+
             backend.emitPostValueClass((ValueClass) node, this);
             backend.emitValueClassBodyBegin((ValueClass) node, this);
             ArrayList<LetFunction> defs = new ArrayList<LetFunction>(256);

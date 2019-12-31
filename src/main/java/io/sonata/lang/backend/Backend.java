@@ -68,6 +68,9 @@ public interface Backend {
     void emitPreValueClass(ValueClass vc, BackendCodeGenerator generator);
     void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
     void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
+
+    void emitValueClassFieldless(ValueClass vc, BackendCodeGenerator generator);
+
     void emitValueClassBodyBegin(ValueClass vc, BackendCodeGenerator generator);
     void emitValueClassBodyEnd(ValueClass vc, BackendCodeGenerator generator);
     void emitPostValueClass(ValueClass vc, BackendCodeGenerator generator);

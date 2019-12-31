@@ -1,0 +1,28 @@
+entity class pinger() {
+    let ping(ponger: ponger, time: number) = {
+        console.log(time + '> ping')
+        ponger.pong(self, time)
+    }
+
+    let ping(ponger: ponger, time == 10) = {
+        console.log('ping end')
+        ponger.pong(self, time)
+    }
+}
+
+entity class ponger() {
+    let pong(pinger: pinger, time: number) = {
+        console.log(time + '> pong')
+        pinger.ping(self, time + 1)
+    }
+
+    let pong(pinger: pinger, time == 10) = {
+        console.log('pong end')
+    }
+}
+
+let _pinger = pinger()
+let _ponger = ponger()
+
+_pinger.ping(_ponger, 0)
+console.log('doing things asynchronously')
