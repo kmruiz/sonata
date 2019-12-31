@@ -32,7 +32,7 @@ public class Sonata {
                 log, symbolMap,
                 new DestructuringProcessor(symbolMap),
                 new QuestionMarkPartialFunctionProcessor(),
-                new ClassScopeProcessor(Scope.root())
+                new ClassScopeProcessor(log, Scope.root())
         );
 
         Subject<Source> requires = ReplaySubject.create();
