@@ -50,6 +50,10 @@ public class JSBackend implements Backend {
         return this.inExpr <= 0;
     }
 
+    private boolean isInExpression() {
+        return this.inExpr > 0;
+    }
+
     @Override
     public void emitScriptBegin(ScriptNode scriptNode, BackendCodeGenerator generator) {
         emit("\"use strict\";");
@@ -260,7 +264,7 @@ public class JSBackend implements Backend {
         if (inEntityClass) {
             emit("this(r$);");
         }
-        emit("return r$;");
+        emit(";return r$;");
     }
 
     @Override
@@ -279,7 +283,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitPreFunctionCall(FunctionCall node, BackendCodeGenerator generator) {
-        if (inEntityClass()) {
+        if (inEntityClass() && isInExpression()) {
             emit(" await ");
         }
 
