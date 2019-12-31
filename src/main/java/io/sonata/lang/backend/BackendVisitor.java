@@ -3,6 +3,7 @@ package io.sonata.lang.backend;
 import io.reactivex.Flowable;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
@@ -140,6 +141,29 @@ public class BackendVisitor implements BackendCodeGenerator {
             });
             emitFunctionList(backend, defs);
             backend.emitValueClassBodyEnd((ValueClass) node, this);
+        }
+
+        if (node instanceof EntityClass) {
+            backend.emitPreEntityClass((EntityClass) node, this);
+            AtomicInteger len = new AtomicInteger(((EntityClass) node).definedFields.size());
+            if (len.get() == 0) {
+                backend.emitEntityClassFieldless((EntityClass) node, this);
+            } else {
+                ((EntityClass) node).definedFields.forEach(field -> {
+                    len.decrementAndGet();
+                    backend.emitEntityClassFieldBegin((EntityClass) node, field, len.get() == 0, this);
+                    backend.emitEntityClassFieldEnd((EntityClass) node, field, len.get() == 0, this);
+                });
+            }
+
+            backend.emitPostEntityClass((EntityClass) node, this);
+            backend.emitEntityClassBodyBegin((EntityClass) node, this);
+            ArrayList<LetFunction> defs = new ArrayList<LetFunction>(256);
+            ((EntityClass) node).body.forEach(expr -> {
+                visitTree(expr, backend, defs);
+            });
+            emitFunctionList(backend, defs);
+            backend.emitEntityClassBodyEnd((EntityClass) node, this);
         }
 
         if (node instanceof LiteralArray) {

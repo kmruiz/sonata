@@ -5,6 +5,7 @@ import io.sonata.lang.backend.Backend;
 import io.sonata.lang.backend.BackendCodeGenerator;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
@@ -27,12 +28,14 @@ public class JSBackend implements Backend {
     private int inExpr;
     private List<String> parameterNames;
     private boolean inClass;
+    private boolean inEntityClass;
 
     public JSBackend() {
         this.buffer = new ByteArrayOutputStream(180000);
         this.inExpr = 0;
         this.parameterNames = null;
         this.inClass = false;
+        this.inEntityClass = false;
     }
 
     private void pushInExpr() {
@@ -54,7 +57,6 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitScriptEnd(ScriptNode scriptNode, BackendCodeGenerator generator) {
-
     }
 
     @Override
@@ -192,7 +194,28 @@ public class JSBackend implements Backend {
     public void emitFunctionDefinitionBegin(List<LetFunction> definition, BackendCodeGenerator generator) {
         LetFunction base = definition.get(0);
 
-        if (inClass) {
+
+        String internalFunctionName = base.letName;
+
+        if (inEntityClass()) {
+            internalFunctionName += "$";
+
+            emit("self.");
+            emit(base.letName);
+            emit("=");
+            emit("function ");
+
+            this.parameterNames = base.parameters.stream().map(e -> (SimpleParameter) e).map(e -> e.name).collect(Collectors.toList());
+
+            emit(base.letName);
+            emit("(");
+            emit(String.join(", ", parameterNames));
+            emit("){ const args = Array.prototype.slice.call(arguments); self._mailbox.push(function () { ");
+            emit(internalFunctionName);
+            emit(".apply(null, args);})};");
+        }
+
+        if (inValueClass()) {
             emit("self.");
             emit(base.letName);
             emit("=");
@@ -202,7 +225,7 @@ public class JSBackend implements Backend {
 
         this.parameterNames = base.parameters.stream().map(e -> (SimpleParameter) e).map(e -> e.name).collect(Collectors.toList());
 
-        emit(base.letName);
+        emit(internalFunctionName);
         emit("(");
         emit(String.join(", ", parameterNames));
         emit("){");
@@ -273,12 +296,12 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitValueClassBodyBegin(ValueClass vc, BackendCodeGenerator generator) {
-        inClass = true;
+        pushValueClass();
     }
 
     @Override
     public void emitValueClassBodyEnd(ValueClass vc, BackendCodeGenerator generator) {
-        inClass = false;
+        popClass();
         emit("return self;};");
     }
 
@@ -295,6 +318,61 @@ public class JSBackend implements Backend {
             emit(field.name());
             emit(";");
         });
+    }
+
+    @Override
+    public void emitPreEntityClass(EntityClass vc, BackendCodeGenerator generator) {
+        emit("function ");
+        emit(vc.name);
+        emit("(");
+    }
+
+    @Override
+    public void emitEntityClassFieldBegin(EntityClass vc, Field field, boolean isLast, BackendCodeGenerator generator) {
+        emit(field.name());
+    }
+
+    @Override
+    public void emitEntityClassFieldEnd(EntityClass vc, Field field, boolean isLast, BackendCodeGenerator generator) {
+        if (isLast) {
+            emit("){");
+        } else {
+            emit(",");
+        }
+    }
+
+    @Override
+    public void emitEntityClassFieldless(EntityClass vc, BackendCodeGenerator generator) {
+        emit("){");
+    }
+
+    @Override
+    public void emitEntityClassBodyBegin(EntityClass vc, BackendCodeGenerator generator) {
+        pushEntityClass();
+    }
+
+    @Override
+    public void emitEntityClassBodyEnd(EntityClass vc, BackendCodeGenerator generator) {
+        popClass();
+        emit("return self;};");
+    }
+
+    @Override
+    public void emitPostEntityClass(EntityClass vc, BackendCodeGenerator generator) {
+        emit("let self={};");
+        emit("self.class='");
+        emit(vc.name);
+        emit("';");
+        vc.definedFields.forEach(field -> {
+            emit("self.");
+            emit(field.name());
+            emit("=");
+            emit(field.name());
+            emit(";");
+        });
+        emit("self._mailbox = [];");
+        emit("self._interval = setInterval(function () { if (self._mailbox.length > 0) { const todo = self._mailbox.shift(); todo(); } }, 0);");
+        emit("self.stop = function () { clearInterval(self._interval); };");
     }
 
     @Override
@@ -412,5 +490,28 @@ public class JSBackend implements Backend {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private void pushEntityClass() {
+        this.inClass = true;
+        this.inEntityClass = true;
+    }
+
+    private void pushValueClass() {
+        this.inClass = true;
+        this.inEntityClass = false;
+    }
+
+    private void popClass() {
+        this.inClass = false;
+        this.inEntityClass = false;
+    }
+
+    private boolean inEntityClass() {
+        return this.inClass && this.inEntityClass;
+    }
+
+    private boolean inValueClass() {
+        return this.inClass && !this.inEntityClass;
     }
 }

@@ -2,6 +2,7 @@ package io.sonata.lang.backend;
 
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
@@ -63,24 +64,49 @@ public interface Backend {
     void emitFunctionSpecificationEnd(LetFunction spec, BackendCodeGenerator generator);
 
     void emitPreFunctionCall(FunctionCall node, BackendCodeGenerator generator);
+
     void emitPostFunctionCall(FunctionCall node, BackendCodeGenerator generator);
 
     void emitPreValueClass(ValueClass vc, BackendCodeGenerator generator);
+
     void emitValueClassFieldBegin(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
+
     void emitValueClassFieldEnd(ValueClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
 
     void emitValueClassFieldless(ValueClass vc, BackendCodeGenerator generator);
 
     void emitValueClassBodyBegin(ValueClass vc, BackendCodeGenerator generator);
+
     void emitValueClassBodyEnd(ValueClass vc, BackendCodeGenerator generator);
+
     void emitPostValueClass(ValueClass vc, BackendCodeGenerator generator);
 
+    void emitPreEntityClass(EntityClass vc, BackendCodeGenerator generator);
+
+    void emitEntityClassFieldBegin(EntityClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
+
+    void emitEntityClassFieldEnd(EntityClass vc, Field field, boolean isLast, BackendCodeGenerator generator);
+
+    void emitEntityClassFieldless(EntityClass vc, BackendCodeGenerator generator);
+
+    void emitEntityClassBodyBegin(EntityClass vc, BackendCodeGenerator generator);
+
+    void emitEntityClassBodyEnd(EntityClass vc, BackendCodeGenerator generator);
+
+    void emitPostEntityClass(EntityClass vc, BackendCodeGenerator generator);
+
     void emitIfBegin(IfElse ifElse, BackendCodeGenerator generator);
+
     void emitIfConditionBegin(IfElse ifElse, BackendCodeGenerator generator);
+
     void emitIfConditionEnd(IfElse ifElse, BackendCodeGenerator generator);
+
     void emitIfBodyBegin(IfElse ifElse, BackendCodeGenerator generator);
+
     void emitIfBodyEnd(IfElse ifElse, BackendCodeGenerator generator);
+
     void emitElseBegin(IfElse ifElse, BackendCodeGenerator generator);
+
     void emitElseEnd(IfElse ifElse, BackendCodeGenerator generator);
 
     void emitLambdaDefinitionBegin(Lambda lambda, BackendCodeGenerator generator);

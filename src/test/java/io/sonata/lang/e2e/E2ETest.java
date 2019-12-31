@@ -16,7 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class E2ETest {
     private final ByteArrayOutputStream proxyOutput = new ByteArrayOutputStream();
-    private final Context jsContext = Context.newBuilder("js").out(proxyOutput).build();
+    private final Context jsContext = Context.newBuilder("js")
+            .allowAllAccess(true)
+            .out(proxyOutput)
+            .build();
 
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) {
         InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");

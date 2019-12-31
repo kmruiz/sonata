@@ -4,9 +4,10 @@ entity class pinger() {
         ponger.pong(self, time)
     }
 
-    let ping(ponger: ponger, time == 10) = {
+    let ping(ponger: ponger, time == 2) = {
         console.log('ping end')
         ponger.pong(self, time)
+        self.stop()
     }
 }
 
@@ -16,8 +17,9 @@ entity class ponger() {
         pinger.ping(self, time + 1)
     }
 
-    let pong(pinger: pinger, time == 10) = {
+    let pong(pinger: pinger, time == 2) = {
         console.log('pong end')
+        self.stop()
     }
 }
 
