@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.type;
 
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -49,5 +50,10 @@ public class PartialGenericType implements Type {
     @Override
     public String representation() {
         return null;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return base.definition();
     }
 }

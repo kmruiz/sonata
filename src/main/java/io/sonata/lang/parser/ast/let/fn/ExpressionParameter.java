@@ -2,6 +2,7 @@ package io.sonata.lang.parser.ast.let.fn;
 
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.exp.LiteralArray;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class ExpressionParameter implements Parameter {
@@ -39,5 +40,10 @@ public class ExpressionParameter implements Parameter {
     @Override
     public boolean isDone() {
         return done;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return expression.definition();
     }
 }

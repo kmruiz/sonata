@@ -1,6 +1,7 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.source.SourcePosition;
 
 public class Atom extends ComposedExpression implements Expression {
     public enum Type {
@@ -10,18 +11,20 @@ public class Atom extends ComposedExpression implements Expression {
         UNKNOWN
     }
 
+    public final SourcePosition definition;
     public final String value;
     public final Type type;
 
-    public static Atom unknown() {
-        return new Atom("?");
+    public static Atom unknown(SourcePosition definition) {
+        return new Atom(definition, "?");
     }
 
     public static boolean isUnknownAtom(Node node) {
         return node instanceof Atom && ((Atom) node).type == Type.UNKNOWN;
     }
 
-    public Atom(String value) {
+    public Atom(SourcePosition definition, String value) {
+        this.definition = definition;
         this.value = value;
 
         if (value.matches("\\d+(\\.\\d+)?")) {
@@ -38,5 +41,10 @@ public class Atom extends ComposedExpression implements Expression {
     @Override
     public String representation() {
         return value;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

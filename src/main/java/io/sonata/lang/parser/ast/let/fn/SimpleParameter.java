@@ -5,6 +5,7 @@ import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.type.EmptyType;
 import io.sonata.lang.parser.ast.type.FunctionType;
 import io.sonata.lang.parser.ast.type.Type;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
@@ -16,16 +17,18 @@ public class SimpleParameter implements Parameter {
         WAITING_NAME, WAITING_SEPARATOR, WAITING_TYPE, END
     }
 
-    public SimpleParameter(String name, Type type, State state) {
+    public SimpleParameter(SourcePosition definition, String name, Type type, State state) {
+        this.definition = definition;
         this.name = name;
         this.type = type;
         this.state = state;
     }
 
-    public static SimpleParameter instance() {
-        return new SimpleParameter(null, EmptyType.instance(), State.WAITING_NAME);
+    public static SimpleParameter instance(SourcePosition definition) {
+        return new SimpleParameter(definition, null, EmptyType.instance(), State.WAITING_NAME);
     }
 
+    public final SourcePosition definition;
     public final String name;
     public final Type type;
     public final State state;
@@ -40,7 +43,7 @@ public class SimpleParameter implements Parameter {
         switch (state) {
             case WAITING_NAME:
                 if (token instanceof IdentifierToken) {
-                    return new SimpleParameter(token.representation(), type, State.WAITING_SEPARATOR);
+                    return new SimpleParameter(definition, token.representation(), type, State.WAITING_SEPARATOR);
                 }
 
                 if (token instanceof SeparatorToken && token.representation().equals(")")) {
@@ -52,18 +55,18 @@ public class SimpleParameter implements Parameter {
                 if (token instanceof SeparatorToken) {
                     SeparatorToken sep = (SeparatorToken) token;
                     if (sep.separator.equals(":")) {
-                        return new SimpleParameter(name, type, State.WAITING_TYPE);
+                        return new SimpleParameter(definition, name, type, State.WAITING_TYPE);
                     }
                 }
 
-                return ExpressionParameter.of(new Atom(name).consume(token));
+                return ExpressionParameter.of(new Atom(definition, name).consume(token));
             case WAITING_TYPE:
                 Type next = type.consume(token);
                 if (next == null || next instanceof FunctionType) {
-                    return new SimpleParameter(name, requireNonNullElse(next, type), State.END);
+                    return new SimpleParameter(definition, name, requireNonNullElse(next, type), State.END);
                 }
 
-                return new SimpleParameter(name, next, State.WAITING_TYPE);
+                return new SimpleParameter(definition, name, next, State.WAITING_TYPE);
         }
 
         return null;
@@ -72,5 +75,10 @@ public class SimpleParameter implements Parameter {
     @Override
     public boolean isDone() {
         return state == State.END;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

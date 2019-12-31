@@ -47,7 +47,7 @@ public class DestructuringProcessor implements Processor {
         AtomicInteger currentOrder = new AtomicInteger(0);
         Map<String, List<Node>> groupedNodes = nodes.stream().collect(Collectors.groupingBy(node -> (node instanceof LetFunction) ? ((LetFunction) node).letName : String.valueOf(currentOrder.incrementAndGet())));
 
-        return groupedNodes.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).map(Map.Entry::getValue).map(children -> {
+        return groupedNodes.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(Map.Entry::getValue).map(children -> {
             if (children.size() > 1) {
                 return reduceFunctionList(children.stream().map(v -> (LetFunction) v).collect(Collectors.toList()));
             } else {
@@ -77,7 +77,7 @@ public class DestructuringProcessor implements Processor {
 
         List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted(IfElse::weightedComparison).collect(Collectors.toList());
 
-        return new LetFunction(master.letName, parameters, master.returnType, new BlockExpression(append(destructuringExpressions, all).stream().map(e -> (Expression) e).filter(Objects::nonNull).collect(Collectors.toList())));
+        return new LetFunction(master.definition(), master.letName, parameters, master.returnType, new BlockExpression(master.body.definition(), append(destructuringExpressions, all).stream().map(e -> (Expression) e).filter(Objects::nonNull).collect(Collectors.toList())));
     }
 
     private Expression generateGuardedBody(LetFunction master, LetFunction overload) {
@@ -89,7 +89,7 @@ public class DestructuringProcessor implements Processor {
                 .reduce((a, b) -> new SimpleExpression(a, "&&", b));
 
         if (guardCondition.isPresent()) {
-            return new IfElse(guardCondition.get(), overload.body, null);
+            return new IfElse(overload.definition(), guardCondition.get(), overload.body, null);
         }
 
         return overload.body;
@@ -105,5 +105,10 @@ public class DestructuringProcessor implements Processor {
         }
 
         return null;
+    }
+
+    @Override
+    public String phase() {
+        return "DESTRUCTURING";
     }
 }

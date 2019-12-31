@@ -6,6 +6,7 @@ import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.source.SourcePosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
 
         if (node instanceof LetConstant) {
             LetConstant let = (LetConstant) node;
-            return new LetConstant(let.letName, let.returnType, (Expression) apply(let.body));
+            return new LetConstant(let.definition(), let.letName, let.returnType, (Expression) apply(let.body));
         }
 
         if (node instanceof Expression) {
@@ -44,14 +45,14 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
 
     private Expression buildLambdaIfNeeded(Expression expression) {
         ArrayList<SimpleParameter> lambdaParams = new ArrayList<SimpleParameter>(4);
-        Supplier<String> paramNameSupplier = scopedLambdaParameterNameSupplier(lambdaParams);
+        Supplier<String> paramNameSupplier = scopedLambdaParameterNameSupplier(expression.definition(), lambdaParams);
         Expression newExpression = parseExpressionForLambda(expression, paramNameSupplier);
 
         if (lambdaParams.isEmpty()) {
             return expression;
         }
 
-        return Lambda.synthetic(lambdaParams, newExpression);
+        return Lambda.synthetic(expression.definition(), lambdaParams, newExpression);
     }
     private Expression parseExpressionForLambda(Expression expression, Supplier<String> paramNameSupplier) {
         if (expression instanceof SimpleExpression) {
@@ -64,22 +65,27 @@ public class QuestionMarkPartialFunctionProcessor implements Processor {
             return new SimpleExpression(left, operator, right);
         } else if (expression instanceof Atom) {
             if (Atom.isUnknownAtom(expression)) {
-                return new Atom(paramNameSupplier.get());
+                return new Atom(expression.definition(), paramNameSupplier.get());
             }
         }
 
         return expression;
     }
 
-    private Supplier<String> scopedLambdaParameterNameSupplier(List<SimpleParameter> lambdaParams) {
+    private Supplier<String> scopedLambdaParameterNameSupplier(SourcePosition definition, List<SimpleParameter> lambdaParams) {
         AtomicInteger counter = new AtomicInteger(0);
         char base = 'a';
 
         return () -> {
             String name = String.valueOf((char) (base + counter.getAndIncrement()));
-            lambdaParams.add(new SimpleParameter(name, null, SimpleParameter.State.END));
+            lambdaParams.add(new SimpleParameter(definition, name, null, SimpleParameter.State.END));
 
             return name;
         };
+    }
+
+    @Override
+    public String phase() {
+        return "ANONYMOUS PARTIAL FUNCTION PROCESSING";
     }
 }

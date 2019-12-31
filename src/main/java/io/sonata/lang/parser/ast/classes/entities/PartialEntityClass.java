@@ -3,6 +3,7 @@ package io.sonata.lang.parser.ast.classes.entities;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.List;
@@ -12,20 +13,22 @@ import static io.sonata.lang.javaext.Lists.append;
 import static java.util.Collections.emptyList;
 
 public class PartialEntityClass implements Node {
+    private final SourcePosition definition;
     private final String name;
     private final List<Field> definedFields;
     private final Field currentField;
     private final State state;
 
-    private PartialEntityClass(String name, List<Field> definedFields, Field currentField, State state) {
+    private PartialEntityClass(SourcePosition definition, String name, List<Field> definedFields, Field currentField, State state) {
+        this.definition = definition;
         this.name = name;
         this.definedFields = definedFields;
         this.currentField = currentField;
         this.state = state;
     }
 
-    public static PartialEntityClass initial() {
-        return new PartialEntityClass(null, emptyList(), null, State.WAITING_FOR_CLASS_KW);
+    public static PartialEntityClass initial(SourcePosition definition) {
+        return new PartialEntityClass(definition, null, emptyList(), null, State.WAITING_FOR_CLASS_KW);
     }
 
     @Override
@@ -33,14 +36,14 @@ public class PartialEntityClass implements Node {
         switch (state) {
             case WAITING_FOR_CLASS_KW:
                 if (token.representation().equals("class")) {
-                    return new PartialEntityClass(null, emptyList(), SimpleField.instance(), State.WAITING_FOR_CLASS_NAME);
+                    return new PartialEntityClass(definition, null, emptyList(), SimpleField.instance(token.sourcePosition()), State.WAITING_FOR_CLASS_NAME);
                 }
 
                 return null;
             case WAITING_FOR_CLASS_NAME:
-                return new PartialEntityClass(token.representation(), emptyList(), SimpleField.instance(), State.WAITING_FIELDS);
+                return new PartialEntityClass(definition, token.representation(), emptyList(), SimpleField.instance(token.sourcePosition()), State.WAITING_FIELDS);
             case WAITING_FIELDS:
-                return new PartialEntityClass(name, emptyList(), SimpleField.instance(), State.IN_FIELDS);
+                return new PartialEntityClass(definition, name, emptyList(), SimpleField.instance(token.sourcePosition()), State.IN_FIELDS);
             case IN_FIELDS:
                 Field nextField = currentField.consume(token);
                 if (nextField == null) {
@@ -51,7 +54,7 @@ public class PartialEntityClass implements Node {
                     return finalization(token, nextField);
                 }
 
-                return new PartialEntityClass(name, definedFields, nextField, state);
+                return new PartialEntityClass(definition, name, definedFields, nextField, state);
         }
 
         return null;
@@ -60,12 +63,12 @@ public class PartialEntityClass implements Node {
     private Node finalization(Token token, Field currentField) {
         switch (token.representation()) {
             case ",":
-                return new PartialEntityClass(name, append(definedFields, currentField), SimpleField.instance(), state);
+                return new PartialEntityClass(definition, name, append(definedFields, currentField), SimpleField.instance(token.sourcePosition()), state);
             case ")":
                 if (!currentField.isDone()) {
-                    return new EntityClass(name, definedFields);
+                    return new EntityClass(definition, name, definedFields);
                 } else {
-                    return new EntityClass(name, append(definedFields, currentField));
+                    return new EntityClass(definition, name, append(definedFields, currentField));
                 }
         }
         return null;
@@ -82,5 +85,10 @@ public class PartialEntityClass implements Node {
 
     enum State {
         WAITING_FOR_CLASS_KW, WAITING_FOR_CLASS_NAME, WAITING_FIELDS, IN_FIELDS
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

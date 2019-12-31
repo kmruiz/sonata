@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -22,5 +23,10 @@ public class PartialMethodReference implements Expression {
     @Override
     public String representation() {
         return receiver.representation() + ".";
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return receiver.definition();
     }
 }

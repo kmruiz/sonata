@@ -1,5 +1,7 @@
 package io.sonata.lang.parser.ast.type;
 
+import io.sonata.lang.source.SourcePosition;
+
 public class ArrayType extends ComposedType implements Type {
     public final Type base;
 
@@ -10,5 +12,10 @@ public class ArrayType extends ComposedType implements Type {
     @Override
     public String representation() {
         return base.representation() + "[]";
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return base.definition();
     }
 }

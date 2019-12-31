@@ -7,6 +7,7 @@ import io.sonata.lang.parser.ast.exp.PartialArray;
 import io.sonata.lang.parser.ast.exp.PartialPriorityExpression;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
@@ -28,16 +29,16 @@ public class RootNode implements Node {
         if (token instanceof IdentifierToken) {
             switch (token.representation()) {
                 case "let":
-                    return PartialLet.initial();
+                    return PartialLet.initial(token.sourcePosition());
                 case "requires":
-                    return PartialRequiresNode.initial();
+                    return PartialRequiresNode.initial(token.sourcePosition());
                 case "entity":
-                    return PartialEntityClass.initial();
+                    return PartialEntityClass.initial(token.sourcePosition());
                 case "value":
-                    return PartialValueClass.initial();
+                    return PartialValueClass.initial(token.sourcePosition());
             }
 
-            return new Atom(token.representation());
+            return new Atom(token.sourcePosition(), token.representation());
         }
 
         if (token instanceof SeparatorToken) {
@@ -50,14 +51,19 @@ public class RootNode implements Node {
             }
 
             if (token.representation().equals("[")) {
-                return PartialArray.initial();
+                return PartialArray.initial(token.sourcePosition());
             }
 
             if (token.representation().equals("?")) {
-                return Atom.unknown();
+                return Atom.unknown(token.sourcePosition());
             }
         }
 
+        return null;
+    }
+
+    @Override
+    public SourcePosition definition() {
         return null;
     }
 }

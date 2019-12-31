@@ -40,12 +40,12 @@ public class ValueClassDestructuringExpressionParser implements DestructuringExp
             int field = argIdx.incrementAndGet();
             String fieldName = tp.valueClass.definedFields.get(field).name();
 
-            return new LetConstant(fieldName, null, new SimpleExpression(new Atom(tp.valueClass.name), ".", new Atom(fieldName)));
+            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), tp.valueClass.name), ".", new Atom(arg.definition(), fieldName)));
         }));
     }
 
     public Parameter normalizeParameter(String parameterName, Parameter parameter) {
-        Parameter newParam = whenIsValueClassParameter(parameter, tp -> new SimpleParameter(tp.valueClass.name, new BasicType(tp.valueClass.name), SimpleParameter.State.END));
+        Parameter newParam = whenIsValueClassParameter(parameter, tp -> new SimpleParameter(tp.valueClass.definition, tp.valueClass.name, new BasicType(tp.valueClass.definition(), tp.valueClass.name), SimpleParameter.State.END));
         if (newParam != null) {
             return newParam;
         }
@@ -61,7 +61,7 @@ public class ValueClassDestructuringExpressionParser implements DestructuringExp
             if (arg instanceof Atom) {
                 Atom atom = ((Atom) arg);
                 if (atom.type != Atom.Type.IDENTIFIER) {
-                    return new SimpleExpression(new Atom(tp.valueClass.definedFields.get(field).name()), "===", arg);
+                    return new SimpleExpression(new Atom(atom.definition(), tp.valueClass.definedFields.get(field).name()), "===", arg);
                 }
             } else if (arg instanceof Expression) {
                 return arg;

@@ -1,6 +1,7 @@
 package io.sonata.lang.parser.ast;
 
 import io.sonata.lang.parser.ast.requires.RequiresNode;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.io.IOException;
@@ -51,5 +52,10 @@ public class ScriptNode implements Node {
         }
 
         return new ScriptNode(nodes, nextNode, requiresNotifier);
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return null;
     }
 }

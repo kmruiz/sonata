@@ -29,9 +29,9 @@ public class ArrayDestructuringExpressionParser implements DestructuringExpressi
             int idx = argIdx.getAndIncrement();
             String value = (arg instanceof Atom && ((Atom) arg).type == Atom.Type.IDENTIFIER) ? arg.representation() : identifierFor(idx);
             if (arg instanceof TailExtraction) {
-                return new LetConstant(((TailExtraction) arg).expression.representation(), null, new TailExtraction(new Atom(tp.arrayName), idx));
+                return new LetConstant(arg.definition(), ((TailExtraction) arg).expression.representation(), null, new TailExtraction(new Atom(arg.definition(), tp.arrayName), idx));
             } else {
-                return new LetConstant(value, null, new ArrayAccess(new Atom(tp.arrayName), String.valueOf(idx)));
+                return new LetConstant(arg.definition(), value, null, new ArrayAccess(new Atom(arg.definition(), tp.arrayName), String.valueOf(idx)));
             }
         }));
     }
@@ -39,7 +39,7 @@ public class ArrayDestructuringExpressionParser implements DestructuringExpressi
     @Override
     public Parameter normalizeParameter(String parameterName, Parameter parameter) {
         AtomicInteger argIdx = new AtomicInteger(0);
-        Parameter newParam = whenIsArrayParameter(parameterName, parameter, tp -> new SimpleParameter(identifierFor(argIdx.getAndIncrement()), null, SimpleParameter.State.END));
+        Parameter newParam = whenIsArrayParameter(parameterName, parameter, tp -> new SimpleParameter(tp.literalArray.definition(), identifierFor(argIdx.getAndIncrement()), null, SimpleParameter.State.END));
         if (newParam != null) {
             return newParam;
         }
@@ -57,12 +57,12 @@ public class ArrayDestructuringExpressionParser implements DestructuringExpressi
             if (arg instanceof Atom) {
                 Atom atom = ((Atom) arg);
                 if (atom.type != Atom.Type.IDENTIFIER) {
-                    return new SimpleExpression(new Atom(value), "===", arg);
+                    return new SimpleExpression(new Atom(arg.definition(), value), "===", arg);
                 } else {
-                    return new Atom(value);
+                    return new Atom(arg.definition(), value);
                 }
             } else if (arg instanceof TailExtraction) {
-                return new SimpleExpression(new MethodReference(new Atom(parameterName), "length"), ">=", new Atom(String.valueOf(tp.literalArray.expressions.size())));
+                return new SimpleExpression(new MethodReference(new Atom(arg.definition(), parameterName), "length"), ">=", new Atom(arg.definition(), String.valueOf(tp.literalArray.expressions.size())));
             } else if (arg instanceof Expression) {
                 return arg;
             }

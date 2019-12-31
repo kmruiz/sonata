@@ -18,7 +18,7 @@ public abstract class ComposedExpression implements Expression {
         if (token instanceof SeparatorToken) {
             SeparatorToken sep = (SeparatorToken) token;
             if (sep.separator.equals("(")) {
-                return PartialFunctionCall.on(this);
+                return PartialFunctionCall.on(token.sourcePosition(), this);
             }
 
             if (sep.separator.equals(".")) {
@@ -26,7 +26,7 @@ public abstract class ComposedExpression implements Expression {
             }
 
             if (sep.separator.equals("[")) {
-                return PartialArrayAccess.on(this);
+                return PartialArrayAccess.on(token.sourcePosition(), this);
             }
         }
 

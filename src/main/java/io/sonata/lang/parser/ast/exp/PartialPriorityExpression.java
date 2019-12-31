@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -32,5 +33,10 @@ public class PartialPriorityExpression implements Expression {
         }
 
         return new PartialPriorityExpression(next);
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return expression.definition();
     }
 }

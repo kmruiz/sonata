@@ -3,6 +3,7 @@ package io.sonata.lang.parser.ast.classes.values;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.List;
@@ -16,20 +17,22 @@ public class PartialValueClass implements Node {
         WAITING_FOR_CLASS_KW, WAITING_FOR_CLASS_NAME, WAITING_FIELDS, IN_FIELDS
     }
 
+    private final SourcePosition definition;
     private final String name;
     private final List<Field> definedFields;
     private final Field currentField;
     private final State state;
 
-    private PartialValueClass(String name, List<Field> definedFields, Field currentField, State state) {
+    private PartialValueClass(SourcePosition definition, String name, List<Field> definedFields, Field currentField, State state) {
+        this.definition = definition;
         this.name = name;
         this.definedFields = definedFields;
         this.currentField = currentField;
         this.state = state;
     }
 
-    public static PartialValueClass initial() {
-        return new PartialValueClass(null, emptyList(), null, State.WAITING_FOR_CLASS_KW);
+    public static PartialValueClass initial(SourcePosition definition) {
+        return new PartialValueClass(definition, null, emptyList(), null, State.WAITING_FOR_CLASS_KW);
     }
 
     @Override
@@ -37,14 +40,14 @@ public class PartialValueClass implements Node {
         switch (state) {
             case WAITING_FOR_CLASS_KW:
                 if (token.representation().equals("class")) {
-                    return new PartialValueClass(null, emptyList(), SimpleField.instance(), State.WAITING_FOR_CLASS_NAME);
+                    return new PartialValueClass(definition, null, emptyList(), SimpleField.instance(token.sourcePosition()), State.WAITING_FOR_CLASS_NAME);
                 }
 
                 return null;
             case WAITING_FOR_CLASS_NAME:
-                return new PartialValueClass(token.representation(), emptyList(), SimpleField.instance(), State.WAITING_FIELDS);
+                return new PartialValueClass(definition, token.representation(), emptyList(), SimpleField.instance(token.sourcePosition()), State.WAITING_FIELDS);
             case WAITING_FIELDS:
-                return new PartialValueClass(name, emptyList(), SimpleField.instance(), State.IN_FIELDS);
+                return new PartialValueClass(definition, name, emptyList(), SimpleField.instance(token.sourcePosition()), State.IN_FIELDS);
             case IN_FIELDS:
                 Field nextField = currentField.consume(token);
                 if (nextField == null) {
@@ -55,7 +58,7 @@ public class PartialValueClass implements Node {
                     return finalization(token, nextField);
                 }
 
-                return new PartialValueClass(name, definedFields, nextField, state);
+                return new PartialValueClass(definition, name, definedFields, nextField, state);
         }
 
         return null;
@@ -64,12 +67,12 @@ public class PartialValueClass implements Node {
     private Node finalization(Token token, Field currentField) {
         switch (token.representation()) {
             case ",":
-                return new PartialValueClass(name, append(definedFields, currentField), SimpleField.instance(), state);
+                return new PartialValueClass(definition, name, append(definedFields, currentField), SimpleField.instance(token.sourcePosition()), state);
             case ")":
                 if (!currentField.isDone()) {
-                    return new ValueClass(name, definedFields);
+                    return new ValueClass(definition, name, definedFields);
                 } else {
-                    return new ValueClass(name, append(definedFields, currentField));
+                    return new ValueClass(definition, name, append(definedFields, currentField));
                 }
         }
         return null;
@@ -82,5 +85,10 @@ public class PartialValueClass implements Node {
                 definedFields.stream().map(Node::representation).collect(Collectors.joining(",")),
                 currentField.representation(),
                 state);
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

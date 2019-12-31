@@ -49,4 +49,9 @@ public class SymbolMap implements Processor, SymbolResolver {
     private void registerValueClass(ValueClass node) {
         dictionary.put(node.name, new SymbolDeclaration(node.name, node));
     }
+
+    @Override
+    public String phase() {
+        return "SYMBOL MAPPING";
+    }
 }

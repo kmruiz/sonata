@@ -2,14 +2,17 @@ package io.sonata.lang.parser.ast.let;
 
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.type.Type;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class LetConstant implements Expression {
+    public final SourcePosition definition;
     public final String letName;
     public final Type returnType;
     public final Expression body;
 
-    public LetConstant(String letName, Type returnType, Expression body) {
+    public LetConstant(SourcePosition definition, String letName, Type returnType, Expression body) {
+        this.definition = definition;
         this.letName = letName;
         this.returnType = returnType;
         this.body = body;
@@ -23,5 +26,10 @@ public class LetConstant implements Expression {
     @Override
     public Expression consume(Token token) {
         return null;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

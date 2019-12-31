@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import static io.sonata.lang.parser.ast.exp.EmptyExpression.instance;
@@ -32,5 +33,10 @@ public class SimpleExpression implements Expression {
     @Override
     public String representation() {
         return leftSide.representation() + " " + operator + " " + rightSide.representation();
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return leftSide.definition();
     }
 }

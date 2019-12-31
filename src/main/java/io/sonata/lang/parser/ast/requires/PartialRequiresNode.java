@@ -1,14 +1,16 @@
 package io.sonata.lang.parser.ast.requires;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class PartialRequiresNode implements Node {
-    public static PartialRequiresNode initial() {
-        return new PartialRequiresNode("", State.IN_NAME);
+    public static PartialRequiresNode initial(SourcePosition definition) {
+        return new PartialRequiresNode(definition, "", State.IN_NAME);
     }
 
-    private PartialRequiresNode(String module, State state) {
+    private PartialRequiresNode(SourcePosition definition, String module, State state) {
+        this.definition = definition;
         this.module = module;
         this.state = state;
     }
@@ -17,6 +19,7 @@ public class PartialRequiresNode implements Node {
         IN_SEPARATOR, IN_NAME
     }
 
+    private final SourcePosition definition;
     private final String module;
     private final State state;
 
@@ -29,16 +32,20 @@ public class PartialRequiresNode implements Node {
     public Node consume(Token token) {
         switch (state) {
             case IN_NAME:
-                return new PartialRequiresNode(module + token.representation(), State.IN_SEPARATOR);
+                return new PartialRequiresNode(definition, module + token.representation(), State.IN_SEPARATOR);
             case IN_SEPARATOR:
                 if (token.representation().equals("\n")) {
-                    return new RequiresNode(module);
+                    return new RequiresNode(definition, module);
                 }
 
-                return new PartialRequiresNode(module + ".", State.IN_NAME);
-
+                return new PartialRequiresNode(definition, module + ".", State.IN_NAME);
         }
 
         return null;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

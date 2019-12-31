@@ -39,7 +39,7 @@ public class FunctionOverloadExpressionParser implements DestructuringExpression
     public Stream<Expression> generateGuardCondition(String parameterName, Parameter parameter) {
         return whenIsExpressionParameter(parameter, tp -> {
             if (tp.expression instanceof Atom) {
-                return Stream.of(new SimpleExpression(new Atom(parameterName), "===", tp.expression));
+                return Stream.of(new SimpleExpression(new Atom(tp.expression.definition(), parameterName), "===", tp.expression));
             }
 
             return Stream.of(tp.expression);

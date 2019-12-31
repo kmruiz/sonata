@@ -1,15 +1,18 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class BlockExpression implements Expression {
+    public final SourcePosition definition;
     public final List<Expression> expressions;
 
-    public BlockExpression(List<Expression> expressions) {
+    public BlockExpression(SourcePosition definition, List<Expression> expressions) {
+        this.definition = definition;
         this.expressions = expressions;
     }
 
@@ -21,5 +24,10 @@ public class BlockExpression implements Expression {
     @Override
     public String representation() {
         return "{" + expressions.stream().map(Node::representation).collect(Collectors.joining("\n")) + "}";
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

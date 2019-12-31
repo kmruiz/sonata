@@ -1,13 +1,15 @@
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.let.fn.Parameter;
+import io.sonata.lang.source.SourcePosition;
 
 public class IfElse extends ComposedExpression {
+    public final SourcePosition definition;
     public final Expression condition;
     public final Expression whenTrue;
     public final Expression whenFalse;
 
-    public IfElse(Expression condition, Expression whenTrue, Expression whenFalse) {
+    public IfElse(SourcePosition definition, Expression condition, Expression whenTrue, Expression whenFalse) {
+        this.definition = definition;
         this.condition = condition;
         this.whenTrue = whenTrue;
         this.whenFalse = whenFalse;
@@ -44,5 +46,10 @@ public class IfElse extends ComposedExpression {
         }
 
         return 0;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }
