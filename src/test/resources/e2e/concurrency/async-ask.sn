@@ -1,0 +1,21 @@
+entity class provider(value: string) {
+    let provide(): string = value
+}
+
+entity class consumer() {
+    let consume(provider: provider) = {
+        console.log('asking for value')
+        let value = provider.provide()
+
+        console.log(value)
+        console.log('value asked')
+
+        provider.stop()
+        self.stop()
+    }
+}
+
+let _provider = provider('Hello World!')
+let _consumer = consumer()
+
+_consumer.consume(_provider)

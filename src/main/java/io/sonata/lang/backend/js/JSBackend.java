@@ -53,6 +53,7 @@ public class JSBackend implements Backend {
     @Override
     public void emitScriptBegin(ScriptNode scriptNode, BackendCodeGenerator generator) {
         emit("\"use strict\";");
+        emit("function _() { let y; const x = new Promise(r => { y = r; }); return [ x, y ]; }");
     }
 
     @Override
@@ -210,15 +211,25 @@ public class JSBackend implements Backend {
             emit(base.letName);
             emit("(");
             emit(String.join(", ", parameterNames));
-            emit("){ const args = Array.prototype.slice.call(arguments); self._mailbox.push(function () { ");
+            emit("){");
+            emit("const args = Array.prototype.slice.call(arguments);");
+            emit("const vs = _();");
+            emit("const p = vs[0];");
+            emit("const r = vs[1];");
+            emit("self._mailbox.push(function () { ");
             emit(internalFunctionName);
-            emit(".apply(null, args);})};");
+            emit(".apply(r, args);});");
+            emit("return p;};");
         }
 
         if (inValueClass()) {
             emit("self.");
             emit(base.letName);
             emit("=");
+        }
+
+        if (inEntityClass()) {
+            emit("async ");
         }
 
         emit("function ");
@@ -240,13 +251,16 @@ public class JSBackend implements Backend {
     @Override
     public void emitBaseFunctionSpecificationBegin(LetFunction base, BackendCodeGenerator generator) {
         if (base.body != null) {
-            emit("return ");
+            emit("const r$ =");
         }
     }
 
     @Override
     public void emitBaseFunctionSpecificationEnd(LetFunction base, BackendCodeGenerator generator) {
-
+        if (inEntityClass) {
+            emit("this(r$);");
+        }
+        emit("return r$;");
     }
 
     @Override
@@ -265,6 +279,10 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitPreFunctionCall(FunctionCall node, BackendCodeGenerator generator) {
+        if (inEntityClass()) {
+            emit(" await ");
+        }
+
         pushInExpr();
     }
 
@@ -400,7 +418,11 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitBlockExpressionBegin(BlockExpression blockExpression, BackendCodeGenerator generator) {
-        emit("(function () {");
+        if (inEntityClass()) {
+            emit("(async function () {");
+        } else {
+            emit("(function () {");
+        }
     }
 
     @Override

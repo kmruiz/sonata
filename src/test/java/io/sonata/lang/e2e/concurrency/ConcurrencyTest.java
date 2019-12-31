@@ -9,4 +9,9 @@ public class ConcurrencyTest extends NodeDockerTest {
     public void shouldRunBothEntitiesInParallel() throws Exception {
         assertResourceScriptOutputs("doing things asynchronously\n0> ping\n0> pong\n1> ping\n1> pong\nping end\npong end", "concurrency/ping-pong");
     }
+
+    @Test
+    public void shouldDoContinuationsItselfUsingPromises() throws Exception {
+        assertResourceScriptOutputs("asking for value\nHello World!\nvalue asked", "concurrency/async-ask");
+    }
 }
