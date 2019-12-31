@@ -1,4 +1,0 @@
-entity class person(id: string, name: string)
-
-console.log(JSON.stringify(person('id', 'John')))
-
