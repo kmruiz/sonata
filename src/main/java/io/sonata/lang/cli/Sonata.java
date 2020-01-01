@@ -24,8 +24,7 @@ import java.util.HashMap;
 import static io.reactivex.BackpressureStrategy.BUFFER;
 
 public class Sonata {
-    public static Single<byte[]> compile(Flowable<Source> sources, BackendVisitor.BackendFactory backend) {
-        CompilerLog log = CompilerLog.console();
+    public static Single<byte[]> compile(CompilerLog log, Flowable<Source> sources, BackendVisitor.BackendFactory backend) {
         SymbolMap symbolMap = new SymbolMap(new HashMap<>());
         BackendVisitor visitor = new BackendVisitor(backend);
         Tokenizer tokenizer = new Tokenizer();
@@ -49,6 +48,7 @@ public class Sonata {
                 .reduce(Parser.initial(notifier), Parser::reduce)
                 .toFlowable()
                 .flatMap(analyzer::apply)
+                .filter(e -> !log.hasErrors())
                 .flatMap(visitor::generateSourceCode)
                 .firstElement()
                 .toSingle();

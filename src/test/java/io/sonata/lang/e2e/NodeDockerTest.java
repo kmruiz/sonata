@@ -3,6 +3,7 @@ package io.sonata.lang.e2e;
 import io.reactivex.Flowable;
 import io.sonata.lang.backend.js.JSBackend;
 import io.sonata.lang.cli.Sonata;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.source.Source;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -57,7 +58,7 @@ public abstract class NodeDockerTest {
 
     private String compileToTemporalPath(String literalScript) throws Exception {
         Source literalSource = Source.fromLiteral(literalScript);
-        String javaScriptSource = Sonata.compile(Flowable.just(literalSource), JSBackend::new).map(String::new).blockingGet();
+        String javaScriptSource = Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), JSBackend::new).map(String::new).blockingGet();
         String output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
 
         Files.write(Paths.get(output), javaScriptSource.getBytes(Charset.defaultCharset()), CREATE, TRUNCATE_EXISTING);

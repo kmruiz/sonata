@@ -40,6 +40,11 @@ public final class CompilerLog {
         info.flush();
     }
 
+    public void info(String message) {
+        info.printf("%s %s\n", INFO_TAG, message);
+        info.flush();
+    }
+
     public boolean hasErrors() {
         return errored;
     }
