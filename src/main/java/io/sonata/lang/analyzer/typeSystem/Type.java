@@ -6,4 +6,5 @@ public interface Type {
     SourcePosition definition();
     String name();
     boolean canBeReassigned();
+    boolean isEntity();
 }

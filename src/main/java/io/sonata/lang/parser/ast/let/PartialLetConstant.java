@@ -3,16 +3,16 @@ package io.sonata.lang.parser.ast.let;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.type.EmptyType;
-import io.sonata.lang.parser.ast.type.FunctionType;
-import io.sonata.lang.parser.ast.type.Type;
+import io.sonata.lang.parser.ast.type.EmptyASTType;
+import io.sonata.lang.parser.ast.type.FunctionASTType;
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class PartialLetConstant implements Expression {
     private final SourcePosition definition;
     private final String letName;
-    private final Type type;
+    private final ASTType ASTType;
     private final State state;
     private final Node value;
 
@@ -21,20 +21,20 @@ public class PartialLetConstant implements Expression {
     }
 
     public static Expression initial(SourcePosition definition, String letName) {
-        return new PartialLetConstant(definition, letName, EmptyType.instance(), State.WAITING_TYPE, RootNode.instance());
+        return new PartialLetConstant(definition, letName, EmptyASTType.instance(), State.WAITING_TYPE, RootNode.instance());
     }
 
-    private PartialLetConstant(SourcePosition definition, String letName, Type type, State state, Node value) {
+    private PartialLetConstant(SourcePosition definition, String letName, ASTType ASTType, State state, Node value) {
         this.definition = definition;
         this.letName = letName;
-        this.type = type;
+        this.ASTType = ASTType;
         this.state = state;
         this.value = value;
     }
 
     @Override
     public String representation() {
-        return "let " + letName + ": " + type.representation() + " = " + value.representation() + "?" + state;
+        return "let " + letName + ": " + ASTType.representation() + " = " + value.representation() + "?" + state;
     }
 
     @Override
@@ -42,34 +42,34 @@ public class PartialLetConstant implements Expression {
         switch (state) {
             case WAITING_TYPE:
                 if (token.representation().equals(":")) {
-                    return new PartialLetConstant(definition, letName, type, State.IN_TYPE, value);
+                    return new PartialLetConstant(definition, letName, ASTType, State.IN_TYPE, value);
                 } else if (token.representation().equals("=")) {
                     return new PartialLetConstant(definition, letName, null, State.IN_BODY, value);
                 }
                 break;
             case IN_TYPE:
-                Type nextType = type.consume(token);
-                if (nextType == null) {
-                    return new PartialLetConstant(definition, letName, type, State.WAITING_EQUALS, value).consume(token);
+                ASTType nextASTType = ASTType.consume(token);
+                if (nextASTType == null) {
+                    return new PartialLetConstant(definition, letName, ASTType, State.WAITING_EQUALS, value).consume(token);
                 }
 
-                if (nextType instanceof FunctionType) {
-                    return new PartialLetConstant(definition, letName, nextType, State.IN_BODY, value);
+                if (nextASTType instanceof FunctionASTType) {
+                    return new PartialLetConstant(definition, letName, nextASTType, State.IN_BODY, value);
                 }
 
-                return new PartialLetConstant(definition, letName, nextType, state, value);
+                return new PartialLetConstant(definition, letName, nextASTType, state, value);
             case WAITING_EQUALS:
                 if (token.representation().equals("=")) {
-                    return new PartialLetConstant(definition, letName, type, State.IN_BODY, value);
+                    return new PartialLetConstant(definition, letName, ASTType, State.IN_BODY, value);
                 }
                 break;
             case IN_BODY:
                 Node nextBody = value.consume(token);
                 if (nextBody == null) {
-                    return new LetConstant(definition, letName, type, (Expression) value);
+                    return new LetConstant(definition, letName, ASTType, (Expression) value);
                 }
 
-                return new PartialLetConstant(definition, letName, type, state, nextBody);
+                return new PartialLetConstant(definition, letName, ASTType, state, nextBody);
         }
 
         return null;

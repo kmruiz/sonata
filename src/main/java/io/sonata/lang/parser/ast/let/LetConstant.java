@@ -1,26 +1,26 @@
 package io.sonata.lang.parser.ast.let;
 
 import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.type.Type;
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class LetConstant implements Expression {
     public final SourcePosition definition;
     public final String letName;
-    public final Type returnType;
+    public final ASTType returnASTType;
     public final Expression body;
 
-    public LetConstant(SourcePosition definition, String letName, Type returnType, Expression body) {
+    public LetConstant(SourcePosition definition, String letName, ASTType returnASTType, Expression body) {
         this.definition = definition;
         this.letName = letName;
-        this.returnType = returnType;
+        this.returnASTType = returnASTType;
         this.body = body;
     }
 
     @Override
     public String representation() {
-        return "let " + letName + ":" + (returnType != null ? returnType.representation() : "?") + " = " + body.representation();
+        return "let " + letName + ":" + (returnASTType != null ? returnASTType.representation() : "?") + " = " + body.representation();
     }
 
     @Override

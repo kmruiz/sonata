@@ -25,4 +25,9 @@ public final class EntityClassType implements Type {
     public boolean canBeReassigned() {
         return false;
     }
+
+    @Override
+    public boolean isEntity() {
+        return true;
+    }
 }

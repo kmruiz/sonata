@@ -12,7 +12,7 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
-import io.sonata.lang.parser.ast.type.Type;
+import io.sonata.lang.parser.ast.type.ASTType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -407,7 +407,7 @@ public class JSBackend implements Backend {
     }
 
     @Override
-    public void emitLetConstantBegin(String letName, Type returnType, BackendCodeGenerator generator) {
+    public void emitLetConstantBegin(String letName, ASTType returnASTType, BackendCodeGenerator generator) {
         emit("let ");
         emit(letName);
         emit("=");
@@ -415,7 +415,7 @@ public class JSBackend implements Backend {
     }
 
     @Override
-    public void emitLetConstantEnd(String letName, Type returnType, BackendCodeGenerator generator) {
+    public void emitLetConstantEnd(String letName, ASTType returnASTType, BackendCodeGenerator generator) {
         emit(";");
         popInExpr();
     }

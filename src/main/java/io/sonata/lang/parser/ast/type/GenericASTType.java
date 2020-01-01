@@ -5,18 +5,18 @@ import io.sonata.lang.source.SourcePosition;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GenericType extends ComposedType implements Type {
-    public final Type base;
-    public final List<Type> parameters;
+public class GenericASTType extends ComposedASTType implements ASTType {
+    public final ASTType base;
+    public final List<ASTType> parameters;
 
-    public GenericType(Type base, List<Type> parameters) {
+    public GenericASTType(ASTType base, List<ASTType> parameters) {
         this.base = base;
         this.parameters = parameters;
     }
 
     @Override
     public String representation() {
-        return base.representation() + "[" + parameters.stream().map(Type::representation).collect(Collectors.joining(", ")) + "]";
+        return base.representation() + "[" + parameters.stream().map(ASTType::representation).collect(Collectors.joining(", ")) + "]";
     }
 
     @Override

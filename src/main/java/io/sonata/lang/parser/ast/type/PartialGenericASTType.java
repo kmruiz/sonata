@@ -9,42 +9,42 @@ import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
 
-public class PartialGenericType implements Type {
-    public final Type base;
-    public final List<Type> parameters;
-    public final Type current;
+public class PartialGenericASTType implements ASTType {
+    public final ASTType base;
+    public final List<ASTType> parameters;
+    public final ASTType current;
 
-    private PartialGenericType(Type base, List<Type> parameters, Type current) {
+    private PartialGenericASTType(ASTType base, List<ASTType> parameters, ASTType current) {
         this.base = base;
         this.parameters = parameters;
         this.current = current;
     }
 
-    public static PartialGenericType on(Type base) {
-        return new PartialGenericType(base, Collections.emptyList(), EmptyType.instance());
+    public static PartialGenericASTType on(ASTType base) {
+        return new PartialGenericASTType(base, Collections.emptyList(), EmptyASTType.instance());
     }
 
     @Override
-    public Type consume(Token token) {
-        Type next = current.consume(token);
+    public ASTType consume(Token token) {
+        ASTType next = current.consume(token);
         if (next == null) {
             if (token instanceof SeparatorToken) {
                 SeparatorToken sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {
-                    return new PartialGenericType(base, append(parameters, current), EmptyType.instance());
+                    return new PartialGenericASTType(base, append(parameters, current), EmptyASTType.instance());
                 }
 
                 if (sep.separator.equals("]")) {
-                    if (parameters.size() == 0 && current instanceof EmptyType) {
-                        return new ArrayType(base);
+                    if (parameters.size() == 0 && current instanceof EmptyASTType) {
+                        return new ArrayASTType(base);
                     }
 
-                    return new GenericType(base, append(parameters, current));
+                    return new GenericASTType(base, append(parameters, current));
                 }
             }
         }
 
-        return new PartialGenericType(base, parameters, next);
+        return new PartialGenericASTType(base, parameters, next);
     }
 
     @Override

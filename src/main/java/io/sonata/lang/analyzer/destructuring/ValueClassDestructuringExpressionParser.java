@@ -11,7 +11,7 @@ import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
-import io.sonata.lang.parser.ast.type.BasicType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -45,7 +45,7 @@ public class ValueClassDestructuringExpressionParser implements DestructuringExp
     }
 
     public Parameter normalizeParameter(String parameterName, Parameter parameter) {
-        Parameter newParam = whenIsValueClassParameter(parameter, tp -> new SimpleParameter(tp.valueClass.definition, tp.valueClass.name, new BasicType(tp.valueClass.definition(), tp.valueClass.name), SimpleParameter.State.END));
+        Parameter newParam = whenIsValueClassParameter(parameter, tp -> new SimpleParameter(tp.valueClass.definition, tp.valueClass.name, new BasicASTType(tp.valueClass.definition(), tp.valueClass.name), SimpleParameter.State.END));
         if (newParam != null) {
             return newParam;
         }

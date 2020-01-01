@@ -7,7 +7,7 @@ import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetFunction;
-import io.sonata.lang.parser.ast.type.Type;
+import io.sonata.lang.parser.ast.type.ASTType;
 
 import java.util.List;
 
@@ -41,8 +41,8 @@ public interface Backend {
     void emitFunctionCallArgumentEnd(Expression expression, boolean isLast, BackendCodeGenerator generator);
     void emitFunctionCallEnd(FunctionCall functionCall, BackendCodeGenerator generator);
 
-    void emitLetConstantBegin(String letName, Type returnType, BackendCodeGenerator generator);
-    void emitLetConstantEnd(String letName, Type returnType, BackendCodeGenerator generator);
+    void emitLetConstantBegin(String letName, ASTType returnASTType, BackendCodeGenerator generator);
+    void emitLetConstantEnd(String letName, ASTType returnASTType, BackendCodeGenerator generator);
 
     void emitMethodReferenceBegin(MethodReference methodReference, BackendCodeGenerator generator);
     void emitMethodReferenceEnd(MethodReference methodReference, BackendCodeGenerator generator);

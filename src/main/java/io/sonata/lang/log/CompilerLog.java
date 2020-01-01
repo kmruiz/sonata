@@ -1,6 +1,6 @@
 package io.sonata.lang.log;
 
-import io.sonata.lang.exception.SonataSyntaxErrorException;
+import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.source.SourcePosition;
 
@@ -24,12 +24,12 @@ public final class CompilerLog {
         return new CompilerLog(new PrintWriter(System.out), new PrintWriter(System.err));
     }
 
-    public void syntaxError(SonataSyntaxErrorException syntaxError) {
+    public void syntaxError(SonataSyntaxError syntaxError) {
         this.errored = true;
 
         final SourcePosition definition = syntaxError.whereHappened().definition();
         final String definitionScript = clearRepresentationOf(syntaxError.whereHappened());
-        final String message = syntaxError.getMessage();
+        final String message = syntaxError.message();
 
         error.printf("%s %s near '%s': %s\n", ERROR_TAG, definition, definitionScript, message);
         error.flush();

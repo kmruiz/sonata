@@ -25,4 +25,9 @@ public final class ValueClassType implements Type {
     public boolean canBeReassigned() {
         return false;
     }
+
+    @Override
+    public boolean isEntity() {
+        return false;
+    }
 }

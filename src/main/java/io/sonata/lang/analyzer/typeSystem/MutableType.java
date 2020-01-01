@@ -23,4 +23,9 @@ public final class MutableType implements Type {
     public boolean canBeReassigned() {
         return true;
     }
+
+    @Override
+    public boolean isEntity() {
+        return false;
+    }
 }

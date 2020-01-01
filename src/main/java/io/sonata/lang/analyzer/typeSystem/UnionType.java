@@ -28,4 +28,9 @@ public final class UnionType implements Type {
     public boolean canBeReassigned() {
         return types.stream().anyMatch(Type::canBeReassigned);
     }
+
+    @Override
+    public boolean isEntity() {
+        return types.stream().anyMatch(Type::isEntity);
+    }
 }
