@@ -6,7 +6,7 @@ import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
-import io.sonata.lang.analyzer.log.CompilerLog;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.analyzer.typeSystem.ClassScopeProcessor;

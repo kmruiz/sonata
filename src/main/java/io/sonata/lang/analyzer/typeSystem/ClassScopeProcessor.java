@@ -1,12 +1,13 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
-import io.sonata.lang.analyzer.log.CompilerLog;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.exception.SonataSyntaxErrorException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 
 public class ClassScopeProcessor implements Processor {
     private final CompilerLog log;
@@ -27,9 +28,17 @@ public class ClassScopeProcessor implements Processor {
             final String className = ((EntityClass) node).name;
             try {
                 rootScope.register(className, new EntityClassType(node.definition(), className));
-                CompilerLog.console().inPhase("PROCESSING CLASS " + ((EntityClass) node).name);
             } catch (TypeCanNotBeReassignedException e) {
-                log.syntaxError(new SonataSyntaxErrorException(node, "Entity classes can not be redefined."));
+                log.syntaxError(new SonataSyntaxErrorException(node, "Entity classes can not be redefined, but " + className + " is defined at least twice."));
+            }
+        }
+
+        if (node instanceof ValueClass) {
+            final String className = ((ValueClass) node).name;
+            try {
+                rootScope.register(className, new ValueClassType(node.definition(), className));
+            } catch (TypeCanNotBeReassignedException e) {
+                log.syntaxError(new SonataSyntaxErrorException(node, "Value classes can not be redefined, but " + className + " is defined at least twice."));
             }
         }
 

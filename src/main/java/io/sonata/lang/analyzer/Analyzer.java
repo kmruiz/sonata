@@ -1,7 +1,7 @@
 package io.sonata.lang.analyzer;
 
 import io.reactivex.Flowable;
-import io.sonata.lang.analyzer.log.CompilerLog;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 
 import java.util.Arrays;

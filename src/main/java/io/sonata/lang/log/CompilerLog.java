@@ -1,4 +1,4 @@
-package io.sonata.lang.analyzer.log;
+package io.sonata.lang.log;
 
 import io.sonata.lang.exception.SonataSyntaxErrorException;
 import io.sonata.lang.parser.ast.Node;
@@ -31,12 +31,12 @@ public final class CompilerLog {
         final String definitionScript = clearRepresentationOf(syntaxError.whereHappened());
         final String message = syntaxError.getMessage();
 
-        error.printf("%s %s > near '%s': %s\n", ERROR_TAG, definition, definitionScript, message);
+        error.printf("%s %s near '%s': %s\n", ERROR_TAG, definition, definitionScript, message);
         error.flush();
     }
 
     public void inPhase(String phase) {
-        info.printf("%s > In phase '%s'\n", INFO_TAG, phase);
+        info.printf("%s In phase '%s'\n", INFO_TAG, phase);
         info.flush();
     }
 
