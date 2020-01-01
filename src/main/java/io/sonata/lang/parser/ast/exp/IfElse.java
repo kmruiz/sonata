@@ -29,7 +29,11 @@ public class IfElse extends ComposedExpression {
 
     @Override
     public String representation() {
-        return "if (" + condition.representation() + ") { " + whenTrue.representation() + " } else { "  + whenFalse.representation() + " }";
+        return "if (" + representationOrEmpty(condition) + ") { " + representationOrEmpty(whenTrue) + " } else { "  + representationOrEmpty(whenFalse) + " }";
+    }
+
+    private String representationOrEmpty(Expression expr) {
+        return expr != null ? expr.representation() : "<none>";
     }
 
     public static int weightedComparison(Expression a, Expression b) {

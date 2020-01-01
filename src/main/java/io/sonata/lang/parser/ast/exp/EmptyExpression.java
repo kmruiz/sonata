@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -31,6 +32,10 @@ public class EmptyExpression implements Expression {
 
         if (token.representation().equals("{")) {
             return PartialBlockExpression.initial(token.sourcePosition());
+        }
+
+        if (token.representation().equals("if")) {
+            return PartialIf.initial(token.sourcePosition());
         }
 
         if (token instanceof SeparatorToken) {

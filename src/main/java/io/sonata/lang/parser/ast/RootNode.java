@@ -6,6 +6,7 @@ import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.PartialArray;
 import io.sonata.lang.parser.ast.exp.PartialPriorityExpression;
+import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
 import io.sonata.lang.source.SourcePosition;
@@ -37,6 +38,8 @@ public class RootNode implements Node {
                     return PartialEntityClass.initial(token.sourcePosition());
                 case "value":
                     return PartialValueClass.initial(token.sourcePosition());
+                case "if":
+                    return PartialIf.initial(token.sourcePosition());
             }
 
             return new Atom(token.sourcePosition(), token.representation());

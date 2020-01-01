@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class BackendVisitor implements BackendCodeGenerator {
     public interface BackendFactory {
-        Backend newBackend();
+        Backend newBackend(boolean inExpression);
     }
 
     private final BackendFactory backendFactory;
@@ -28,7 +28,7 @@ public class BackendVisitor implements BackendCodeGenerator {
     }
 
     public Flowable<byte[]> generateSourceCode(Node node) {
-        Backend backend = backendFactory.newBackend();
+        Backend backend = backendFactory.newBackend(false);
         visitTree(node, backend, new ArrayList<>(256));
         return Flowable.fromSupplier(backend::result);
     }
@@ -224,7 +224,13 @@ public class BackendVisitor implements BackendCodeGenerator {
     }
 
     @Override
-    public Flowable<byte[]> generateFor(Node node) {
-        return new BackendVisitor(backendFactory).generateSourceCode(node);
+    public Flowable<byte[]> generateFor(Expression expression) {
+        return new BackendVisitor(backendFactory).generateSourceCode(expression);
+    }
+
+    private Flowable<byte[]> generateSourceCode(Expression expression) {
+        Backend backend = backendFactory.newBackend(true);
+        visitTree(expression, backend, new ArrayList<>(256));
+        return Flowable.fromSupplier(backend::result);
     }
 }

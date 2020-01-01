@@ -1,0 +1,26 @@
+entity class pinger(times: number) {
+    let ping(ponger: ponger) = {
+        self.times += 1
+        if (self.times > 2) {
+            self.stop()
+            ponger.stop();
+        } else {
+            console.log(self.times + '> ping')
+            ponger.pong(self);
+        }
+    }
+}
+
+entity class ponger(times: number) {
+    let pong(pinger: pinger) = {
+        self.times += 1
+        console.log(self.times + '> pong')
+        pinger.ping(self)
+    }
+}
+
+let _pinger = pinger(0)
+let _ponger = ponger(0)
+
+_pinger.ping(_ponger)
+console.log('doing things asynchronously')

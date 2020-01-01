@@ -31,29 +31,13 @@ public class JSBackend implements Backend {
     private boolean inEntityClass;
     private boolean isUsingEntities;
 
-    public JSBackend() {
+    public JSBackend(boolean inExpression) {
         this.buffer = new ByteArrayOutputStream(180000);
-        this.inExpr = 0;
+        this.inExpr = inExpression ? 1 : 0;
         this.parameterNames = null;
         this.inClass = false;
         this.inEntityClass = false;
         this.isUsingEntities = false;
-    }
-
-    private void pushInExpr() {
-        this.inExpr++;
-    }
-
-    private void popInExpr() {
-        this.inExpr--;
-    }
-
-    private boolean isNotInExpression() {
-        return this.inExpr <= 0;
-    }
-
-    private boolean isInExpression() {
-        return this.inExpr > 0;
     }
 
     @Override
@@ -64,7 +48,7 @@ public class JSBackend implements Backend {
     @Override
     public void emitScriptEnd(ScriptNode scriptNode, BackendCodeGenerator generator) {
         if (isUsingEntities) {
-            emit("function _(){let y,x=new Promise(r=>{y=r});return[x,y]}");
+            emit("function _(){let y,x=new Promise(function(r){y=r});return[x,y]}");
             emit("function _$(p){return Array.prototype.slice.call(p)}");
             emit("function SI(a,b){return setInterval(a,b)}");
             emit("function CI(a){clearInterval(a)}");
@@ -113,6 +97,9 @@ public class JSBackend implements Backend {
     @Override
     public void emitSimpleExpressionEnd(SimpleExpression expression, BackendCodeGenerator generator) {
         popInExpr();
+        if (!isInExpression()) {
+            emit(";");
+        }
     }
 
     @Override
@@ -209,7 +196,7 @@ public class JSBackend implements Backend {
 
         String internalFunctionName = base.letName;
 
-        if (inEntityClass()) {
+        if (isInEntityClass()) {
             internalFunctionName += "$";
 
             emit("self.");
@@ -233,13 +220,13 @@ public class JSBackend implements Backend {
             emit("return p;};");
         }
 
-        if (inValueClass()) {
+        if (isInValueClass()) {
             emit("self.");
             emit(base.letName);
             emit("=");
         }
 
-        if (inEntityClass()) {
+        if (isInEntityClass()) {
             emit("async ");
         }
 
@@ -290,7 +277,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitPreFunctionCall(FunctionCall node, BackendCodeGenerator generator) {
-        if (inEntityClass() && isInExpression()) {
+        if (isInEntityClass() && isInExpression()) {
             emit(" await ");
         }
 
@@ -429,7 +416,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitBlockExpressionBegin(BlockExpression blockExpression, BackendCodeGenerator generator) {
-        if (inEntityClass()) {
+        if (isInEntityClass()) {
             emit("(async function () {");
         } else {
             emit("(function () {");
@@ -439,12 +426,21 @@ public class JSBackend implements Backend {
     @Override
     public void emitBlockExpressionExpressionBegin(Node expr, boolean isLast, BackendCodeGenerator generator) {
         if (isLast) {
-            emit("return ");
+            if (expr instanceof IfElse) {
+                emit("return (function(){");
+            } else {
+                emit("return ");
+            }
         }
     }
 
     @Override
     public void emitBlockExpressionExpressionEnd(Node expr, boolean isLast, BackendCodeGenerator generator) {
+        if (isLast) {
+            if (expr instanceof IfElse) {
+                emit("})();");
+            }
+        }
     }
 
     @Override
@@ -454,6 +450,10 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitIfBegin(IfElse ifElse, BackendCodeGenerator generator) {
+        if (isInExpression()) {
+            emit("(function(){");
+        }
+
         emit("if");
     }
 
@@ -477,6 +477,9 @@ public class JSBackend implements Backend {
     @Override
     public void emitIfBodyEnd(IfElse ifElse, BackendCodeGenerator generator) {
         emit("}");
+        if (isInExpression() && ifElse.whenFalse == null) {
+            emit("})();");
+        }
     }
 
     @Override
@@ -487,6 +490,9 @@ public class JSBackend implements Backend {
     @Override
     public void emitElseEnd(IfElse ifElse, BackendCodeGenerator generator) {
         emit("}");
+        if (isInExpression()) {
+            emit("})();");
+        }
     }
 
     @Override
@@ -541,10 +547,30 @@ public class JSBackend implements Backend {
         this.inEntityClass = false;
     }
 
-    private boolean inEntityClass() {
+    private boolean isInEntityClass() {
         return this.inClass && this.inEntityClass;
     }
-    private boolean inValueClass() {
+    private boolean isInValueClass() {
         return this.inClass && !this.inEntityClass;
+    }
+
+    private void pushInExpr() {
+        this.inExpr++;
+    }
+
+    private void popInExpr() {
+        this.inExpr--;
+    }
+
+    private boolean isNotInExpression() {
+        return this.inExpr <= 0;
+    }
+
+    private boolean isInExpression() {
+        return this.inExpr > 0;
+    }
+
+    private boolean isInNestedExpression() {
+        return this.inExpr > 1;
     }
 }
