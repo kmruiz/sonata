@@ -52,7 +52,7 @@ public class ClassRelationshipValidator implements Processor {
             } else {
                 Type type = resolution.get();
                 if (type.isEntity()) {
-                    log.syntaxError(new SonataSyntaxError(fieldASTType, "Value classes can not depend on entities, but " + type.name() + " defined at " + type.definition() + " is an entity."));
+                    log.syntaxError(new SonataSyntaxError(fieldASTType, "Value classes can not depend on entities, but type " + type.name() + " defined at " + type.definition() + " is an entity."));
                 }
             }
         }
