@@ -27,7 +27,7 @@ public final class ClassScopeProcessor implements Processor {
         if (node instanceof EntityClass) {
             final String className = ((EntityClass) node).name;
             try {
-                rootScope.register(className, new EntityClassType(node.definition(), className));
+                rootScope.registerType(className, new EntityClassType(node.definition(), className));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Entity classes can not be redefined, but " + className + " is defined at least twice."));
             }
@@ -36,7 +36,7 @@ public final class ClassScopeProcessor implements Processor {
         if (node instanceof ValueClass) {
             final String className = ((ValueClass) node).name;
             try {
-                rootScope.register(className, new ValueClassType(node.definition(), className));
+                rootScope.registerType(className, new ValueClassType(node.definition(), className));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Value classes can not be redefined, but " + className + " is defined at least twice."));
             }
