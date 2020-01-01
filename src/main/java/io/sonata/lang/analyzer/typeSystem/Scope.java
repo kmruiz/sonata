@@ -23,7 +23,10 @@ public final class Scope {
     }
 
     public static Scope from(Scope parent, Node anchor) {
-        return new Scope(anchor, parent, new ArrayList<>(), new HashMap<>());
+        Scope scope = new Scope(anchor, parent, new ArrayList<>(), new HashMap<>());
+        parent.children.add(scope);
+
+        return scope;
     }
 
     public Optional<Type> resolve(String name) {
