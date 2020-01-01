@@ -35,24 +35,25 @@ public class ClassRelationshipValidator implements Processor {
 
         if (node instanceof ValueClass) {
             ValueClass vc = (ValueClass) node;
-            vc.definedFields.forEach(this::validateIsNotAnEntity);
+            vc.definedFields.forEach(field -> this.validateIsNotAnEntity(vc, field));
         }
 
         return node;
     }
 
-    private void validateIsNotAnEntity(Field field) {
+    private void validateIsNotAnEntity(ValueClass valueClass, Field field) {
         ASTType fieldASTType = ((SimpleField) field).astType;
 
         if (fieldASTType instanceof BasicASTType) {
-            String name = ((BasicASTType) fieldASTType).name;
-            final Optional<Type> resolution = scope.resolve(name);
+            String fieldName = ((SimpleField) field).name;
+            String typeName = ((BasicASTType) fieldASTType).name;
+            final Optional<Type> resolution = scope.resolve(typeName);
             if (!resolution.isPresent()) {
-                log.syntaxError(new SonataSyntaxError(fieldASTType, "Couldn't resolve type " + name));
+                log.syntaxError(new SonataSyntaxError(fieldASTType, "Couldn't resolve type " + typeName));
             } else {
                 Type type = resolution.get();
                 if (type.isEntity()) {
-                    log.syntaxError(new SonataSyntaxError(fieldASTType, "Value classes can not depend on entities, but type " + type.name() + " defined at " + type.definition() + " is an entity."));
+                    log.syntaxError(new SonataSyntaxError(field, "Value classes can not depend on entities but value class '" + valueClass.name + "' has a field named '" + fieldName + "' of type '" + type.name() + "' defined at " + type.definition() + " as an entity."));
                 }
             }
         }

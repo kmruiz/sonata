@@ -22,9 +22,9 @@ public final class Scope {
         return new Scope(null, null, new ArrayList<>(), new HashMap<>());
     }
 
-    public static Scope from(Scope parent, Node anchor) {
-        Scope scope = new Scope(anchor, parent, new ArrayList<>(), new HashMap<>());
-        parent.children.add(scope);
+    public Scope diveIn(Node anchor) {
+        Scope scope = new Scope(anchor, this, new ArrayList<>(), new HashMap<>());
+        children.add(scope);
 
         return scope;
     }
