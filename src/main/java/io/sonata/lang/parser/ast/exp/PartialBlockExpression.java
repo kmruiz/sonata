@@ -28,10 +28,18 @@ public class PartialBlockExpression implements Expression {
         Expression nextNode = currentNode.consume(token);
         if (nextNode == null) {
             if (token.representation().equals("}")) {
+                if (currentNode instanceof EmptyExpression) {
+                    return new BlockExpression(definition, nodes);
+                }
+
                 return new BlockExpression(definition, append(nodes, currentNode));
             }
 
-            return new PartialBlockExpression(definition, append(nodes, currentNode), EmptyExpression.instance());
+            if (!(currentNode instanceof EmptyExpression)) {
+                return new PartialBlockExpression(definition, append(nodes, currentNode), EmptyExpression.instance());
+            }
+
+            return this;
         }
 
         return new PartialBlockExpression(definition, nodes, nextNode);

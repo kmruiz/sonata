@@ -45,6 +45,10 @@ public class PartialEntityClassWithBody implements Node {
         Node nextExpr = current.consume(token);
         if (nextExpr == null) {
             if (token.representation().equals("}")) {
+                if (current instanceof RootNode) {
+                    return new EntityClass(definition, name, definedFields, declarations);
+                }
+
                 return new EntityClass(definition, name, definedFields, append(declarations, current));
             }
 

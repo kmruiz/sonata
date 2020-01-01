@@ -2,6 +2,7 @@ package io.sonata.lang.parser.ast.classes.values;
 
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
@@ -45,6 +46,10 @@ public class PartialValueClassWithBody implements Node {
         Node nextExpr = current.consume(token);
         if (nextExpr == null) {
             if (token.representation().equals("}")) {
+                if (current instanceof RootNode) {
+                    return new ValueClass(definition, name, definedFields, declarations);
+                }
+
                 return new ValueClass(definition, name, definedFields, append(declarations, current));
             }
 
