@@ -1,6 +1,4 @@
-let _zero() = 0
-
 let sum(numberList: number[])
 let sum([a, tail#]) = a + sum(tail)
 let sum([a]) = a
-let sum([]) = _zero()
+let sum([]) = 0

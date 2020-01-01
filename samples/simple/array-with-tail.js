@@ -1,1 +1,1 @@
-"use strict";console.log(sum([1,2,3,4,5,6,7,8,9,10]));function sum(x){return (function () {let tail=x.slice(1);let a=x[0];if(a&&x.length>=2){return a+sum(tail)}if(a){return a;}return 0;})();};
+"use strict";console.log(sum([1,2,3,4,5,6,7,8,9,10]));function sum(x){const r$ =(function () {let tail=x.slice(1);let a=x[0];if(a&&x.length>=2){return a+sum(tail)}if(a){return a;}return 0;})();return r$;}

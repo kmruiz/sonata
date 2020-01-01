@@ -29,6 +29,7 @@ public class JSBackend implements Backend {
     private List<String> parameterNames;
     private boolean inClass;
     private boolean inEntityClass;
+    private boolean isUsingEntities;
 
     public JSBackend() {
         this.buffer = new ByteArrayOutputStream(180000);
@@ -36,6 +37,7 @@ public class JSBackend implements Backend {
         this.parameterNames = null;
         this.inClass = false;
         this.inEntityClass = false;
+        this.isUsingEntities = false;
     }
 
     private void pushInExpr() {
@@ -57,11 +59,16 @@ public class JSBackend implements Backend {
     @Override
     public void emitScriptBegin(ScriptNode scriptNode, BackendCodeGenerator generator) {
         emit("\"use strict\";");
-        emit("function _() { let y; const x = new Promise(r => { y = r; }); return [ x, y ]; }");
     }
 
     @Override
     public void emitScriptEnd(ScriptNode scriptNode, BackendCodeGenerator generator) {
+        if (isUsingEntities) {
+            emit("function _(){let y,x=new Promise(r=>{y=r});return[x,y]}");
+            emit("function _$(p){return Array.prototype.slice.call(p)}");
+            emit("function SI(a,b){return setInterval(a,b)}");
+            emit("function CI(a){clearInterval(a)}");
+        }
     }
 
     @Override
@@ -216,7 +223,7 @@ public class JSBackend implements Backend {
             emit("(");
             emit(String.join(", ", parameterNames));
             emit("){");
-            emit("const args = Array.prototype.slice.call(arguments);");
+            emit("const args = _$(arguments);");
             emit("const vs = _();");
             emit("const p = vs[0];");
             emit("const r = vs[1];");
@@ -393,8 +400,8 @@ public class JSBackend implements Backend {
             emit(";");
         });
         emit("self._mailbox = [];");
-        emit("self._interval = setInterval(function () { if (self._mailbox.length > 0) { const todo = self._mailbox.shift(); todo(); } }, 0);");
-        emit("self.stop = function () { clearInterval(self._interval); };");
+        emit("self._interval = SI(function () { if (self._mailbox.length > 0) { const todo = self._mailbox.shift(); todo(); } }, 0);");
+        emit("self.stop = function () { CI(self._interval); };");
     }
 
     @Override
@@ -521,6 +528,7 @@ public class JSBackend implements Backend {
     private void pushEntityClass() {
         this.inClass = true;
         this.inEntityClass = true;
+        this.isUsingEntities = true;
     }
 
     private void pushValueClass() {
@@ -536,7 +544,6 @@ public class JSBackend implements Backend {
     private boolean inEntityClass() {
         return this.inClass && this.inEntityClass;
     }
-
     private boolean inValueClass() {
         return this.inClass && !this.inEntityClass;
     }

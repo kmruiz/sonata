@@ -1,1 +1,1 @@
-"use strict";function price(amount,currency){let body={};body.class='price';body.amount=amount;body.currency=currency;body.format=function format(){return amount+' '+currency};return body;};console.log(price(42,'EUR').format());
+"use strict";function price(amount,currency){let self={};self.class='price';self.amount=amount;self.currency=currency;self.format=function format(){const r$ =amount+' '+currency;return r$;};return self;};console.log(price(42,'EUR').format());
