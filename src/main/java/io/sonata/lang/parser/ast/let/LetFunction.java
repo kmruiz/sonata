@@ -13,20 +13,20 @@ public class LetFunction implements Expression {
     public final SourcePosition definition;
     public final String letName;
     public final List<Parameter> parameters;
-    public final ASTType returnASTType;
+    public final ASTType returnType;
     public final Expression body;
 
-    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnASTType, Expression body) {
+    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnType, Expression body) {
         this.definition = definition;
         this.letName = letName;
         this.parameters = parameters;
-        this.returnASTType = returnASTType;
+        this.returnType = returnType;
         this.body = body;
     }
 
     @Override
     public String representation() {
-        return "let " + letName + "(" + parameters.stream().map(Parameter::representation).collect(Collectors.joining(", ")) + "): " + returnASTType.representation() + " = " + body.representation();
+        return "let " + letName + "(" + parameters.stream().map(Parameter::representation).collect(Collectors.joining(", ")) + "): " + returnType.representation() + " = " + body.representation();
     }
 
     @Override

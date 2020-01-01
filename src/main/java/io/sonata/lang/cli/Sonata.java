@@ -6,13 +6,10 @@ import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
-import io.sonata.lang.analyzer.typeSystem.ClassRelationshipValidator;
-import io.sonata.lang.analyzer.typeSystem.LetVariableProcessor;
+import io.sonata.lang.analyzer.typeSystem.*;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
-import io.sonata.lang.analyzer.typeSystem.ClassScopeProcessor;
-import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.backend.BackendVisitor;
 import io.sonata.lang.parser.Parser;
 import io.sonata.lang.parser.ast.RequiresNodeNotifier;
@@ -33,6 +30,7 @@ public class Sonata {
         Analyzer analyzer = new Analyzer(log,
                 symbolMap,
                 new ClassScopeProcessor(log, scope),
+                new TypeInferenceProcessor(log, scope),
                 new LetVariableProcessor(log, scope),
                 new ClassRelationshipValidator(log, scope),
                 new DestructuringProcessor(symbolMap),

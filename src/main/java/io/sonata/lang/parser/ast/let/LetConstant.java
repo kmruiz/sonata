@@ -8,19 +8,19 @@ import io.sonata.lang.tokenizer.token.Token;
 public class LetConstant implements Expression {
     public final SourcePosition definition;
     public final String letName;
-    public final ASTType returnASTType;
+    public final ASTType returnType;
     public final Expression body;
 
-    public LetConstant(SourcePosition definition, String letName, ASTType returnASTType, Expression body) {
+    public LetConstant(SourcePosition definition, String letName, ASTType returnType, Expression body) {
         this.definition = definition;
         this.letName = letName;
-        this.returnASTType = returnASTType;
+        this.returnType = returnType;
         this.body = body;
     }
 
     @Override
     public String representation() {
-        return "let " + letName + ":" + (returnASTType != null ? returnASTType.representation() : "?") + " = " + body.representation();
+        return "let " + letName + ":" + (returnType != null ? returnType.representation() : "?") + " = " + body.representation();
     }
 
     @Override

@@ -28,7 +28,7 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
 
         if (node instanceof LetConstant) {
             LetConstant let = (LetConstant) node;
-            return new LetConstant(let.definition(), let.letName, let.returnASTType, (Expression) apply(let.body));
+            return new LetConstant(let.definition(), let.letName, let.returnType, (Expression) apply(let.body));
         }
 
         if (node instanceof Expression) {

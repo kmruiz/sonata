@@ -55,7 +55,7 @@ public final class LetVariableProcessor implements Processor {
         if (node instanceof LetConstant) {
             String letName = ((LetConstant) node).letName;
             try {
-                scope.registerVariable(letName, node, scope.resolveType(((LetConstant) node).returnASTType.representation()).get());
+                scope.registerVariable(letName, node, scope.resolveType(((LetConstant) node).returnType.representation()).orElse(new ValueClassType(null, "any")));
                 apply(scope, ((LetConstant) node).body);
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Variable '" + letName + "' has been already defined. Found on " + e.initialAssignment()));
@@ -65,20 +65,21 @@ public final class LetVariableProcessor implements Processor {
         if (node instanceof LetFunction) {
             String letName = ((LetFunction) node).letName;
             try {
-                scope.registerVariable(letName, node, scope.resolveType(((LetFunction) node).returnASTType.representation()).get());
-                Scope letScope = scope.diveIn(node);
-                ((LetFunction) node).parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
-                    String paramName = ((SimpleParameter) parameter).name;
-                    try {
-                        letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astType.representation()).get());
-                    } catch (TypeCanNotBeReassignedException e) {
-                        log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
-                    }
-                });
-                apply(letScope, ((LetFunction) node).body);
+                scope.registerVariable(letName, node, scope.resolveType(((LetFunction) node).returnType.representation()).orElse(new ValueClassType(null, "any")));
             } catch (TypeCanNotBeReassignedException e) {
-                log.syntaxError(new SonataSyntaxError(node, "Function '" + letName + "' has been already defined. Found on " + e.initialAssignment()));
+                // It's fine, let functions can be overloaded
             }
+
+            Scope letScope = scope.diveIn(node);
+            ((LetFunction) node).parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
+                String paramName = ((SimpleParameter) parameter).name;
+                try {
+                    letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astType.representation()).orElse(new ValueClassType(null, "any")));
+                } catch (TypeCanNotBeReassignedException e) {
+                    log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
+                }
+            });
+            apply(letScope, ((LetFunction) node).body);
         }
     }
 

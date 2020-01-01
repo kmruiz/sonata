@@ -84,9 +84,9 @@ public class BackendVisitor implements BackendCodeGenerator {
 
         if (node instanceof LetConstant) {
             LetConstant constant = (LetConstant) node;
-            backend.emitLetConstantBegin(constant.letName, constant.returnASTType, this);
+            backend.emitLetConstantBegin(constant.letName, constant.returnType, this);
             visitTree(constant.body, backend, funcDefs);
-            backend.emitLetConstantEnd(constant.letName, constant.returnASTType, this);
+            backend.emitLetConstantEnd(constant.letName, constant.returnType, this);
         }
 
         if (node instanceof IfElse) {
