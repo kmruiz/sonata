@@ -19,7 +19,15 @@ public final class Scope {
     }
 
     public static Scope root() {
-        return new Scope(null, null, new ArrayList<>(), new HashMap<>());
+        Scope root = new Scope(null, null, new ArrayList<>(), new HashMap<>());
+        try {
+            root.register("string", new ValueClassType(null, "string"));
+            root.register("number", new ValueClassType(null, "number"));
+        } catch (TypeCanNotBeReassignedException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return root;
     }
 
     public Scope diveIn(Node anchor) {
