@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class ArrayDestructuringExpressionParser implements DestructuringExpressionParser {
+public final class ArrayDestructuringExpressionParser implements DestructuringExpressionParser {
     private final class ArrayParameterTouchPoint {
         public final String arrayName;
         public final LiteralArray literalArray;

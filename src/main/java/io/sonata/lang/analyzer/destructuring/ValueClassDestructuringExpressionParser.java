@@ -17,12 +17,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class ValueClassDestructuringExpressionParser implements DestructuringExpressionParser {
+public final class ValueClassDestructuringExpressionParser implements DestructuringExpressionParser {
     private final SymbolResolver resolver;
 
     public ValueClassDestructuringExpressionParser(SymbolResolver resolver) {
         this.resolver = resolver;
     }
+
     private final class ValueClassParameterTouchPoint {
         public final FunctionCall functionCall;
         public final ValueClass valueClass;

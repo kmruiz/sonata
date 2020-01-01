@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class ComposedDestructuringExpressionParser implements DestructuringExpressionParser {
+public final class ComposedDestructuringExpressionParser implements DestructuringExpressionParser {
     private final List<DestructuringExpressionParser> parsers;
 
     public ComposedDestructuringExpressionParser(DestructuringExpressionParser... parsers) {

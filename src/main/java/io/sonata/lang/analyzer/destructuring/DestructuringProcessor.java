@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static io.sonata.lang.javaext.Lists.append;
 
-public class DestructuringProcessor implements Processor {
+public final class DestructuringProcessor implements Processor {
     private final DestructuringExpressionParser expressionParsers;
 
     public DestructuringProcessor(SymbolResolver resolver) {

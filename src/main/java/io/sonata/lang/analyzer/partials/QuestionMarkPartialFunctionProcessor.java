@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class QuestionMarkPartialFunctionProcessor implements Processor {
+public final class QuestionMarkPartialFunctionProcessor implements Processor {
     @Override
     public Node apply(Node node) {
         if (node instanceof ScriptNode) {

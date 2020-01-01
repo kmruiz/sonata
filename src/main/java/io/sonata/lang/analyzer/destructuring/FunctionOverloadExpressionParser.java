@@ -10,7 +10,7 @@ import io.sonata.lang.parser.ast.let.fn.Parameter;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class FunctionOverloadExpressionParser implements DestructuringExpressionParser {
+public final class FunctionOverloadExpressionParser implements DestructuringExpressionParser {
     private final SymbolResolver resolver;
 
     public FunctionOverloadExpressionParser(SymbolResolver resolver) {
