@@ -13,7 +13,7 @@ import io.sonata.lang.parser.ast.type.ASTType;
 
 import java.util.Optional;
 
-public class ClassRelationshipValidator implements Processor {
+public final class ClassRelationshipValidator implements Processor {
     private final Scope scope;
     private final CompilerLog log;
 

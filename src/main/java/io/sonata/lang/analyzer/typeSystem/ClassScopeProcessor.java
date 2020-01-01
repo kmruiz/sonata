@@ -9,7 +9,7 @@ import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 
-public class ClassScopeProcessor implements Processor {
+public final class ClassScopeProcessor implements Processor {
     private final CompilerLog log;
     private final Scope rootScope;
 

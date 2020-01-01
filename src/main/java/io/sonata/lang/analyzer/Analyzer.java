@@ -7,7 +7,7 @@ import io.sonata.lang.parser.ast.Node;
 import java.util.Arrays;
 import java.util.List;
 
-public class Analyzer {
+public final class Analyzer {
     private final CompilerLog log;
     private final List<Processor> processors;
 
