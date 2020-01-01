@@ -250,6 +250,9 @@ public class JSBackend implements Backend {
     public void emitBaseFunctionSpecificationBegin(LetFunction base, BackendCodeGenerator generator) {
         if (base.body != null) {
             emit("const r$ =");
+            if (base.body instanceof IfElse) {
+                emit("(function(){");
+            }
         }
     }
 
@@ -258,6 +261,11 @@ public class JSBackend implements Backend {
         if (inEntityClass) {
             emit("this(r$);");
         }
+
+        if (base.body instanceof IfElse) {
+            emit("})()");
+        }
+
         emit(";return r$;");
     }
 
@@ -484,7 +492,7 @@ public class JSBackend implements Backend {
 
     @Override
     public void emitElseBegin(IfElse ifElse, BackendCodeGenerator generator) {
-        emit("else{");
+        emit("else{return ");
     }
 
     @Override
