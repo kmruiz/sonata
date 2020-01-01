@@ -52,6 +52,7 @@ public class Source implements AutoCloseable {
                 final int readByte = inputStream.read(buffer);
                 if (readByte == -1) {
                     emitEof(emitter, position);
+                    emitEof(emitter, position);
                     break;
                 }
 

@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class Compile {
     public static void execute(List<String> files, String output) throws Exception {
@@ -26,8 +27,8 @@ public class Compile {
         try {
             result = Sonata.compile(log, sources, JSBackend::new).blockingGet();
             Files.write(Paths.get(output), result);
-        } catch (Exception e) {
-            log.info("Could not compile because there have been compilation errors. Please check the log.");
+        } catch (NoSuchElementException e) {
+            log.info("Could not compile because there are compilation errors.");
         }
 
         Instant endingTime = Instant.now();

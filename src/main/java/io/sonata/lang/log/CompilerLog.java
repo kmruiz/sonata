@@ -36,7 +36,7 @@ public final class CompilerLog {
     }
 
     public void inPhase(String phase) {
-        info.printf("%s In phase '%s'\n", INFO_TAG, phase);
+        info.printf("%s In phase '%s'.\n", INFO_TAG, phase);
         info.flush();
     }
 

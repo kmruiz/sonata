@@ -7,6 +7,7 @@ import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.typeSystem.ClassRelationshipValidator;
+import io.sonata.lang.analyzer.typeSystem.LetVariableProcessor;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
@@ -29,12 +30,13 @@ public class Sonata {
         BackendVisitor visitor = new BackendVisitor(backend);
         Tokenizer tokenizer = new Tokenizer();
         Scope scope = Scope.root();
-        Analyzer analyzer = new Analyzer(
-                log, symbolMap,
-                new DestructuringProcessor(symbolMap),
-                new QuestionMarkPartialFunctionProcessor(),
+        Analyzer analyzer = new Analyzer(log,
+                symbolMap,
                 new ClassScopeProcessor(log, scope),
-                new ClassRelationshipValidator(log, scope)
+                new LetVariableProcessor(log, scope),
+                new ClassRelationshipValidator(log, scope),
+                new DestructuringProcessor(symbolMap),
+                new QuestionMarkPartialFunctionProcessor()
         );
 
         Subject<Source> requires = ReplaySubject.create();

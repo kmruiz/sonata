@@ -3,6 +3,7 @@ package io.sonata.lang.parser.ast;
 import io.sonata.lang.parser.ast.classes.entities.PartialEntityClass;
 import io.sonata.lang.parser.ast.classes.values.PartialValueClass;
 import io.sonata.lang.parser.ast.exp.Atom;
+import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.PartialArray;
 import io.sonata.lang.parser.ast.exp.PartialPriorityExpression;
 import io.sonata.lang.parser.ast.let.PartialLet;
@@ -59,7 +60,7 @@ public class RootNode implements Node {
             }
         }
 
-        return null;
+        return EmptyExpression.instance().consume(token);
     }
 
     @Override

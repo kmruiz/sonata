@@ -17,7 +17,7 @@ public class SourcePosition {
 
     public final SourcePosition next(char byChar) {
         if (byChar == '\n') {
-            return new SourcePosition(source, line + 1, 1);
+            return new SourcePosition(source, line + 1, 0);
         }
         return new SourcePosition(source, line, column + 1);
     }

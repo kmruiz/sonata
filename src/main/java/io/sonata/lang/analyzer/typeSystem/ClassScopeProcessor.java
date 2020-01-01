@@ -29,7 +29,7 @@ public final class ClassScopeProcessor implements Processor {
             try {
                 rootScope.registerType(className, new EntityClassType(node.definition(), className));
             } catch (TypeCanNotBeReassignedException e) {
-                log.syntaxError(new SonataSyntaxError(node, "Entity classes can not be redefined, but " + className + " is defined at least twice."));
+                log.syntaxError(new SonataSyntaxError(node, "Entity classes can not be redefined, but '" + className + "' is defined at least twice. Found on " + e.initialAssignment()));
             }
         }
 

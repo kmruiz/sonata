@@ -12,7 +12,7 @@ import io.sonata.lang.tokenizer.token.Token;
 public class PartialLetConstant implements Expression {
     private final SourcePosition definition;
     private final String letName;
-    private final ASTType ASTType;
+    private final ASTType astType;
     private final State state;
     private final Node value;
 
@@ -24,17 +24,17 @@ public class PartialLetConstant implements Expression {
         return new PartialLetConstant(definition, letName, EmptyASTType.instance(), State.WAITING_TYPE, RootNode.instance());
     }
 
-    private PartialLetConstant(SourcePosition definition, String letName, ASTType ASTType, State state, Node value) {
+    private PartialLetConstant(SourcePosition definition, String letName, ASTType astType, State state, Node value) {
         this.definition = definition;
         this.letName = letName;
-        this.ASTType = ASTType;
+        this.astType = astType;
         this.state = state;
         this.value = value;
     }
 
     @Override
     public String representation() {
-        return "let " + letName + ": " + ASTType.representation() + " = " + value.representation() + "?" + state;
+        return "let " + letName + ": " + astType.representation() + " = " + value.representation() + "?" + state;
     }
 
     @Override
@@ -42,15 +42,15 @@ public class PartialLetConstant implements Expression {
         switch (state) {
             case WAITING_TYPE:
                 if (token.representation().equals(":")) {
-                    return new PartialLetConstant(definition, letName, ASTType, State.IN_TYPE, value);
+                    return new PartialLetConstant(definition, letName, astType, State.IN_TYPE, value);
                 } else if (token.representation().equals("=")) {
                     return new PartialLetConstant(definition, letName, null, State.IN_BODY, value);
                 }
                 break;
             case IN_TYPE:
-                ASTType nextASTType = ASTType.consume(token);
+                ASTType nextASTType = astType.consume(token);
                 if (nextASTType == null) {
-                    return new PartialLetConstant(definition, letName, ASTType, State.WAITING_EQUALS, value).consume(token);
+                    return new PartialLetConstant(definition, letName, astType, State.WAITING_EQUALS, value).consume(token);
                 }
 
                 if (nextASTType instanceof FunctionASTType) {
@@ -60,16 +60,16 @@ public class PartialLetConstant implements Expression {
                 return new PartialLetConstant(definition, letName, nextASTType, state, value);
             case WAITING_EQUALS:
                 if (token.representation().equals("=")) {
-                    return new PartialLetConstant(definition, letName, ASTType, State.IN_BODY, value);
+                    return new PartialLetConstant(definition, letName, astType, State.IN_BODY, value);
                 }
                 break;
             case IN_BODY:
                 Node nextBody = value.consume(token);
-                if (nextBody == null) {
-                    return new LetConstant(definition, letName, ASTType, (Expression) value);
+                if (nextBody == null && value instanceof Expression) {
+                    return new LetConstant(definition, letName, astType, (Expression) value);
                 }
 
-                return new PartialLetConstant(definition, letName, ASTType, state, nextBody);
+                return new PartialLetConstant(definition, letName, astType, state, nextBody);
         }
 
         return null;
