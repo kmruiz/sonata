@@ -1,1 +1,1 @@
-"use strict";let numbers=[1,2,3,4,5];let tenTimes=numbers.map(function (a){ return a*10});console.log(tenTimes);
+"use strict";function _(){let y,x=new Promise(function(r){y=r});return[x,y]}function _$(p){return Array.prototype.slice.call(p)}function SI(a,b){return setInterval(a,b)}function CI(a){clearInterval(a)}let numbers=[1,2,3,4,5,];let tenTimes=numbers.map(function(a){return a*10});console.log(tenTimes);

@@ -1,16 +1,13 @@
 package io.sonata.lang.e2e;
 
 import io.reactivex.Flowable;
-import io.sonata.lang.backend.js.JSBackend;
+import io.sonata.lang.backend.js.JavaScriptBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.source.Source;
 import org.graalvm.polyglot.Context;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +42,12 @@ public abstract class E2ETest {
     }
 
     private String compileToString(String literalScript) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos));
+
         Source literalSource = Source.fromLiteral(literalScript);
-        return Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), JSBackend::new).map(String::new).blockingGet();
+        Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), new JavaScriptBackend(writer)).blockingAwait();
+
+        return new String(baos.toByteArray());
     }
 }

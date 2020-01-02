@@ -4,6 +4,8 @@ import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.analyzer.symbols.SymbolResolver;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.BlockExpression;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.exp.IfElse;
@@ -12,7 +14,10 @@ import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,10 +45,24 @@ public final class DestructuringProcessor implements Processor {
     }
 
     private Node parse(ScriptNode node) {
-        return new ScriptNode(reduceFunctionsIfAny(node.nodes).collect(Collectors.toList()), node.currentNode, node.requiresNotifier);
+        List<Node> nodes = node.nodes.stream().map(e -> {
+            if (e instanceof ValueClass) {
+                ValueClass vc = (ValueClass) e;
+                return new ValueClass(vc.definition, vc.name, vc.definedFields, reduceFunctionsIfAny(vc.body));
+            }
+
+            if (e instanceof EntityClass) {
+                EntityClass entity = (EntityClass) e;
+                return new EntityClass(entity.definition, entity.name, entity.definedFields, reduceFunctionsIfAny(entity.body));
+            }
+
+            return e;
+        }).collect(Collectors.toList());
+
+        return new ScriptNode(reduceFunctionsIfAny(nodes), node.currentNode, node.requiresNotifier);
     }
 
-    private Stream<Node> reduceFunctionsIfAny(List<Node> nodes) {
+    private List<Node> reduceFunctionsIfAny(List<Node> nodes) {
         AtomicInteger currentOrder = new AtomicInteger(0);
         Map<String, List<Node>> groupedNodes = nodes.stream().collect(Collectors.groupingBy(node -> (node instanceof LetFunction) ? ((LetFunction) node).letName : String.valueOf(currentOrder.incrementAndGet())));
 
@@ -53,7 +72,7 @@ public final class DestructuringProcessor implements Processor {
             } else {
                 return children.get(0);
             }
-        });
+        }).collect(Collectors.toList());
     }
 
     private LetFunction reduceFunctionList(List<LetFunction> fns) {
@@ -77,7 +96,7 @@ public final class DestructuringProcessor implements Processor {
 
         List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted(IfElse::weightedComparison).collect(Collectors.toList());
 
-        return new LetFunction(master.definition(), master.letName, parameters, master.returnType, new BlockExpression(master.definition(), append(destructuringExpressions, all).stream().map(e -> (Expression) e).filter(Objects::nonNull).collect(Collectors.toList())));
+        return new LetFunction(master.definition(), master.letName, parameters, master.returnType, flatten(new BlockExpression(master.definition(), append(destructuringExpressions, all).stream().map(e -> (Expression) e).filter(Objects::nonNull).collect(Collectors.toList()))));
     }
 
     private Expression generateGuardedBody(LetFunction master, LetFunction overload) {
@@ -107,6 +126,18 @@ public final class DestructuringProcessor implements Processor {
         return null;
     }
 
+    private BlockExpression flatten(BlockExpression block) {
+        List<Expression> expressions = block.expressions.stream()
+                .flatMap(expr -> {
+                    if (expr instanceof BlockExpression) {
+                        return ((BlockExpression) expr).expressions.stream();
+                    }
+
+                    return Stream.of(expr);
+                }).collect(Collectors.toList());
+
+        return new BlockExpression(block.definition, expressions);
+    }
     @Override
     public String phase() {
         return "DESTRUCTURING";
