@@ -149,20 +149,6 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("};");
     }
 
-    private void emitEnqueueFunctionFor(String baseName, String internalFunctionName, List<String> parameterNames) {
-        emit("self.", baseName, "=function ");
-
-        emit(baseName, "(", String.join(",", parameterNames), "){");
-        emit("const args = _$(arguments);");
-        emit("const vs = _();");
-        emit("const p = vs[0];");
-        emit("const r = vs[1];");
-        emit("self._mailbox.push(function () { r(");
-        emit(internalFunctionName);
-        emit(".apply(r, args));});");
-        emit("return p;};");
-    }
-
     private void emitAtom(Atom atom, Context context) {
         emit(atom.value, !context.isInExpression ? ";" : "");
     }
@@ -286,10 +272,10 @@ public class JavaScriptBackend implements CompilerBackend {
         emit(fields.stream().collect(Collectors.joining(",")));
         emit("){let self={};");
         emit("self.class='", node.name, "';");
-        emit("self._mailbox=[];");
-        emit("self._interval=SI(function(){if(self._mailbox.length>0){const x=self._mailbox.shift();x()}},0);");
+        emit("self._m$=[];");
+        emit("self._i$=SI(DQ(self),0);");
         emitEnqueueFunctionFor("stop","$stop$", Collections.emptyList());
-        emit("function $stop$(){CI(self._interval);this()};");
+        emit("function $stop$(){CI(self._i$)};");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
         node.body.forEach(e -> emitNode(e, context.inEntityClass()));
         emit("return self;}");
@@ -328,6 +314,14 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("function _$(p){return Array.prototype.slice.call(p)}");
         emit("function SI(a,b){return setInterval(a,b)}");
         emit("function CI(a){clearInterval(a)}");
+        emit("function PS(s,f){return function(){const a=_$(arguments);const v=_();const p=v[0];const r=v[1];");
+        emit("s._m$.push(function(){r(f.apply(null,a))});");
+        emit("return p}}");
+        emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
+    }
+
+    private void emitEnqueueFunctionFor(String baseName, String internalFunctionName, List<String> parameterNames) {
+        emit("self.", baseName, "=PS(self,", internalFunctionName, ");");
     }
 
     private void emit(String... args) {
