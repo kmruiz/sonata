@@ -4,8 +4,6 @@ import io.sonata.lang.parser.ast.classes.entities.PartialEntityClass;
 import io.sonata.lang.parser.ast.classes.values.PartialValueClass;
 import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
-import io.sonata.lang.parser.ast.exp.PartialArray;
-import io.sonata.lang.parser.ast.exp.PartialPriorityExpression;
 import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
@@ -45,22 +43,8 @@ public class RootNode implements Node {
             return new Atom(token.sourcePosition(), token.representation());
         }
 
-        if (token instanceof SeparatorToken) {
-            if (token.representation().equals("\n")) {
-                return this;
-            }
-
-            if (token.representation().equals("(")) {
-                return PartialPriorityExpression.instance();
-            }
-
-            if (token.representation().equals("[")) {
-                return PartialArray.initial(token.sourcePosition());
-            }
-
-            if (token.representation().equals("?")) {
-                return Atom.unknown(token.sourcePosition());
-            }
+        if (token instanceof SeparatorToken && token.representation().equals("\n")) {
+            return this;
         }
 
         return EmptyExpression.instance().consume(token);
