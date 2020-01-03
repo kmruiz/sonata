@@ -36,7 +36,7 @@ public class PartialBlockExpression implements Expression {
             }
 
             if (!(currentNode instanceof EmptyExpression)) {
-                return new PartialBlockExpression(definition, append(nodes, currentNode), EmptyExpression.instance());
+                return new PartialBlockExpression(definition, append(nodes, currentNode), EmptyExpression.instance()).consume(token);
             }
 
             return this;
