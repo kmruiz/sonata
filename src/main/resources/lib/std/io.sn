@@ -1,0 +1,1 @@
+let println(text: string) = console.log(text)

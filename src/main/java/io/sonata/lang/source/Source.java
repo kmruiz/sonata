@@ -17,7 +17,7 @@ public class Source implements AutoCloseable {
     private static final byte[] EOL = System.lineSeparator().getBytes(Charset.defaultCharset());
 
     public enum Type {
-        FILE, LITERAL
+        FILE, LITERAL, RESOURCE
     }
 
     public final String name;
@@ -36,6 +36,11 @@ public class Source implements AutoCloseable {
 
     public static Source fromLiteral(String literal) {
         return new Source(literal, Type.LITERAL, new ByteArrayInputStream(literal.getBytes(Charset.defaultCharset())));
+    }
+
+    public static Source fromResourceModule(String moduleName) {
+        final String resourceName = "/lib/" + moduleName.replaceAll("\\.", "/") + ".sn";
+        return new Source(moduleName, Type.RESOURCE, Source.class.getResourceAsStream(resourceName));
     }
 
     public static Source endOfProgram() {
