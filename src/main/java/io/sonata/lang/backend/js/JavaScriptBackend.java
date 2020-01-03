@@ -321,7 +321,7 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitEnqueueFunctionFor(String baseName, String internalFunctionName, List<String> parameterNames) {
-        emit("self.", baseName, "=PS(self,", internalFunctionName, ");");
+        emit("self.", baseName, "=PS(self,", internalFunctionName, ");const ", baseName, "=self.",baseName,";");
     }
 
     private void emit(String... args) {
