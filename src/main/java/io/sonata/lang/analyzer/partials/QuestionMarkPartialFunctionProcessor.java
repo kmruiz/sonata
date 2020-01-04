@@ -3,8 +3,11 @@ package io.sonata.lang.analyzer.partials;
 import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
+import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.source.SourcePosition;
 
@@ -29,6 +32,29 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
         if (node instanceof LetConstant) {
             LetConstant let = (LetConstant) node;
             return new LetConstant(let.definition(), let.letName, let.returnType, (Expression) apply(let.body));
+        }
+
+        if (node instanceof LetFunction) {
+            LetFunction let = (LetFunction) node;
+            return new LetFunction(let.definition, let.letName, let.parameters, let.returnType, (Expression) apply(let.body));
+        }
+
+        if (node instanceof ValueClass) {
+            ValueClass vc = (ValueClass) node;
+            List<Node> body = vc.body.stream().map(this::apply).collect(Collectors.toList());
+            return new ValueClass(vc.definition, vc.name, vc.definedFields, body);
+        }
+
+        if (node instanceof EntityClass) {
+            EntityClass entity = (EntityClass) node;
+            List<Node> body = entity.body.stream().map(this::apply).collect(Collectors.toList());
+            return new EntityClass(entity.definition, entity.name, entity.definedFields, body);
+        }
+
+        if (node instanceof BlockExpression) {
+            BlockExpression block = (BlockExpression) node;
+            List<Expression> body = block.expressions.stream().map(this::apply).map(e -> (Expression) e).collect(Collectors.toList());
+            return new BlockExpression(block.definition, body);
         }
 
         if (node instanceof Expression) {
@@ -67,6 +93,15 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
             if (Atom.isUnknownAtom(expression)) {
                 return new Atom(expression.definition(), paramNameSupplier.get());
             }
+        } else if (expression instanceof MethodReference) {
+            MethodReference ref = (MethodReference) expression;
+            Expression receiver = parseExpressionForLambda(ref.receiver, paramNameSupplier);
+            return new MethodReference(receiver, ref.methodName);
+        } else if (expression instanceof FunctionCall) {
+            FunctionCall fc = (FunctionCall) expression;
+            Expression rcv = parseExpressionForLambda(fc.receiver, paramNameSupplier);
+            List<Expression> args = fc.arguments.stream().map(e -> parseExpressionForLambda(e, paramNameSupplier)).collect(Collectors.toList());
+            return new FunctionCall(rcv, args);
         }
 
         return expression;

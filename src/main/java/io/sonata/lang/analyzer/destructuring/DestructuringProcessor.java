@@ -14,10 +14,7 @@ import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,16 +60,33 @@ public final class DestructuringProcessor implements Processor {
     }
 
     private List<Node> reduceFunctionsIfAny(List<Node> nodes) {
-        AtomicInteger currentOrder = new AtomicInteger(0);
-        Map<String, List<Node>> groupedNodes = nodes.stream().collect(Collectors.groupingBy(node -> (node instanceof LetFunction) ? ((LetFunction) node).letName : String.valueOf(currentOrder.incrementAndGet())));
-
-        return groupedNodes.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(Map.Entry::getValue).map(children -> {
-            if (children.size() > 1) {
-                return reduceFunctionList(children.stream().map(v -> (LetFunction) v).collect(Collectors.toList()));
+        Map<String, Optional<NodeAndOrder>> groupedNodes = groupWithOriginalOrder(nodes);
+        return groupedNodes.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(Map.Entry::getValue).map(Optional::get).map(children -> {
+            if (children.nodes.size() > 1) {
+                final LetFunction fn = reduceFunctionList(children.nodes.stream().map(v -> (LetFunction) v).collect(Collectors.toList()));
+                return new NodeAndOrder(Collections.singletonList(fn), children.order);
             } else {
-                return children.get(0);
+                return new NodeAndOrder(children.nodes, children.order);
             }
-        }).collect(Collectors.toList());
+        })
+        .sorted(Comparator.comparingInt(a -> -a.order))
+        .map(a -> a.nodes.get(0))
+        .collect(Collectors.toList());
+    }
+
+    private Map<String, Optional<NodeAndOrder>> groupWithOriginalOrder(List<Node> nodes) {
+        AtomicInteger currentOrder = new AtomicInteger(0);
+        return nodes.stream()
+                .map(node -> new NodeAndOrder(Arrays.asList(node), currentOrder.getAndIncrement()))
+                .collect(Collectors.groupingBy(nodeAndOrder -> {
+                    Node node = nodeAndOrder.nodes.get(0);
+                    if (node instanceof LetFunction) {
+                        LetFunction fn = (LetFunction) node;
+                        return fn.letName;
+                    } else {
+                        return UUID.randomUUID().toString();
+                    }
+                }, Collectors.reducing((a, b) -> new NodeAndOrder(append(a.nodes, b.nodes), a.order))));
     }
 
     private LetFunction reduceFunctionList(List<LetFunction> fns) {
@@ -141,5 +155,15 @@ public final class DestructuringProcessor implements Processor {
     @Override
     public String phase() {
         return "DESTRUCTURING";
+    }
+}
+
+class NodeAndOrder {
+    public final List<Node> nodes;
+    public final int order;
+
+    NodeAndOrder(List<Node> nodes, int order) {
+        this.nodes = nodes;
+        this.order = order;
     }
 }

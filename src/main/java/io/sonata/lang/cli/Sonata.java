@@ -43,7 +43,7 @@ public class Sonata {
 
         return sources
                 .concatWith(Single.fromSupplier(Source::endOfProgram))
-                .concatWith(requires.toFlowable(BUFFER))
+                .concatWith(requires.distinct(s -> s.name).toFlowable(BUFFER))
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)
                 .reduce(Parser.initial(notifier), Parser::reduce)

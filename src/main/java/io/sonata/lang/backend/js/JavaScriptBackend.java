@@ -30,6 +30,10 @@ public class JavaScriptBackend implements CompilerBackend {
             this.isInValueClass = isInValueClass;
         }
 
+        public Context outOfExpression() {
+            return new Context(false, isInEntityClass, isInValueClass);
+        }
+
         public Context inExpression() {
             return new Context(true, isInEntityClass, isInValueClass);
         }
@@ -191,7 +195,7 @@ public class JavaScriptBackend implements CompilerBackend {
                 emit("return ");
                 emitNode(ex, context.inExpression());
             } else {
-                emitNode(ex, context);
+                emitNode(ex, context.outOfExpression());
             }
         }
 
@@ -247,6 +251,10 @@ public class JavaScriptBackend implements CompilerBackend {
         int arg = 0;
         for (Expression expr : node.arguments) {
             arg++;
+            if (context.isInEntityClass) {
+                emit("await ");
+            }
+
             emitNode(expr, context.inExpression());
             if (arg < args) {
                 emit(",");
@@ -291,6 +299,10 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitLambda(Lambda node, Context context) {
+        if (context.isInEntityClass) {
+            emit("async ");
+        }
+
         emit("function(");
         emit(node.parameters.stream().map(p -> p.name).collect(Collectors.joining(",")));
         emit("){return ");

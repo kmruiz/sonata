@@ -1,7 +1,6 @@
 package io.sonata.lang.javaext;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,10 +21,6 @@ public final class Lists {
     }
 
     private static <T> List<T> newIfNeed(List<T> list) {
-        if (list == Collections.emptyList()) {
-            return new LinkedList<>();
-        }
-
-        return list;
+        return new LinkedList<>(list);
     }
 }

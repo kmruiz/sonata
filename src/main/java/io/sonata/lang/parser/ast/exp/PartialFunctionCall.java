@@ -38,7 +38,11 @@ public class PartialFunctionCall implements Expression {
                 }
 
                 if (sep.separator.equals(")")) {
-                    return new FunctionCall(receiver, append(arguments, requireNonNullElse(next, currentExpression)));
+                    if (currentExpression instanceof EmptyExpression) {
+                        return new FunctionCall(receiver, arguments);
+                    } else {
+                        return new FunctionCall(receiver, append(arguments, requireNonNullElse(next, currentExpression)));
+                    }
                 }
             }
         }

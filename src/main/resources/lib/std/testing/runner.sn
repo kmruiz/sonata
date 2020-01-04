@@ -1,0 +1,11 @@
+requires std.testing.suite
+requires std.testing.test
+
+entity class TestRunner(suites: TestSuites[], report: any) {
+    let register(suite: TestSuite) = self.suites.push(suite)
+    let run() = {
+        let results = self.suites.map(?.runAll())
+        results.forEach(self.report(?))
+        self.stop()
+    }
+}

@@ -1,0 +1,13 @@
+requires std.testing.test
+
+value class TestSuiteResult(suite: string, tests: TestResult[], failed: boolean)
+
+entity class TestSuite(name: string, tests: Test[]) {
+    let register(test: Test) = self.tests.push(test)
+    let runAll(): TestSuiteResult = {
+        let results = self.tests.map(?.run())
+        let failed = results.some(?.failed)
+        self.stop()
+        TestSuiteResult(self.name, results, failed)
+    }
+}

@@ -98,7 +98,7 @@ public class PartialLetFunction implements Expression {
                 Expression nextBody = body.consume(token);
                 if (nextBody == null || nextBody instanceof BlockExpression) {
                     if (letName.equals("")) {
-                        return Lambda.synthetic(definition, (List) parameters, body);
+                        return Lambda.synthetic(definition, (List) parameters, requireNonNullElse(nextBody, body));
                     } else {
                         return new LetFunction(definition, letName, parameters, returnASTType, requireNonNullElse(nextBody, body));
                     }

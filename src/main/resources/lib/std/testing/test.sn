@@ -1,0 +1,20 @@
+requires std.io
+
+value class AssertionStatus(message: string, success: boolean)
+value class TestResult(test: string, assertions: AssertionStatus[], failed: boolean)
+
+entity class Test(name: string, execution: any, assertions: AssertionStatus[], failed: boolean) {
+    let register(exec: any) = self.execution = exec
+    let asserted(status: AssertionStatus) = self.assertions.push(status)
+    let asserted(AssertionStatus(message, false)) = {
+        self.assertions.push(status)
+        self.failed = true
+    }
+
+    let run(): TestResult = {
+        self.execution()
+        self.stop()
+        TestResult(self.name, self.assertions, self.failed)
+    }
+}
+

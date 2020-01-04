@@ -41,7 +41,7 @@ public final class ValueClassDestructuringExpressionParser implements Destructur
             int field = argIdx.incrementAndGet();
             String fieldName = tp.valueClass.definedFields.get(field).name();
 
-            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), tp.valueClass.name), ".", new Atom(arg.definition(), fieldName)));
+            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), parameterName), ".", new Atom(arg.definition(), fieldName)));
         }));
     }
 

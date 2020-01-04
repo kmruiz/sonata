@@ -49,16 +49,22 @@ public class TypeInferenceProcessor implements Processor {
 
         if (node instanceof LetConstant) {
             LetConstant constant = (LetConstant) node;
-            if (constant.returnType == null || constant.returnType instanceof EmptyASTType) {
-                return new LetConstant(constant.definition, constant.letName, infer(constant.body), (Expression) apply(constant.body));
+            ASTType type = constant.returnType;
+            if (type == null || type instanceof EmptyASTType) {
+                type = infer(constant.body);
             }
+
+            return new LetConstant(constant.definition, constant.letName, type, (Expression) apply(constant.body));
         }
 
         if (node instanceof LetFunction) {
             LetFunction fn = (LetFunction) node;
-            if (fn.returnType == null  || fn.returnType instanceof EmptyASTType) {
-                return new LetFunction(fn.definition, fn.letName, fn.parameters, infer(fn.body), (Expression) apply(fn.body));
+            ASTType type = fn.returnType;
+            if (type == null || type instanceof EmptyASTType) {
+                type = infer(fn.body);
             }
+
+            return new LetFunction(fn.definition, fn.letName, fn.parameters, type, (Expression) apply(fn.body));
         }
 
         if (node instanceof BlockExpression) {
@@ -77,14 +83,10 @@ public class TypeInferenceProcessor implements Processor {
                     return new BasicASTType(expression.definition(), "number");
                 case STRING:
                     return new BasicASTType(expression.definition(), "string");
-                case IDENTIFIER:
-                    switch (expression.representation()) {
-                        case "true":
-                        case "false":
-                            return new BasicASTType(expression.definition(), "boolean");
-                        case "null":
-                            return new BasicASTType(expression.definition(), "null");
-                    }
+                case BOOLEAN:
+                    return new BasicASTType(expression.definition(), "boolean");
+                case NULL:
+                    return new BasicASTType(expression.definition(), "null");
             }
         }
 

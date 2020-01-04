@@ -8,6 +8,8 @@ public class Atom extends ComposedExpression implements Expression {
         NUMERIC,
         STRING,
         IDENTIFIER,
+        BOOLEAN,
+        NULL,
         UNKNOWN
     }
 
@@ -33,6 +35,10 @@ public class Atom extends ComposedExpression implements Expression {
             type = Type.STRING;
         } else if (value.equals("?")) {
             type = Type.UNKNOWN;
+        } else if (value.equals("true") || value.equals("false")) {
+            type = Type.BOOLEAN;
+        } else if (value.equals("null")) {
+            type = Type.NULL;
         } else {
             type = Type.IDENTIFIER;
         }
