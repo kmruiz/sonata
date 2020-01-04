@@ -69,7 +69,7 @@ public final class DestructuringProcessor implements Processor {
                 return new NodeAndOrder(children.nodes, children.order);
             }
         })
-        .sorted(Comparator.comparingInt(a -> -a.order))
+        .sorted(Comparator.comparingInt(a -> a.order))
         .map(a -> a.nodes.get(0))
         .collect(Collectors.toList());
     }

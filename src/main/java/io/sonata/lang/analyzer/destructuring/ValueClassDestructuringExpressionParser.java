@@ -1,6 +1,7 @@
 package io.sonata.lang.analyzer.destructuring;
 
 import io.sonata.lang.analyzer.symbols.SymbolResolver;
+import io.sonata.lang.javaext.Objects;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.Atom;
@@ -41,7 +42,7 @@ public final class ValueClassDestructuringExpressionParser implements Destructur
             int field = argIdx.incrementAndGet();
             String fieldName = tp.valueClass.definedFields.get(field).name();
 
-            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), parameterName), ".", new Atom(arg.definition(), fieldName)));
+            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), Objects.requireNonNullElse(parameterName, tp.valueClass.name)), ".", new Atom(arg.definition(), fieldName)));
         }));
     }
 
