@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.let;
 
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
@@ -29,21 +30,21 @@ public class PartialLet implements Expression {
         if (letName == null) {
             if (token instanceof IdentifierToken) {
                 return new PartialLet(definition, ((IdentifierToken) token).value);
-            }
-
-            if (token instanceof SeparatorToken) {
+            } else if (token instanceof SeparatorToken) {
                 SeparatorToken sep = (SeparatorToken) token;
 
                 if (sep.separator.equals("(")) {
-                    return PartialLetFunction.anonymous(token.sourcePosition());
+                    return PartialLetFunction.anonymous(definition);
                 }
             }
+
+            throw new ParserException(this, "Expected an identifier or an opening parenthesis, but got '" + token.representation() + "'");
         } else {
             if (token instanceof SeparatorToken) {
                 SeparatorToken sep = (SeparatorToken) token;
 
                 if (sep.separator.equals("(")) {
-                    return PartialLetFunction.initial(token.sourcePosition(), letName);
+                    return PartialLetFunction.initial(definition, letName);
                 }
             }
         }

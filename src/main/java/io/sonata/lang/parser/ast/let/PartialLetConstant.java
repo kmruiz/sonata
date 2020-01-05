@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.let;
 
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.parser.ast.exp.Expression;
@@ -46,7 +47,7 @@ public class PartialLetConstant implements Expression {
                 } else if (token.representation().equals("=")) {
                     return new PartialLetConstant(definition, letName, null, State.IN_BODY, value);
                 }
-                break;
+                throw new ParserException(this, "Expecting a colon ':' or an equals '=', but got '" + token.representation() + "'");
             case IN_TYPE:
                 ASTType nextASTType = astType.consume(token);
                 if (nextASTType == null) {
@@ -62,7 +63,7 @@ public class PartialLetConstant implements Expression {
                 if (token.representation().equals("=")) {
                     return new PartialLetConstant(definition, letName, astType, State.IN_BODY, value);
                 }
-                break;
+                throw new ParserException(this, "Expecting an equals '=', but got '"+ token.representation() + "'");
             case IN_BODY:
                 Node nextBody = value.consume(token);
                 if (nextBody == null && value instanceof Expression) {
@@ -72,7 +73,7 @@ public class PartialLetConstant implements Expression {
                 return new PartialLetConstant(definition, letName, astType, state, nextBody);
         }
 
-        return null;
+        throw new ParserException(this, "Parser got to an unknown state.");
     }
 
     @Override

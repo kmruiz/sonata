@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.let;
 
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.exp.BlockExpression;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.Expression;
@@ -73,20 +74,21 @@ public class PartialLetFunction implements Expression {
                                 } else {
                                     return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
                                 }
+                            default:
+                                throw new ParserException(this, "Expecting a comma ',', a closing parenthesis ')' or a closing bracket ']', but got '" + token.representation() + "'");
                         }
                     }
-                } else {
-                    return new PartialLetFunction(definition, letName, State.IN_PARAMETER, parameters, nextParam, returnASTType, body);
                 }
+                return new PartialLetFunction(definition, letName, State.IN_PARAMETER, parameters, nextParam, returnASTType, body);
             case WAITING_DEFINITION:
-                if (token instanceof OperatorToken) {
+                if (token instanceof OperatorToken && token.representation().equals("=")) {
                     return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTType, body);
                 } else if (token instanceof SeparatorToken && token.representation().equals("\n")) {
                     return new LetFunction(definition, letName, parameters, returnASTType, null);
                 } else if (token instanceof SeparatorToken && token.representation().equals(":") && returnASTType instanceof EmptyASTType) {
                     return new PartialLetFunction(definition, letName, State.IN_RETURN_TYPE, parameters, currentParameter, returnASTType, body);
                 }
-                return this;
+                throw new ParserException(this, "Expecting an equals '=', a new line or a colon ':', but got '" + token.representation() + "'");
             case IN_RETURN_TYPE:
                 ASTType nextASTType = returnASTType.consume(token);
                 if (nextASTType == null) {
@@ -107,7 +109,7 @@ public class PartialLetFunction implements Expression {
                 return new PartialLetFunction(definition, letName, state, parameters, currentParameter, returnASTType, nextBody);
         }
 
-        return null;
+        throw new ParserException(this, "Parser got to an unknown state.");
     }
 
     @Override
