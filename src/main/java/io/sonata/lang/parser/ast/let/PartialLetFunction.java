@@ -68,14 +68,13 @@ public class PartialLetFunction implements Expression {
                             case ",":
                                 return new PartialLetFunction(definition, letName, State.IN_PARAMETER, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
                             case ")":
-                            case "]":
                                 if (nextParam == null) {
                                     return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, parameters, SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
                                 } else {
                                     return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
                                 }
                             default:
-                                throw new ParserException(this, "Expecting a comma ',', a closing parenthesis ')' or a closing bracket ']', but got '" + token.representation() + "'");
+                                return new PartialLetFunction(definition, letName, state, parameters, requireNonNullElse(nextParam, currentParameter), returnASTType, body);
                         }
                     }
                 }
