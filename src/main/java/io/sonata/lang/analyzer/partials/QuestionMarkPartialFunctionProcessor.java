@@ -22,7 +22,7 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
     public Node apply(Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.nodes.stream().map(this::apply).collect(Collectors.toList()), script.currentNode, script.requiresNotifier);
+            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(Collectors.toList()), script.currentNode, script.requiresNotifier);
         }
 
         if (node instanceof FunctionCall) {

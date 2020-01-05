@@ -46,7 +46,7 @@ public class Sonata {
                 .concatWith(requires.distinct(s -> s.name).toFlowable(BUFFER))
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)
-                .reduce(Parser.initial(notifier), Parser::reduce)
+                .reduce(Parser.initial(log, notifier), Parser::reduce)
                 .toFlowable()
                 .flatMap(analyzer::apply)
                 .filter(e -> !log.hasErrors())
