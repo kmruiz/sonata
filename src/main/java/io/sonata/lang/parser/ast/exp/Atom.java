@@ -3,6 +3,8 @@ package io.sonata.lang.parser.ast.exp;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.Objects;
+
 public class Atom extends ComposedExpression implements Expression {
     public enum Type {
         NUMERIC,
@@ -52,5 +54,18 @@ public class Atom extends ComposedExpression implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Atom atom = (Atom) o;
+        return value.equals(atom.value) && type == atom.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, type);
     }
 }

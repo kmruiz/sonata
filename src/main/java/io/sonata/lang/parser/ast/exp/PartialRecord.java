@@ -42,6 +42,10 @@ public class PartialRecord implements Expression {
                 if (maybeAtom instanceof Atom) {
                     Atom atom = (Atom) maybeAtom;
                     if (atom.type == Atom.Type.IDENTIFIER) {
+                        if (values.containsKey(atom)) {
+                            throw new ParserException(this, "Literal records can not contain duplicate keys, but " + atom.value + " has been registered at least twice.");
+                        }
+
                         return new PartialRecord(definition, values, State.WAITING_COLON, atom, EmptyExpression.instance());
                     }
                 }
@@ -81,6 +85,6 @@ public class PartialRecord implements Expression {
 
     @Override
     public String representation() {
-        return values.entrySet().stream().map(kv -> kv.getKey() + ":" + kv.getValue()).collect(joining(",", "{", "}"));
+        return values.entrySet().stream().map(kv -> kv.getKey().representation() + ":" + kv.getValue().representation()).collect(joining(",", "{", "}"));
     }
 }
