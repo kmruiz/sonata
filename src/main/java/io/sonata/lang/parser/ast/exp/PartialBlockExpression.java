@@ -12,6 +12,7 @@ import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
@@ -47,6 +48,10 @@ public class PartialBlockExpression implements Expression {
         if (nextNode == null) {
             if (token.representation().equals("}")) {
                 if (currentNode instanceof EmptyExpression) {
+                    if (nodes.isEmpty()) {
+                        return new Record(definition, new HashMap<>());
+                    }
+
                     return new BlockExpression(definition, nodes);
                 }
 
