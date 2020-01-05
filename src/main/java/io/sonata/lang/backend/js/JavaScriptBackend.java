@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JavaScriptBackend implements CompilerBackend {
@@ -120,6 +121,10 @@ public class JavaScriptBackend implements CompilerBackend {
 
         if (node instanceof ArrayAccess) {
             emitArrayAccess((ArrayAccess) node, context);
+        }
+
+        if (node instanceof Record) {
+            emitRecord((Record) node, context);
         }
     }
 
@@ -318,6 +323,26 @@ public class JavaScriptBackend implements CompilerBackend {
     private void emitArrayAccess(ArrayAccess node, Context context) {
         emitNode(node.receiver, context);
         emit("[", node.index, "]", !context.isInExpression ? ";" : "");
+    }
+
+
+    private void emitRecord(Record node, Context context) {
+        emit("({");
+        final int values = node.values.size();
+        int val = 0;
+        for (Map.Entry<Atom, Expression> e : node.values.entrySet()) {
+            val++;
+
+            emitNode(e.getKey(), context.inExpression());
+            emit(":");
+            emitNode(e.getValue(), context.inExpression());
+
+            if (val < values) {
+                emit(",");
+            }
+        }
+
+        emit("})");
     }
 
     private void emitPreface() {

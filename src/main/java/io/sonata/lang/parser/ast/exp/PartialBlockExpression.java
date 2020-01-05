@@ -1,5 +1,6 @@
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -25,6 +26,16 @@ public class PartialBlockExpression implements Expression {
 
     @Override
     public Expression consume(Token token) {
+        if (token.representation().equals(":")) {
+            if (this.currentNode instanceof Atom && nodes.isEmpty()) {
+                final Atom atom = (Atom) this.currentNode;
+                if (atom.type == Atom.Type.IDENTIFIER) {
+                    return PartialRecord.waitingValue(definition, atom);
+                }
+            }
+            throw new ParserException(this.currentNode, "Record keys can only be identifiers, but got '" + token.representation() + "'");
+        }
+
         Expression nextNode = currentNode.consume(token);
         if (nextNode == null) {
             if (token.representation().equals("}")) {
