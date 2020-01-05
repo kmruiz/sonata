@@ -6,7 +6,7 @@ import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
@@ -31,7 +31,7 @@ public class PartialRecord implements Expression {
     }
 
     public static PartialRecord waitingValue(SourcePosition definition, Atom key) {
-        return new PartialRecord(definition, new HashMap<>(), State.IN_VALUE, key, EmptyExpression.instance());
+        return new PartialRecord(definition, new LinkedHashMap<>(), State.IN_VALUE, key, EmptyExpression.instance());
     }
 
     @Override
