@@ -68,11 +68,11 @@ fibonacci example, go to the fibonacci directory and run the compiler:
 ### Windows
 ```ps1
 $> cd samples/fibonacci/
-$> docker run -it -v "$(pwd):/home/" -w "/home" snc snc fibonacci.sn -o fibfromdocker.js
+$> docker run -it -v "$(pwd):/code/" -w "/code" kmruiz/sonata snc fibonacci.sn -o fibfromdocker.js
 ```
 
 ### Linux / OSX
 ```sh
 $> cd samples/fibonacci/
-$> docker run -it -v "`pwd`:/home/" -w "/home" snc snc fibonacci.sn -o fibfromdocker.js
+$> docker run -it -v "`pwd`:/code/" -w "/code" kmruiz/sonata snc fibonacci.sn -o fibfromdocker.js
 ```
