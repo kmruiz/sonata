@@ -1,7 +1,9 @@
 package io.sonata.lang.parser.ast.requires;
 
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class PartialRequiresNode implements Node {
@@ -25,20 +27,29 @@ public class PartialRequiresNode implements Node {
 
     @Override
     public String representation() {
-        return "requires " + module + " ?";
+        return "requires " + module;
     }
 
     @Override
     public Node consume(Token token) {
         switch (state) {
             case IN_NAME:
-                return new PartialRequiresNode(definition, module + token.representation(), State.IN_SEPARATOR);
+                if (token instanceof IdentifierToken) {
+                    return new PartialRequiresNode(definition, module + token.representation(), State.IN_SEPARATOR);
+                }
+
+                throw new ParserException(this, "Expecting identifier, but got '" + token.representation() + "'");
             case IN_SEPARATOR:
                 if (token.representation().equals("\n")) {
                     return new RequiresNode(definition, module);
                 }
 
-                return new PartialRequiresNode(definition, module + ".", State.IN_NAME);
+                if (token.representation().equals(".")) {
+                    return new PartialRequiresNode(definition, module + ".", State.IN_NAME);
+                }
+
+                throw new ParserException(this, "Expecting a new line, to finish the statement, or a dot '.' to continue with the definition, but got '" + token.representation() + "'");
+
         }
 
         return null;
