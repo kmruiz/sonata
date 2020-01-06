@@ -1,5 +1,3 @@
-requires std.io
-
 value class AssertionStatus(message: string, success: boolean)
 value class TestResult(test: string, assertions: AssertionStatus[], failed: boolean)
 

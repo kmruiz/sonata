@@ -1,10 +1,11 @@
 requires std.testing
+requires std.io
 
 let _ = Testing(TestRunner([], println))
 
 _.describe('Test', let (it: any) = {
     it('should do', let (assert: any) = {
-        assert('true is true', true)
+        assert('true is true', false)
     })
 })
 
