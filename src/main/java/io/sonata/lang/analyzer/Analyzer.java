@@ -24,8 +24,11 @@ public final class Analyzer {
     }
 
     private Node applyProcessor(Node current, Processor processor) {
-        log.inPhase(processor.phase());
-        return processor.apply(current);
+        long millis = System.currentTimeMillis();
+        Node result = processor.apply(current);
+        long elapsed = System.currentTimeMillis() - millis;
+        log.phaseExecuted(processor.phase(), elapsed);
+        return result;
     }
 
     public Flowable<Node> apply(Node node) {

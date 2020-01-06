@@ -128,6 +128,6 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
 
     @Override
     public String phase() {
-        return "ANONYMOUS PARTIAL FUNCTION PROCESSING";
+        return "ANON. PARTIAL FUNCTIONS";
     }
 }

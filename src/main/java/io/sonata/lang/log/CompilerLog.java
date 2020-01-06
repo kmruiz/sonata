@@ -12,6 +12,7 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.source.SourcePosition;
 
 import java.io.PrintWriter;
+import java.text.NumberFormat;
 
 public final class CompilerLog {
     public static final String FATAL_TAG = "[FATAL]";
@@ -43,8 +44,8 @@ public final class CompilerLog {
         error.flush();
     }
 
-    public void inPhase(String phase) {
-        info.printf("%s In phase '%s'.\n", INFO_TAG, phase);
+    public void phaseExecuted(String phase, long timeInMs) {
+        info.printf("%s %30s: %8s ms\n", INFO_TAG, "'" + phase + "'", NumberFormat.getIntegerInstance().format(timeInMs));
         info.flush();
     }
 

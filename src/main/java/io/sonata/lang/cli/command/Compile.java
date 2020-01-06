@@ -20,13 +20,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 public class Compile {
     public static void execute(List<String> files, String output) throws Exception {
         CompilerLog log = CompilerLog.console();
-        Instant startingTime = Instant.now();
+        Instant startingTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
         Flowable<Source> sources = Flowable.fromIterable(files)
                 .map(Paths::get)
@@ -42,8 +43,15 @@ public class Compile {
             log.info("Could not compile because there are compilation errors.");
         }
 
-        Instant endingTime = Instant.now();
-        String duration = Duration.between(startingTime, endingTime).toString();
+        Instant endingTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        String duration = humanReadableFormat(Duration.between(startingTime, endingTime));
         log.info("Finished in " + duration);
+    }
+
+    private static String humanReadableFormat(Duration duration) {
+        return duration.toString()
+                .substring(2)
+                .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+                .toLowerCase();
     }
 }

@@ -31,7 +31,7 @@ public final class ClassRelationshipValidator implements Processor {
 
     @Override
     public String phase() {
-        return "CLASS RELATIONSHIP VALIDATION";
+        return "CLASS RELATIONSHIPS";
     }
 
     @Override
