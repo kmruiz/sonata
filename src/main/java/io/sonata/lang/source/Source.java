@@ -50,10 +50,6 @@ public class Source implements AutoCloseable {
         return new Source(moduleName, Type.RESOURCE, Source.class.getResourceAsStream(resourceName));
     }
 
-    public static Source endOfProgram() {
-        return fromLiteral("\0");
-    }
-
     public final Flowable<SourceCharacter> read() {
         final byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -63,7 +59,6 @@ public class Source implements AutoCloseable {
             do {
                 final int readByte = inputStream.read(buffer);
                 if (readByte == -1) {
-                    emitEof(emitter, position);
                     emitEof(emitter, position);
                     break;
                 }
@@ -90,5 +85,7 @@ public class Source implements AutoCloseable {
         for (byte c : EOL) {
             emitter.onNext(new SourceCharacter(position, (char) c));
         }
+        emitter.onNext(new SourceCharacter(position.next('\0'),'\0'));
+        emitter.onNext(new SourceCharacter(position.next('\0'),'\0'));
     }
 }

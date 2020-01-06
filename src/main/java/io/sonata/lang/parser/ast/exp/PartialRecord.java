@@ -57,7 +57,6 @@ public class PartialRecord implements Expression {
                     }
                 }
 
-                throw new ParserException(maybeAtom, "Record keys can only be identifiers, but got '" + token.representation() + "'");
             case WAITING_COLON:
                 if (token.representation().equals(":")) {
                     return new PartialRecord(definition, values, State.IN_VALUE, currentAtom, EmptyExpression.instance());

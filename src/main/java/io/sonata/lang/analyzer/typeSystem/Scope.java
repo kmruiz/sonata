@@ -68,6 +68,10 @@ public final class Scope {
     }
 
     public Optional<Type> resolveType(String name) {
+        if (name.endsWith("[]")) {
+            return resolveType(name.substring(0, name.length() - 2));
+        }
+
         final Type typeInThisScope = typeContext.get(name);
         if (typeInThisScope == null) {
             if (parent != null) {

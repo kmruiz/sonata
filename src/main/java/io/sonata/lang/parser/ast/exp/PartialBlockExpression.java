@@ -40,8 +40,9 @@ public class PartialBlockExpression implements Expression {
                 if (atom.type == Atom.Type.IDENTIFIER) {
                     return PartialRecord.waitingValue(definition, atom);
                 }
+
+                throw new ParserException(this.currentNode, "Record keys can only be identifiers, but got '" + token.representation() + "'");
             }
-            throw new ParserException(this.currentNode, "Record keys can only be identifiers, but got '" + token.representation() + "'");
         }
 
         Expression nextNode = currentNode.consume(token);

@@ -33,6 +33,16 @@ public final class CompilerLog {
         return new CompilerLog(new PrintWriter(System.out), new PrintWriter(System.err));
     }
 
+    public void requestedModule(String moduleName, boolean isStd) {
+        info.printf("%s Requested module %s, which is %s.\n", INFO_TAG, moduleName, isStd ? "standard" : "external");
+        info.flush();
+    }
+
+    public void loadedModule(String moduleName) {
+        info.printf("%s Module %s has been marked as loaded.\n", INFO_TAG, moduleName);
+        info.flush();
+    }
+
     public void syntaxError(SonataSyntaxError syntaxError) {
         this.errored = true;
 

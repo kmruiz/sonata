@@ -9,17 +9,16 @@ package io.sonata.lang.cli;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.continuations.ContinuationProcessor;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
+import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
+import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.analyzer.typeSystem.*;
 import io.sonata.lang.backend.CompilerBackend;
 import io.sonata.lang.log.CompilerLog;
-import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
-import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.parser.Parser;
 import io.sonata.lang.parser.ast.RequiresNodeNotifier;
 import io.sonata.lang.parser.ast.RxRequiresNodeNotifier;
@@ -48,10 +47,11 @@ public class Sonata {
         );
 
         Subject<Source> requires = ReplaySubject.create();
-        RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(requires);
+        RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(log, requires);
+
+        notifier.mainModules(sources.map(e -> e.name).toList().blockingGet());
 
         return sources
-                .concatWith(Single.fromSupplier(Source::endOfProgram))
                 .concatWith(requires.distinct(s -> s.name).toFlowable(BUFFER))
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)

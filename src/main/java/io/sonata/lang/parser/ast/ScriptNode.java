@@ -45,7 +45,7 @@ public class ScriptNode implements Node {
     @Override
     public Node consume(Token token) {
         if (token.representation().equals("\0")) {
-            requiresNotifier.done();
+            requiresNotifier.loadedModule(token.sourcePosition().source.name);
             return this;
         }
 
