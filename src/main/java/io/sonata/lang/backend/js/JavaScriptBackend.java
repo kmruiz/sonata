@@ -21,7 +21,6 @@ import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -145,7 +144,7 @@ public class JavaScriptBackend implements CompilerBackend {
 
         if (context.isInEntityClass) {
             internalFunctionName += "$";
-            emitEnqueueFunctionFor(base.letName, internalFunctionName, parameterNames);
+            emitEnqueueFunctionFor(base.letName, internalFunctionName);
         }
 
         if (context.isInValueClass) {
@@ -283,7 +282,7 @@ public class JavaScriptBackend implements CompilerBackend {
     private void emitValueClass(ValueClass node, Context context) {
         final List<String> fields = node.definedFields.stream().map(e -> (SimpleField) e).map(e -> e.name).collect(Collectors.toList());
         emit("function ", node.name, "(");
-        emit(fields.stream().collect(Collectors.joining(",")));
+        emit(String.join(",", fields));
         emit("){let self={};");
         emit("self.class='", node.name, "';");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
@@ -294,13 +293,10 @@ public class JavaScriptBackend implements CompilerBackend {
     private void emitEntityClass(EntityClass node, Context context) {
         final List<String> fields = node.definedFields.stream().map(e -> (SimpleField) e).map(e -> e.name).collect(Collectors.toList());
         emit("function ", node.name, "(");
-        emit(fields.stream().collect(Collectors.joining(",")));
-        emit("){let self={};");
-        emit("self.class='", node.name, "';");
-        emit("self._m$=[];");
-        emit("self._i$=SI(DQ(self),0);");
-        emitEnqueueFunctionFor("stop","$stop$", Collections.emptyList());
-        emit("function $stop$(){CI(self._i$)};");
+        emit(String.join(",", fields));
+        emit("){let self=ECP('", node.name, "');");
+        emit("let $stop$ = ST(self);");
+        emitEnqueueFunctionFor("stop", "$stop$");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
         node.body.forEach(e -> emitNode(e, context.inEntityClass()));
         emit("return self;}");
@@ -322,7 +318,12 @@ public class JavaScriptBackend implements CompilerBackend {
 
         emit("function(");
         emit(node.parameters.stream().map(p -> p.name).collect(Collectors.joining(",")));
-        emit("){return ");
+        emit("){");
+        if (context.isInEntityClass) {
+            emit(node.parameters.stream().map(p -> p.name + "=await " + p.name).collect(Collectors.joining(";")), ";return ");
+        } else {
+            emit("return ");
+        }
         emitNode(node.body, context.inExpression());
         emit("}");
     }
@@ -359,18 +360,20 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitPreface() {
         emit("\"use strict\";");
-        emit("function _(){let y,x=new Promise(function(r){y=r});return[x,y]}");
+        emit("function ECP(c){let o={};o._p$=false;o.class=c;o._m$=[];o._i$=SI(DQ(o),0);return o}");
+        emit("function _(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
         emit("function _$(p){return Array.prototype.slice.call(p)}");
         emit("function SI(a,b){return setInterval(a,b)}");
         emit("function CI(a){clearInterval(a)}");
+        emit("function ST(s){const F=function(){if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}");
         emit("function PS(s,f){return function(){const a=_$(arguments);const v=_();const p=v[0];const r=v[1];");
         emit("s._m$.push(function(){r(f.apply(null,a))});");
         emit("return p}}");
         emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
     }
 
-    private void emitEnqueueFunctionFor(String baseName, String internalFunctionName, List<String> parameterNames) {
-        emit("self.", baseName, "=PS(self,", internalFunctionName, ");const ", baseName, "=self.",baseName,";");
+    private void emitEnqueueFunctionFor(String baseName, String internalFunctionName) {
+        emit("self.", baseName, "=PS(self,", internalFunctionName, ", '", baseName, "');");
     }
 
     private void emit(String... args) {

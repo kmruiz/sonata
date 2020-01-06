@@ -15,4 +15,4 @@ let describe(suiteName: string, suiteDefinition: any) = {
     })
 }
 
-let run() = setTimeout(RUNNER_INSTANCE.run, 0)
+let run() = RUNNER_INSTANCE.run()

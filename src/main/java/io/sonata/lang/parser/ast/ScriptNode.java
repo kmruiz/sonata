@@ -9,11 +9,13 @@ package io.sonata.lang.parser.ast;
 
 import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.log.CompilerLog;
+import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,13 @@ public class ScriptNode implements Node {
         }
 
         return new ScriptNode(log, nodes, nextNode, requiresNotifier);
+    }
+
+    public ScriptNode normalize() {
+        List<Node> sortedNodeList = new LinkedList<>(nodes);
+        sortedNodeList.sort((a, b) -> a instanceof LetConstant ? -1 : 0);
+
+        return new ScriptNode(log, sortedNodeList, currentNode, requiresNotifier);
     }
 
     @Override

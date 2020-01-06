@@ -1,1 +1,9 @@
 requires std.testing
+
+describe('Test', let (it: any) = {
+    it('should do', let (assert: any) = {
+        assert('true is true', true)
+    })
+})
+
+run()
