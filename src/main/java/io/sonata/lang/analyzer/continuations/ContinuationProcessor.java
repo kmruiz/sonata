@@ -45,7 +45,11 @@ public class ContinuationProcessor implements Processor {
         if (node instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) node;
             if (isInferredTypeEntityClass(scope, fc.receiver)) {
-                return new Continuation(fc.definition(), fc);
+                return new Continuation(fc.definition(), fc, false);
+            }
+
+            if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, fc)) {
+                return new Continuation(fc.definition(), fc, true);
             }
         }
 
@@ -99,6 +103,10 @@ public class ContinuationProcessor implements Processor {
         }
 
         return node;
+    }
+
+    private boolean shouldWaitForAllContinuations(Scope scope, FunctionCall fc) {
+        return fc.receiver.representation().endsWith("map");
     }
 
     private boolean isInferredTypeEntityClass(Scope scope, Expression expression) {

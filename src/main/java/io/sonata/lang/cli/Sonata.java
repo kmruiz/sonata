@@ -57,8 +57,6 @@ public class Sonata {
                 .flatMap(tokenizer::process)
                 .reduce(Parser.initial(log, notifier), Parser::reduce)
                 .toFlowable()
-                .map(e -> (ScriptNode) e)
-                .map(ScriptNode::normalize)
                 .flatMap(analyzer::apply)
                 .doOnError(log::compilerError)
                 .filter(e -> !log.hasErrors())

@@ -6,10 +6,12 @@ import io.sonata.lang.tokenizer.token.Token;
 public class Continuation implements Expression {
     public final SourcePosition definition;
     public final Expression body;
+    public final boolean fanOut;
 
-    public Continuation(SourcePosition definition, Expression body) {
+    public Continuation(SourcePosition definition, Expression body, boolean fanOut) {
         this.definition = definition;
         this.body = body;
+        this.fanOut = fanOut;
     }
 
     @Override

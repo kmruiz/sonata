@@ -174,7 +174,16 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitContinuation(Continuation continuation, Context context) {
         emit("await ");
+        if (continuation.fanOut) {
+            emit("Promise.all(");
+        }
+
         emitNode(continuation.body, context.inExpression());
+
+        if (continuation.fanOut) {
+            emit(")");
+        }
+
         if (!context.isInExpression) {
             emit(";");
         }
@@ -312,18 +321,9 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitLambda(Lambda node, Context context) {
-        if (context.isInEntityClass) {
-            emit("async ");
-        }
-
         emit("function(");
         emit(node.parameters.stream().map(p -> p.name).collect(Collectors.joining(",")));
-        emit("){");
-        if (context.isInEntityClass) {
-            emit(node.parameters.stream().map(p -> p.name + "=await " + p.name).collect(Collectors.joining(";")), ";return ");
-        } else {
-            emit("return ");
-        }
+        emit("){return ");
         emitNode(node.body, context.inExpression());
         emit("}");
     }

@@ -136,4 +136,8 @@ public final class Scope {
 
         throw new TypeCanNotBeReassignedException(variableInThisScope.definition.definition());
     }
+
+    public boolean inEntityClass() {
+        return this.anchor != null && this.anchor.startsWith("entity class");
+    }
 }
