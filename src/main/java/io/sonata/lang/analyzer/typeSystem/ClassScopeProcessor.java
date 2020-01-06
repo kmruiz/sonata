@@ -8,13 +8,22 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
-import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.exception.SonataSyntaxError;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
+import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class ClassScopeProcessor implements Processor {
     private final CompilerLog log;
@@ -32,24 +41,77 @@ public final class ClassScopeProcessor implements Processor {
         }
 
         if (node instanceof EntityClass) {
-            final String className = ((EntityClass) node).name;
+            EntityClass entityClass = (EntityClass) node;
+            final String className = entityClass.name;
             try {
-                rootScope.registerType(className, new EntityClassType(node.definition(), className));
+                Map<String, Type> fields = new HashMap<>();
+                Map<String, FunctionType> methods = new HashMap<>();
+
+                entityClass.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
+                    registerFields(entityClass, fields, field)
+                );
+
+                entityClass.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
+                        registerMethods(methods, method)
+                );
+
+                rootScope.registerType(className, new EntityClassType(node.definition(), className, fields, methods));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Entity classes can not be redefined, but '" + className + "' is defined at least twice. Found on " + e.initialAssignment()));
             }
         }
 
         if (node instanceof ValueClass) {
-            final String className = ((ValueClass) node).name;
+            ValueClass vc = (ValueClass) node;
+            final String className = vc.name;
             try {
-                rootScope.registerType(className, new ValueClassType(node.definition(), className));
+                Map<String, Type> fields = new HashMap<>();
+                Map<String, FunctionType> methods = new HashMap<>();
+
+                vc.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
+                        registerFields(vc, fields, field)
+                );
+
+                vc.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
+                        registerMethods(methods, method)
+                );
+
+                rootScope.registerType(className, new ValueClassType(node.definition(), className, fields, methods));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Value classes can not be redefined, but " + className + " is defined at least twice."));
             }
         }
 
         return node;
+    }
+
+    private void registerMethods(Map<String, FunctionType> methods, LetFunction method) {
+        String methodName = method.letName;
+        if (method.parameters.stream().anyMatch(p -> !(p instanceof SimpleParameter))) {
+            return;
+        }
+
+        List<Type> parameters = method.parameters.stream().map(p -> (SimpleParameter) p).map(param -> {
+            final String paramTypeName = param.astType.representation();
+            Optional<Type> paramType = rootScope.resolveType(paramTypeName);
+            return paramType.orElse(willBeAny());
+        }).collect(Collectors.toList());
+        Type returnType = rootScope.resolveType(method.returnType.representation()).orElse(willBeAny());
+        methods.put(methodName, new FunctionType(method.definition(), methodName, returnType, parameters));
+    }
+
+    private void registerFields(Node owner, Map<String, Type> fields, SimpleField field) {
+        final String typeName = field.astType.representation();
+        Optional<Type> refType = rootScope.resolveType(typeName);
+        if (!refType.isPresent()) {
+            log.syntaxError(new SonataSyntaxError(owner, "Field '" + field.name + "' refers to a type '" + typeName + "', which does not exist."));
+        } else {
+            fields.put(field.name, refType.orElse(willBeAny()));
+        }
+    }
+
+    private Type willBeAny() {
+        return rootScope.resolveType("any").get();
     }
 
     @Override
