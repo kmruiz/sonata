@@ -16,6 +16,7 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.BlockExpression;
 import io.sonata.lang.parser.ast.let.LetConstant;
@@ -51,10 +52,15 @@ public final class LetVariableProcessor implements Processor {
 
         if (node instanceof EntityClass) {
             Map<String, FunctionType> methods = new HashMap<>();
+            Map<String, Type> fields = new HashMap<>();
 
             Scope classScope = scope.diveIn((Scoped) node);
             EntityClass entity = (EntityClass) node;
             String className = entity.name;
+
+            entity.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
+                    registerFields(classScope, entity, fields, field)
+            );
 
             entity.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
                     registerMethods(classScope, methods, method)
@@ -65,18 +71,21 @@ public final class LetVariableProcessor implements Processor {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
             }
 
-            final EntityClassType ect = (EntityClassType) incompleteType.get();
-            classScope.enrichType(className, new EntityClassType(node.definition(), className, ect.fields, methods));
-
+            classScope.enrichType(className, new EntityClassType(node.definition(), className, fields, methods));
             entity.body.forEach(b -> apply(classScope, b));
         }
 
         if (node instanceof ValueClass) {
+            Map<String, Type> fields = new HashMap<>();
             Map<String, FunctionType> methods = new HashMap<>();
 
             Scope classScope = scope.diveIn((Scoped) node);
             ValueClass vc = (ValueClass) node;
             String className = vc.name;
+
+            vc.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
+                    registerFields(classScope, vc, fields, field)
+            );
 
             vc.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
                     registerMethods(classScope, methods, method)
@@ -87,8 +96,7 @@ public final class LetVariableProcessor implements Processor {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this value class. Please fill a bug with a sample code.");
             }
 
-            final ValueClassType vct = (ValueClassType) incompleteType.get();
-            classScope.enrichType(className, new ValueClassType(node.definition(), className, vct.fields, methods));
+            classScope.enrichType(className, new ValueClassType(node.definition(), className, fields, methods));
 
             vc.body.forEach(b -> apply(classScope, b));
         }
@@ -126,6 +134,16 @@ public final class LetVariableProcessor implements Processor {
                 }
             });
             apply(letScope, ((LetFunction) node).body);
+        }
+    }
+
+    private void registerFields(Scope scope, Node owner, Map<String, Type> fields, SimpleField field) {
+        final String typeName = field.astType.representation();
+        Optional<Type> refType = scope.resolveType(typeName);
+        if (!refType.isPresent()) {
+            log.syntaxError(new SonataSyntaxError(owner, "Field '" + field.name + "' refers to a type '" + typeName + "', which does not exist."));
+        } else {
+            fields.put(field.name, refType.orElse(willBeAny(scope)));
         }
     }
 

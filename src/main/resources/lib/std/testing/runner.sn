@@ -1,7 +1,7 @@
 requires std.testing.suite
 requires std.testing.test
 
-entity class TestRunner(suites: TestSuites[], report: any) {
+entity class TestRunner(suites: TestSuite[], report: any) {
     let register(suite: TestSuite) = self.suites.push(suite)
     let run() = {
         let results = self.suites.map(?.runAll())

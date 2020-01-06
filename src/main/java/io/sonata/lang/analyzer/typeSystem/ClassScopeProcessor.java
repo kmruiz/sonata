@@ -15,13 +15,9 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
-import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public final class ClassScopeProcessor implements Processor {
     private final CompilerLog log;
@@ -42,13 +38,7 @@ public final class ClassScopeProcessor implements Processor {
             EntityClass entityClass = (EntityClass) node;
             final String className = entityClass.name;
             try {
-                Map<String, Type> fields = new HashMap<>();
-
-                entityClass.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
-                    registerFields(entityClass, fields, field)
-                );
-
-                final EntityClassType type = new EntityClassType(node.definition(), className, fields, Collections.emptyMap());
+                final EntityClassType type = new EntityClassType(node.definition(), className, Collections.emptyMap(), Collections.emptyMap());
                 rootScope.registerType(className, type);
                 rootScope.diveIn((Scoped) node).registerVariable("self", node, type);
             } catch (TypeCanNotBeReassignedException e) {
@@ -60,29 +50,13 @@ public final class ClassScopeProcessor implements Processor {
             ValueClass vc = (ValueClass) node;
             final String className = vc.name;
             try {
-                Map<String, Type> fields = new HashMap<>();
-
-                vc.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
-                        registerFields(vc, fields, field)
-                );
-
-                rootScope.registerType(className, new ValueClassType(node.definition(), className, fields, Collections.emptyMap()));
+                rootScope.registerType(className, new ValueClassType(node.definition(), className, Collections.emptyMap(), Collections.emptyMap()));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Value classes can not be redefined, but " + className + " is defined at least twice."));
             }
         }
 
         return node;
-    }
-
-    private void registerFields(Node owner, Map<String, Type> fields, SimpleField field) {
-        final String typeName = field.astType.representation();
-        Optional<Type> refType = rootScope.resolveType(typeName);
-        if (!refType.isPresent()) {
-            log.syntaxError(new SonataSyntaxError(owner, "Field '" + field.name + "' refers to a type '" + typeName + "', which does not exist."));
-        } else {
-            fields.put(field.name, refType.orElse(willBeAny()));
-        }
     }
 
     private Type willBeAny() {
