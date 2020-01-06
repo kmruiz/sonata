@@ -16,14 +16,11 @@ import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.let.LetFunction;
-import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public final class ClassScopeProcessor implements Processor {
     private final CompilerLog log;
@@ -45,17 +42,12 @@ public final class ClassScopeProcessor implements Processor {
             final String className = entityClass.name;
             try {
                 Map<String, Type> fields = new HashMap<>();
-                Map<String, FunctionType> methods = new HashMap<>();
 
                 entityClass.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
                     registerFields(entityClass, fields, field)
                 );
 
-                entityClass.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
-                        registerMethods(methods, method)
-                );
-
-                rootScope.registerType(className, new EntityClassType(node.definition(), className, fields, methods));
+                rootScope.registerType(className, new EntityClassType(node.definition(), className, fields, Collections.emptyMap()));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Entity classes can not be redefined, but '" + className + "' is defined at least twice. Found on " + e.initialAssignment()));
             }
@@ -66,38 +58,18 @@ public final class ClassScopeProcessor implements Processor {
             final String className = vc.name;
             try {
                 Map<String, Type> fields = new HashMap<>();
-                Map<String, FunctionType> methods = new HashMap<>();
 
                 vc.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
                         registerFields(vc, fields, field)
                 );
 
-                vc.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
-                        registerMethods(methods, method)
-                );
-
-                rootScope.registerType(className, new ValueClassType(node.definition(), className, fields, methods));
+                rootScope.registerType(className, new ValueClassType(node.definition(), className, fields, Collections.emptyMap()));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Value classes can not be redefined, but " + className + " is defined at least twice."));
             }
         }
 
         return node;
-    }
-
-    private void registerMethods(Map<String, FunctionType> methods, LetFunction method) {
-        String methodName = method.letName;
-        if (method.parameters.stream().anyMatch(p -> !(p instanceof SimpleParameter))) {
-            return;
-        }
-
-        List<Type> parameters = method.parameters.stream().map(p -> (SimpleParameter) p).map(param -> {
-            final String paramTypeName = param.astType.representation();
-            Optional<Type> paramType = rootScope.resolveType(paramTypeName);
-            return paramType.orElse(willBeAny());
-        }).collect(Collectors.toList());
-        Type returnType = rootScope.resolveType(method.returnType.representation()).orElse(willBeAny());
-        methods.put(methodName, new FunctionType(method.definition(), methodName, returnType, parameters));
     }
 
     private void registerFields(Node owner, Map<String, Type> fields, SimpleField field) {

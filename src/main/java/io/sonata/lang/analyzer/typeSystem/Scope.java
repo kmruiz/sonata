@@ -86,6 +86,16 @@ public final class Scope {
         return Optional.of(typeInThisScope);
     }
 
+    public void enrichType(String name, Type type) {
+        final Type typeInThisScope = typeContext.get(name);
+        if (typeInThisScope == null) {
+            parent.enrichType(name, type);
+            return;
+        }
+
+        typeContext.put(name, type);
+    }
+
     public void registerType(String name, Type type) throws TypeCanNotBeReassignedException {
         final Type typeInThisScope = typeContext.get(name);
         if (typeInThisScope == null) {

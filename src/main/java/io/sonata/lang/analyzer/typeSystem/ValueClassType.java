@@ -12,10 +12,10 @@ import io.sonata.lang.source.SourcePosition;
 import java.util.Map;
 
 public final class ValueClassType implements Type {
-    private final SourcePosition definition;
-    private final String name;
-    private final Map<String, Type> fields;
-    private final Map<String, FunctionType> methods;
+    public final SourcePosition definition;
+    public final String name;
+    public final Map<String, Type> fields;
+    public final Map<String, FunctionType> methods;
 
     public ValueClassType(SourcePosition definition, String name, Map<String, Type> fields, Map<String, FunctionType> methods) {
         this.definition = definition;

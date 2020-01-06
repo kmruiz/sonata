@@ -9,6 +9,7 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
@@ -19,6 +20,12 @@ import io.sonata.lang.parser.ast.exp.BlockExpression;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class LetVariableProcessor implements Processor {
     private final CompilerLog log;
@@ -43,15 +50,43 @@ public final class LetVariableProcessor implements Processor {
         }
 
         if (node instanceof EntityClass) {
+            Map<String, FunctionType> methods = new HashMap<>();
+
             Scope classScope = scope.diveIn(node);
-            ((EntityClass) node).definedFields.forEach(field -> apply(classScope, field));
-            ((EntityClass) node).body.forEach(childDef -> apply(classScope, childDef));
+            EntityClass entity = (EntityClass) node;
+            String className = entity.name;
+
+            entity.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
+                    registerMethods(classScope, methods, method)
+            );
+
+            final Optional<Type> incompleteType = classScope.resolveType(className);
+            if (!incompleteType.isPresent()) {
+                throw new ParserException(node, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
+            }
+
+            final EntityClassType ect = (EntityClassType) incompleteType.get();
+            classScope.enrichType(className, new ValueClassType(node.definition(), className, ect.fields, methods));
         }
 
         if (node instanceof ValueClass) {
+            Map<String, FunctionType> methods = new HashMap<>();
+
             Scope classScope = scope.diveIn(node);
-            ((ValueClass) node).definedFields.forEach(field -> apply(classScope, field));
-            ((ValueClass) node).body.forEach(childDef -> apply(classScope, childDef));
+            ValueClass vc = (ValueClass) node;
+            String className = vc.name;
+
+            vc.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
+                    registerMethods(classScope, methods, method)
+            );
+
+            final Optional<Type> incompleteType = classScope.resolveType(className);
+            if (!incompleteType.isPresent()) {
+                throw new ParserException(node, "Somehow we didn't manage to pre-register this value class. Please fill a bug with a sample code.");
+            }
+
+            final ValueClassType vct = (ValueClassType) incompleteType.get();
+            classScope.enrichType(className, new ValueClassType(node.definition(), className, vct.fields, methods));
         }
 
         if (node instanceof BlockExpression) {
@@ -88,6 +123,25 @@ public final class LetVariableProcessor implements Processor {
             });
             apply(letScope, ((LetFunction) node).body);
         }
+    }
+
+    private void registerMethods(Scope scope, Map<String, FunctionType> methods, LetFunction method) {
+        String methodName = method.letName;
+        if (method.parameters.stream().anyMatch(p -> !(p instanceof SimpleParameter))) {
+            return;
+        }
+
+        List<Type> parameters = method.parameters.stream().map(p -> (SimpleParameter) p).map(param -> {
+            final String paramTypeName = param.astType.representation();
+            Optional<Type> paramType = scope.resolveType(paramTypeName);
+            return paramType.orElse(willBeAny(scope));
+        }).collect(Collectors.toList());
+        Type returnType = scope.resolveType(method.returnType.representation()).orElse(willBeAny(scope));
+        methods.put(methodName, new FunctionType(method.definition(), methodName, returnType, parameters));
+    }
+
+    private Type willBeAny(Scope scope) {
+        return scope.resolveType("any").get();
     }
 
     @Override
