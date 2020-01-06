@@ -71,7 +71,7 @@ public class TypeInferenceProcessor implements Processor {
                 type = infer(fn.body);
             }
 
-            return new LetFunction(fn.definition, fn.letName, fn.parameters, type, (Expression) apply(fn.body));
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, type, (Expression) apply(fn.body));
         }
 
         if (node instanceof BlockExpression) {

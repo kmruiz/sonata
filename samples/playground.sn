@@ -1,4 +1,4 @@
-import std.io
+requires std.io
 
 let TIMES = 10
 

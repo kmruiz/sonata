@@ -117,7 +117,7 @@ public final class DestructuringProcessor implements Processor {
 
         List<Node> all = fns.stream().map(fn -> this.generateGuardedBody(master, fn)).sorted(IfElse::weightedComparison).collect(Collectors.toList());
 
-        return new LetFunction(master.definition(), master.letName, parameters, master.returnType, flatten(new BlockExpression(master.definition(), append(destructuringExpressions, all).stream().map(e -> (Expression) e).filter(Objects::nonNull).collect(Collectors.toList()))));
+        return new LetFunction(master.letId, master.definition(), master.letName, parameters, master.returnType, flatten(new BlockExpression(master.definition(), append(destructuringExpressions, all).stream().map(e -> (Expression) e).filter(Objects::nonNull).collect(Collectors.toList()))));
     }
 
     private Expression generateGuardedBody(LetFunction master, LetFunction overload) {

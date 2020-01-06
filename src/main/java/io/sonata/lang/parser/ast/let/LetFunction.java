@@ -7,6 +7,7 @@
  */
 package io.sonata.lang.parser.ast.let;
 
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.type.ASTType;
@@ -14,21 +15,28 @@ import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class LetFunction implements Expression {
+public class LetFunction implements Expression, Scoped {
+    public final String letId;
     public final SourcePosition definition;
     public final String letName;
     public final List<Parameter> parameters;
     public final ASTType returnType;
     public final Expression body;
 
-    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnType, Expression body) {
+    public LetFunction(String letId, SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnType, Expression body) {
+        this.letId = letId;
         this.definition = definition;
         this.letName = letName;
         this.parameters = parameters;
         this.returnType = returnType;
         this.body = body;
+    }
+
+    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnType, Expression body) {
+        this(UUID.randomUUID().toString(), definition, letName, parameters, returnType, body);
     }
 
     @Override
@@ -44,5 +52,10 @@ public class LetFunction implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public String scopeId() {
+        return "<" + letId + "> let " + letName;
     }
 }

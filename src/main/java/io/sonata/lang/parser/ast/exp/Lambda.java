@@ -8,21 +8,29 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class Lambda extends ComposedExpression {
+public class Lambda extends ComposedExpression implements Scoped {
+    public final String lambdaId;
     public final SourcePosition definition;
     public final List<SimpleParameter> parameters;
     public final Expression body;
 
-    public Lambda(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
+    public Lambda(String lambdaId, SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
+        this.lambdaId = lambdaId;
         this.definition = definition;
         this.parameters = parameters;
         this.body = body;
+    }
+
+    public Lambda(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
+        this(UUID.randomUUID().toString(), definition, parameters, body);
     }
 
     public static Lambda synthetic(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
@@ -37,5 +45,10 @@ public class Lambda extends ComposedExpression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public String scopeId() {
+        return lambdaId;
     }
 }

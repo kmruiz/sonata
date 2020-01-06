@@ -78,6 +78,10 @@ public class JavaScriptBackend implements CompilerBackend {
             emitAtom((Atom) node, context);
         }
 
+        if (node instanceof Continuation) {
+            emitContinuation((Continuation) node, context);
+        }
+
         if (node instanceof TailExtraction) {
             emitTrailExtraction((TailExtraction) node, context);
         }
@@ -169,6 +173,14 @@ public class JavaScriptBackend implements CompilerBackend {
         emit(atom.value, !context.isInExpression ? ";" : "");
     }
 
+    private void emitContinuation(Continuation continuation, Context context) {
+        emit("await ");
+        emitNode(continuation.body, context.inExpression());
+        if (!context.isInExpression) {
+            emit(";");
+        }
+    }
+
     private void emitTrailExtraction(TailExtraction node, Context context) {
         emitNode(node.expression, context.inExpression());
         emit(".slice(", String.valueOf(node.fromIndex), ")", !context.isInExpression ? ";" : "");
@@ -253,19 +265,12 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitFunctionCall(FunctionCall node, Context context) {
-        if (context.isInExpression && context.isInEntityClass) {
-            emit("await ");
-        }
-
         emitNode(node.receiver, context.inExpression());
         emit("(");
         final int args = node.arguments.size();
         int arg = 0;
         for (Expression expr : node.arguments) {
             arg++;
-            if (context.isInEntityClass) {
-                emit("await ");
-            }
 
             emitNode(expr, context.inExpression());
             if (arg < args) {

@@ -13,6 +13,7 @@ import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
@@ -45,14 +46,13 @@ public final class LetVariableProcessor implements Processor {
 
     private void apply(Scope scope, Node node) {
         if (node instanceof ScriptNode) {
-            Scope scriptScope = scope.diveIn(node);
-            ((ScriptNode) node).nodes.forEach(child -> apply(scriptScope, child));
+            ((ScriptNode) node).nodes.forEach(child -> apply(scope, child));
         }
 
         if (node instanceof EntityClass) {
             Map<String, FunctionType> methods = new HashMap<>();
 
-            Scope classScope = scope.diveIn(node);
+            Scope classScope = scope.diveIn((Scoped) node);
             EntityClass entity = (EntityClass) node;
             String className = entity.name;
 
@@ -67,12 +67,14 @@ public final class LetVariableProcessor implements Processor {
 
             final EntityClassType ect = (EntityClassType) incompleteType.get();
             classScope.enrichType(className, new ValueClassType(node.definition(), className, ect.fields, methods));
+
+            entity.body.forEach(b -> apply(classScope, b));
         }
 
         if (node instanceof ValueClass) {
             Map<String, FunctionType> methods = new HashMap<>();
 
-            Scope classScope = scope.diveIn(node);
+            Scope classScope = scope.diveIn((Scoped) node);
             ValueClass vc = (ValueClass) node;
             String className = vc.name;
 
@@ -87,10 +89,12 @@ public final class LetVariableProcessor implements Processor {
 
             final ValueClassType vct = (ValueClassType) incompleteType.get();
             classScope.enrichType(className, new ValueClassType(node.definition(), className, vct.fields, methods));
+
+            vc.body.forEach(b -> apply(classScope, b));
         }
 
         if (node instanceof BlockExpression) {
-            Scope blockScope = scope.diveIn(node);
+            Scope blockScope = scope.diveIn((Scoped) node);
             ((BlockExpression) node).expressions.forEach(expr -> apply(blockScope, expr));
         }
 
@@ -112,7 +116,7 @@ public final class LetVariableProcessor implements Processor {
                 // It's fine, let functions can be overloaded
             }
 
-            Scope letScope = scope.diveIn(node);
+            Scope letScope = scope.diveIn((Scoped) node);
             ((LetFunction) node).parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
                 String paramName = ((SimpleParameter) parameter).name;
                 try {

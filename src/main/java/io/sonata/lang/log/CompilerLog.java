@@ -14,6 +14,7 @@ import io.sonata.lang.source.SourcePosition;
 import java.io.PrintWriter;
 
 public final class CompilerLog {
+    public static final String FATAL_TAG = "[FATAL]";
     public static final String ERROR_TAG = "[ERROR]";
     public static final String INFO_TAG  = "[INFO ]";
 
@@ -64,5 +65,11 @@ public final class CompilerLog {
         } else {
             return representation.substring(0, newLineIndex) + "...";
         }
+    }
+
+    public void compilerError(Throwable err) {
+        error.printf("%s %s: %s\n", ERROR_TAG, err.getClass().getCanonicalName(), err.getMessage());
+        err.printStackTrace(error);
+        error.flush();
     }
 }

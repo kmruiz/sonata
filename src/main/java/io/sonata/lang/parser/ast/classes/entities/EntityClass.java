@@ -8,6 +8,7 @@
 package io.sonata.lang.parser.ast.classes.entities;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class EntityClass implements Node {
+public class EntityClass implements Node, Scoped {
     public final SourcePosition definition;
     public final String name;
     public final List<Field> definedFields;
@@ -54,5 +55,10 @@ public class EntityClass implements Node {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public String scopeId() {
+        return "entity class " + name;
     }
 }

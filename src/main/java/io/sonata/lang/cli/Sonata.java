@@ -13,6 +13,7 @@ import io.reactivex.Single;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
+import io.sonata.lang.analyzer.continuations.ContinuationProcessor;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.typeSystem.*;
 import io.sonata.lang.backend.CompilerBackend;
@@ -42,7 +43,8 @@ public class Sonata {
                 new LetVariableProcessor(log, scope),
                 new ClassRelationshipValidator(log, scope),
                 new DestructuringProcessor(symbolMap),
-                new QuestionMarkPartialFunctionProcessor()
+                new QuestionMarkPartialFunctionProcessor(),
+                new ContinuationProcessor(log, scope)
         );
 
         Subject<Source> requires = ReplaySubject.create();
@@ -56,6 +58,7 @@ public class Sonata {
                 .reduce(Parser.initial(log, notifier), Parser::reduce)
                 .toFlowable()
                 .flatMap(analyzer::apply)
+                .doOnError(log::compilerError)
                 .filter(e -> !log.hasErrors())
                 .map(e -> (ScriptNode) e)
                 .doOnNext(backend::compile)

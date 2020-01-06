@@ -7,19 +7,28 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.source.SourcePosition;
 
-public class IfElse extends ComposedExpression {
+import java.util.UUID;
+
+public class IfElse extends ComposedExpression implements Scoped {
+    public final String ifElseId;
     public final SourcePosition definition;
     public final Expression condition;
     public final Expression whenTrue;
     public final Expression whenFalse;
 
-    public IfElse(SourcePosition definition, Expression condition, Expression whenTrue, Expression whenFalse) {
+    public IfElse(String ifElseId, SourcePosition definition, Expression condition, Expression whenTrue, Expression whenFalse) {
+        this.ifElseId = ifElseId;
         this.definition = definition;
         this.condition = condition;
         this.whenTrue = whenTrue;
         this.whenFalse = whenFalse;
+    }
+
+    public IfElse(SourcePosition definition, Expression condition, Expression whenTrue, Expression whenFalse) {
+        this(UUID.randomUUID().toString(), definition, condition, whenTrue, whenFalse);
     }
 
     public int weight() {
@@ -62,5 +71,10 @@ public class IfElse extends ComposedExpression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public String scopeId() {
+        return ifElseId;
     }
 }

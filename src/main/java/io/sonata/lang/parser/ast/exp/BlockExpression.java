@@ -8,19 +8,27 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class BlockExpression implements Expression {
+public class BlockExpression implements Expression, Scoped {
+    private final String blockId;
     public final SourcePosition definition;
     public final List<Expression> expressions;
 
-    public BlockExpression(SourcePosition definition, List<Expression> expressions) {
+    public BlockExpression(String blockId, SourcePosition definition, List<Expression> expressions) {
+        this.blockId = blockId;
         this.definition = definition;
         this.expressions = expressions;
+    }
+
+    public BlockExpression(SourcePosition definition, List<Expression> expressions) {
+        this(UUID.randomUUID().toString(), definition, expressions);
     }
 
     @Override
@@ -36,5 +44,10 @@ public class BlockExpression implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public String scopeId() {
+        return blockId;
     }
 }

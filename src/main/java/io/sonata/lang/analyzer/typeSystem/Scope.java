@@ -9,6 +9,7 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.Scoped;
 
 import java.util.*;
 
@@ -23,13 +24,13 @@ public final class Scope {
         }
     }
 
-    private final Node anchor;
+    private final String anchor;
     private final Scope parent;
     private final List<Scope> children;
     private final Map<String, Type> typeContext;
     private final Map<String, Variable> variableContext;
 
-    public Scope(Node anchor, Scope parent, List<Scope> children, Map<String, Type> typeContext, Map<String, Variable> variableContext) {
+    public Scope(String anchor, Scope parent, List<Scope> children, Map<String, Type> typeContext, Map<String, Variable> variableContext) {
         this.anchor = anchor;
         this.parent = parent;
         this.children = children;
@@ -53,10 +54,16 @@ public final class Scope {
         return root;
     }
 
-    public Scope diveIn(Node anchor) {
-        Scope scope = new Scope(anchor, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
-        children.add(scope);
+    public Scope diveIn(Scoped anchor) {
+        final String anchorRepresentation = anchor.scopeId();
+        final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
 
+        if (foundScope.isPresent()) {
+            return foundScope.get();
+        }
+
+        Scope scope = new Scope(anchorRepresentation, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
+        children.add(scope);
         return scope;
     }
 
