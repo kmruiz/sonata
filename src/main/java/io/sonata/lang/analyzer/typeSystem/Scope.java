@@ -138,6 +138,10 @@ public final class Scope {
     }
 
     public boolean inEntityClass() {
-        return this.anchor != null && this.anchor.startsWith("entity class");
+        if (this.anchor == null) {
+            return false;
+        }
+
+        return this.anchor.startsWith("entity class") || parent.inEntityClass();
     }
 }

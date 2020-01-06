@@ -1,9 +1,11 @@
 requires std.testing
 
-describe('Test', let (it: any) = {
+let _ = Testing(TestRunner([], println))
+
+_.describe('Test', let (it: any) = {
     it('should do', let (assert: any) = {
         assert('true is true', true)
     })
 })
 
-run()
+_.run()

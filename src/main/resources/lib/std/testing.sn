@@ -3,16 +3,21 @@ requires std.testing.test
 requires std.testing.runner
 requires std.io
 
-let RUNNER_INSTANCE = TestRunner([], println)
+entity class Testing(runner: TestRunner) {
+    let describe(suiteName: string, suiteDefinition: any) = {
+        let suite = TestSuite(suiteName, [])
+        self.runner.register(suite)
+        suiteDefinition(let (testName: string, testDefinition: any) = {
+            let test = Test(testName, null, [], false)
+            suite.register(test)
+            test.register(let () = testDefinition(let (message: string, condition: boolean) = test.asserted(message, condition)))
+        })
+    }
 
-let describe(suiteName: string, suiteDefinition: any) = {
-    let suite = TestSuite(suiteName, [])
-    RUNNER_INSTANCE.register(suite)
-    suiteDefinition(let (testName: string, testDefinition: any) = {
-        let test = Test(testName, null, [], false)
-        suite.register(test)
-        test.register(let () = testDefinition(let (message: string, condition: boolean) = test.asserted(message, condition)))
-    })
+    let run() = {
+        self.runner.run()
+        self.stop()
+    }
 }
 
-let run() = RUNNER_INSTANCE.run()
+

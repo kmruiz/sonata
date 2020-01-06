@@ -361,12 +361,12 @@ public class JavaScriptBackend implements CompilerBackend {
     private void emitPreface() {
         emit("\"use strict\";");
         emit("function ECP(c){let o={};o._p$=false;o.class=c;o._m$=[];o._i$=SI(DQ(o),0);return o}");
-        emit("function _(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
+        emit("function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
         emit("function _$(p){return Array.prototype.slice.call(p)}");
         emit("function SI(a,b){return setInterval(a,b)}");
         emit("function CI(a){clearInterval(a)}");
         emit("function ST(s){const F=function(){if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}");
-        emit("function PS(s,f){return function(){const a=_$(arguments);const v=_();const p=v[0];const r=v[1];");
+        emit("function PS(s,f){return function(){const a=_$(arguments);const v=_P();const p=v[0];const r=v[1];");
         emit("s._m$.push(function(){r(f.apply(null,a))});");
         emit("return p}}");
         emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
