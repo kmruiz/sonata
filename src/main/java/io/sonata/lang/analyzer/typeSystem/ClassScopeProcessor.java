@@ -12,6 +12,7 @@ import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedExcept
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
@@ -47,7 +48,9 @@ public final class ClassScopeProcessor implements Processor {
                     registerFields(entityClass, fields, field)
                 );
 
-                rootScope.registerType(className, new EntityClassType(node.definition(), className, fields, Collections.emptyMap()));
+                final EntityClassType type = new EntityClassType(node.definition(), className, fields, Collections.emptyMap());
+                rootScope.registerType(className, type);
+                rootScope.diveIn((Scoped) node).registerVariable("self", node, type);
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Entity classes can not be redefined, but '" + className + "' is defined at least twice. Found on " + e.initialAssignment()));
             }

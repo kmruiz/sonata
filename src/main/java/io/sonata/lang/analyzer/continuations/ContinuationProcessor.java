@@ -58,7 +58,7 @@ public class ContinuationProcessor implements Processor {
         if (node instanceof ValueClass) {
             ValueClass vc = (ValueClass) node;
             List<Node> body = vc.body.stream().map(b -> apply(scope.diveIn(vc), b)).collect(Collectors.toList());
-            return new EntityClass(vc.definition, vc.name, vc.definedFields, body);
+            return new ValueClass(vc.definition, vc.name, vc.definedFields, body);
         }
 
         if (node instanceof BlockExpression) {

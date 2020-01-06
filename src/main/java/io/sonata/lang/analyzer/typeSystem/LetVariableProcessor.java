@@ -66,7 +66,7 @@ public final class LetVariableProcessor implements Processor {
             }
 
             final EntityClassType ect = (EntityClassType) incompleteType.get();
-            classScope.enrichType(className, new ValueClassType(node.definition(), className, ect.fields, methods));
+            classScope.enrichType(className, new EntityClassType(node.definition(), className, ect.fields, methods));
 
             entity.body.forEach(b -> apply(classScope, b));
         }
