@@ -1,13 +1,15 @@
+requires std.io
+
 let TIMES = 10
 
 entity class pinger() {
     let ping(ponger: ponger, time: number) = {
-        console.log(time + '> ping')
+        println(time + '> ping')
         ponger.pong(self, time)
     }
 
     let ping(ponger: ponger, time === TIMES) = {
-        console.log('ping end')
+        println('ping end')
         ponger.pong(self, time)
         self.stop()
     }
@@ -15,12 +17,12 @@ entity class pinger() {
 
 entity class ponger() {
     let pong(pinger: pinger, time: number) = {
-        console.log(time + '> pong')
+        println(time + '> pong')
         pinger.ping(self, time + 1)
     }
 
     let pong(pinger: pinger, time === TIMES) = {
-        console.log('pong end')
+        println('pong end')
         self.stop()
     }
 }
@@ -29,4 +31,4 @@ let _pinger = pinger()
 let _ponger = ponger()
 
 _pinger.ping(_ponger, 0)
-console.log('doing things asynchronously')
+println('doing things asynchronously')

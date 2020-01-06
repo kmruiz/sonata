@@ -1,7 +1,9 @@
-let say(command: string[]) = undefined
+requires std.io
+
+let say(command: string[])
 let say(['hello', whom]) = 'Hello ' + whom + '!'
 let say(['bye', whom]) = 'Bye ' + whom + '. I am really sad.'
 
-console.log(say(['hello', 'John']))
-console.log(say(['bye', 'Doe']))
+println(say(['hello', 'John']))
+println(say(['bye', 'Doe']))
 

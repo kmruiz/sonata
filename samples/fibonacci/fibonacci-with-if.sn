@@ -1,7 +1,9 @@
+requires std.io
+
 let f(a: number) = if (a <= 1) 1 else f(a - 1) + f(a - 2)
 
-console.log('f(1)', f(1))
-console.log('f(2)', f(2))
-console.log('f(3)', f(3))
-console.log('f(4)', f(4))
-console.log('f(5)', f(5))
+println('f(1) ' + f(1))
+println('f(2) ' + f(2))
+println('f(3) ' + f(3))
+println('f(4) ' + f(4))
+println('f(5) ' + f(5))

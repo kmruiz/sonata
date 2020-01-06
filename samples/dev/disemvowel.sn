@@ -1,7 +1,9 @@
+requires std.io
+
 let vowel(char: string) = ['a', 'e', 'i', 'o', 'u'].indexOf(char.toLowerCase()) >= 0
 let process(char: string) = char
 let process(vowel(char)) = ''
 
 let disemvowel(text: string) = text.split('').map(process).join('')
 
-console.log(disemvowel('This website is for losers LOL!'))
+println(disemvowel('This website is for losers LOL!'))

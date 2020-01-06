@@ -1,7 +1,9 @@
+requires std.io
+
 value class price(amount: number, currency: string)
 
-let print(price(amount, currency)) = amount + ' ' + currency
-let print(price(amount, '$')) = currency + ' ' + amount
+let format(price(amount, currency)) = amount + ' ' + currency
+let format(price(amount, '$')) = currency + ' ' + amount
 
-console.log(print(price(42, 'EUR')))
-console.log(print(price(42, '$')))
+println(format(price(42, 'EUR')))
+println(format(price(42, '$')))
