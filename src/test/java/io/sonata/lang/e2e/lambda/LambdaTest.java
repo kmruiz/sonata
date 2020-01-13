@@ -28,4 +28,10 @@ public class LambdaTest extends E2ETest {
     public void lambdaWithMultipleQuestionMarksAndReference() throws Exception {
         assertResourceScriptOutputs("15", "lambda/implicit-lambda-as-reference");
     }
+
+
+    @Test
+    public void lambdaWithSimpleInferredArguments() throws Exception {
+        assertResourceScriptOutputs("HELLO WORLD", "lambda/lambda-with-simple-arguments");
+    }
 }

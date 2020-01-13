@@ -3,14 +3,19 @@ package io.sonata.lang.e2e;
 import io.reactivex.Flowable;
 import io.sonata.lang.backend.js.JavaScriptBackend;
 import io.sonata.lang.cli.Sonata;
+import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.source.Source;
 import org.graalvm.polyglot.Context;
+import org.mockito.Mockito;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class E2ETest {
     private final ByteArrayOutputStream proxyOutput = new ByteArrayOutputStream();
@@ -20,10 +25,21 @@ public abstract class E2ETest {
             .build();
 
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) {
-        InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
-        String script = new BufferedReader(new InputStreamReader(stream)).lines().collect(joining("\n"));
-
+        String script = getLiteralResource(resource);
         assertScriptOutputs(expectedOutput, script);
+    }
+
+    protected final void assertSyntaxError(String errorMessage, String resource) {
+        List<SonataSyntaxError> syntaxErrors = new ArrayList<>();
+        CompilerLog mockLog = Mockito.mock(CompilerLog.class);
+        Mockito.doAnswer(e -> {
+            syntaxErrors.add(e.getArgument(0, SonataSyntaxError.class));
+            return null;
+        }).when(mockLog).syntaxError(Mockito.any());
+
+        compileToString(mockLog, getLiteralResource(resource));
+        boolean found = syntaxErrors.stream().anyMatch(p -> p.message().contains(errorMessage));
+        assertTrue(found, "Could not find a syntax error containing the following error message: " + errorMessage);
     }
 
     private void assertScriptOutputs(String expectedOutput, String literalScript) {
@@ -32,7 +48,7 @@ public abstract class E2ETest {
     }
 
     private String executeScript(String literalScript) {
-        String compiledVersion = compileToString(literalScript);
+        String compiledVersion = compileToString(CompilerLog.console(), literalScript);
         System.out.println(">> Source Code:\n" + literalScript);
         System.out.println(">> JavaScript:\n" + compiledVersion);
 
@@ -41,13 +57,18 @@ public abstract class E2ETest {
         return new String(proxyOutput.toByteArray());
     }
 
-    private String compileToString(String literalScript) {
+    private String compileToString(CompilerLog log, String literalScript) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos));
 
         Source literalSource = Source.fromLiteral(literalScript);
-        Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), new JavaScriptBackend(writer)).blockingAwait();
+        Sonata.compile(log, Flowable.just(literalSource), new JavaScriptBackend(writer)).blockingAwait();
 
         return new String(baos.toByteArray());
+    }
+
+    private String getLiteralResource(String resource) {
+        InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
+        return new BufferedReader(new InputStreamReader(stream)).lines().collect(joining("\n"));
     }
 }

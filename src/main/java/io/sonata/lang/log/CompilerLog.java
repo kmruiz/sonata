@@ -14,7 +14,7 @@ import io.sonata.lang.source.SourcePosition;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 
-public final class CompilerLog {
+public class CompilerLog {
     public static final String FATAL_TAG = "[FATAL]";
     public static final String ERROR_TAG = "[ERROR]";
     public static final String INFO_TAG  = "[INFO ]";

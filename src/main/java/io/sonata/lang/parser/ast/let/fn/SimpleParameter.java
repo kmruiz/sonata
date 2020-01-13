@@ -64,6 +64,10 @@ public class SimpleParameter implements Parameter {
                     if (sep.separator.equals(":")) {
                         return new SimpleParameter(definition, name, astType, State.WAITING_TYPE);
                     }
+
+                    if (sep.separator.equals(")") || sep.separator.equals(",")) {
+                        return new SimpleParameter(definition, name, astType, State.END);
+                    }
                 }
 
                 return ExpressionParameter.of(new Atom(definition, name).consume(token));

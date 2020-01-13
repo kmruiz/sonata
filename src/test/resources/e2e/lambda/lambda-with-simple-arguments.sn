@@ -1,0 +1,6 @@
+requires std.io
+
+let modifier(value: string, fn: (string) -> string) = fn(value)
+let uppercase(value: string) = modifier(value, let(x) = x.toUpperCase())
+
+println(uppercase('hello world'))
