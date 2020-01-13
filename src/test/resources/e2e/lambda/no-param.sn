@@ -1,3 +1,5 @@
+requires std.io
+
 let provide(a: -> string) = a()
 
-console.log(provide(let() = 'Hello'))
+println(provide(let() = 'Hello'))

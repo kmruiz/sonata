@@ -1,3 +1,5 @@
+requires std.io
+
 value class price(amount: number, currency: string)
 
-console.log(JSON.stringify(price(42,'EUR')))
+println(JSON.stringify(price(42,'EUR')))

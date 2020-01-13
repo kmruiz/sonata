@@ -1,4 +1,6 @@
+requires std.io
+
 let numbers: number[] = [1, 2, 3, 4, 5]
 let tenTimes = numbers.map(? * 10)
 
-console.log(tenTimes)
+println(tenTimes)

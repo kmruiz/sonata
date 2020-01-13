@@ -1,6 +1,8 @@
+requires std.io
+
 let multiplePrint() = {
-    console.log('a')
-    console.log('b')
+    println('a')
+    println('b')
 }
 
 multiplePrint()

@@ -1,14 +1,16 @@
+requires std.io
+
 entity class provider(value: string) {
     let provide(): string = value
 }
 
 entity class consumer() {
     let consume(provider: provider) = {
-        console.log('asking for value')
+        println('asking for value')
         let value = provider.provide()
 
-        console.log(value)
-        console.log('value asked')
+        println(value)
+        println('value asked')
 
         provider.stop()
         self.stop()

@@ -1,3 +1,5 @@
+requires std.io
+
 let say(msg: string) = msg
 
-console.log(say('Bye World!'))
+println(say('Bye World!'))

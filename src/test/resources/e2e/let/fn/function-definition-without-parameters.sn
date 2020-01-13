@@ -1,3 +1,5 @@
+requires std.io
+
 let helloWorld() = 'Hello World!'
 
-console.log(helloWorld())
+println(helloWorld())

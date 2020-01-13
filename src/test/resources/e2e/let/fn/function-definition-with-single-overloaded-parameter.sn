@@ -1,5 +1,7 @@
+requires std.io
+
 let say(a: string) = a
 let say('') = 'Nope!'
 
-console.log(say('Hey!'))
-console.log(say(''))
+println(say('Hey!'))
+println(say(''))

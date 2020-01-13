@@ -1,3 +1,5 @@
+requires std.io
+
 entity class pinger(times: number) {
     let ping(ponger: ponger) = {
         self.times += 1
@@ -5,7 +7,7 @@ entity class pinger(times: number) {
             self.stop()
             ponger.stop();
         } else {
-            console.log(self.times + '> ping')
+            println(self.times + '> ping')
             ponger.pong(self);
         }
     }
@@ -14,7 +16,7 @@ entity class pinger(times: number) {
 entity class ponger(times: number) {
     let pong(pinger: pinger) = {
         self.times += 1
-        console.log(self.times + '> pong')
+        println(self.times + '> pong')
         pinger.ping(self)
     }
 }
@@ -23,4 +25,4 @@ let _pinger = pinger(0)
 let _ponger = ponger(0)
 
 _pinger.ping(_ponger)
-console.log('doing things asynchronously')
+println('doing things asynchronously')

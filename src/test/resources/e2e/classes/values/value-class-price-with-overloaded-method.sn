@@ -1,7 +1,9 @@
+requires std.io
+
 value class dice(magicNumber: number) {
     let rolled(a: number) = 'Try again'
     let rolled(a == magicNumber) = 'Found it!'
 }
 
-console.log(dice(5).rolled(2))
-console.log(dice(5).rolled(5))
+println(dice(5).rolled(2))
+println(dice(5).rolled(5))
