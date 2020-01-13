@@ -1,0 +1,6 @@
+requires std.io
+
+entity class Person(name: string) {
+    # this method should not compile
+    let salute(person: Person) = println('Hi ' + person.name)
+}

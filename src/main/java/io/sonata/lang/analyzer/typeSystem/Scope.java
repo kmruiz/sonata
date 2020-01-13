@@ -67,6 +67,19 @@ public final class Scope {
         return scope;
     }
 
+    public Scope diveInIfNeeded(Node node) {
+        if (!(node instanceof Scoped)) {
+            return this;
+        }
+
+        Scoped anchor = (Scoped) node;
+
+        final String anchorRepresentation = anchor.scopeId();
+        final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
+
+        return foundScope.orElse(this);
+    }
+
     public Optional<Type> resolveType(String name) {
         if (name.endsWith("[]")) {
             return resolveType(name.substring(0, name.length() - 2));

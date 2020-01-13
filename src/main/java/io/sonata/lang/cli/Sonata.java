@@ -41,6 +41,7 @@ public class Sonata {
                 new TypeInferenceProcessor(log, scope),
                 new LetVariableProcessor(log, scope),
                 new ClassRelationshipValidator(log, scope),
+                new PropertyVisibilityProcessor(log, scope),
                 new DestructuringProcessor(symbolMap),
                 new QuestionMarkPartialFunctionProcessor(),
                 new ContinuationProcessor(log, scope)
