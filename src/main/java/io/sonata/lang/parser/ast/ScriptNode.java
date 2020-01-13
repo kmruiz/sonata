@@ -53,11 +53,7 @@ public class ScriptNode implements Node {
         try {
             nextNode = currentNode.consume(token);
             if (nextNode == null) {
-                if (currentNode instanceof PanicNode) {
-                    return new ScriptNode(log, nodes, RootNode.instance().consume(token), requiresNotifier);
-                } else {
-                    return new ScriptNode(log, append(nodes, currentNode), RootNode.instance().consume(token), requiresNotifier);
-                }
+                return new ScriptNode(log, append(nodes, currentNode), RootNode.instance().consume(token), requiresNotifier);
             }
         } catch (ParserException e) {
             log.syntaxError(e.syntaxError());
@@ -72,6 +68,7 @@ public class ScriptNode implements Node {
                 throw new IllegalStateException(e);
             }
         }
+
 
         return new ScriptNode(log, nodes, nextNode, requiresNotifier);
     }

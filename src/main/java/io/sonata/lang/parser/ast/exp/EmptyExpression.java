@@ -7,6 +7,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.CommentNode;
 import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.source.SourcePosition;
@@ -43,6 +44,10 @@ public class EmptyExpression implements Expression {
 
         if (token.representation().equals("if")) {
             return PartialIf.initial(token.sourcePosition());
+        }
+
+        if (token.representation().equals("#")) {
+            return new CommentNode(token.sourcePosition());
         }
 
         if (token instanceof SeparatorToken) {

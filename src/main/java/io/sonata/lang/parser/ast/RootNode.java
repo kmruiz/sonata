@@ -16,6 +16,7 @@ import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
+import io.sonata.lang.tokenizer.token.OperatorToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -54,6 +55,9 @@ public class RootNode implements Node {
             return this;
         }
 
+        if (token instanceof OperatorToken && token.representation().equals("#")) {
+            return new CommentNode(token.sourcePosition());
+        }
         return EmptyExpression.instance().consume(token);
     }
 
