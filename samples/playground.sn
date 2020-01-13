@@ -3,8 +3,8 @@ requires std.io
 
 let _ = Testing(TestRunner([], println))
 
-_.describe('Test', let (it: any) = {
-    it('should do', let (assert: any) = {
+_.describe('Test', let (it) = {
+    it('should do', let (assert) = {
         assert('true is true', false)
     })
 })
