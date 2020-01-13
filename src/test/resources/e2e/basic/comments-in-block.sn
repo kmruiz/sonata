@@ -1,7 +1,7 @@
 requires std.io
 
 let sayHello() = {
-    # println('This is going to be ignored')
+    ; println('This is going to be ignored')
     println('Hello World!')
 }
 

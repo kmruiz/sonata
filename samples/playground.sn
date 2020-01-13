@@ -1,12 +1,6 @@
-requires std.testing
+; Requires the functions and objects that are part of the std.io module, bundled with the compiler.
 requires std.io
 
-let _ = Testing(TestRunner([], println))
-
-_.describe('Test', let (it) = {
-    it('should do', let (assert) = {
-        assert('true is true', false)
-    })
-})
-
-_.run()
+; This calls the println function, bundled in the std.io module.
+; Strings are wrapped in simple quotes, and it's the only way to write strings.
+println('Hello World!')

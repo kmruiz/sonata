@@ -49,6 +49,10 @@ public class RootToken implements Token {
             return Optional.of(new StringToken(character.position, initial, false, false));
         }
 
+        if (CommentToken.isComment(character.character)) {
+            return Optional.of(new CommentToken(character.position, ""));
+        }
+
         return Optional.of(this);
     }
 

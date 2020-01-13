@@ -10,49 +10,33 @@ package io.sonata.lang.tokenizer.token;
 import io.sonata.lang.source.SourceCharacter;
 import io.sonata.lang.source.SourcePosition;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
-public class SeparatorToken implements Token {
-    private static final Set<Character> SEPARATORS;
-
-    static {
-        SEPARATORS = new HashSet<>();
-        SEPARATORS.add('(');
-        SEPARATORS.add(')');
-        SEPARATORS.add('[');
-        SEPARATORS.add(']');
-        SEPARATORS.add('{');
-        SEPARATORS.add('}');
-        SEPARATORS.add(':');
-        SEPARATORS.add(',');
-        SEPARATORS.add('.');
-        SEPARATORS.add('?');
-        SEPARATORS.add('\n');
-        SEPARATORS.add('\0');
+public class CommentToken implements Token {
+    public static boolean isComment(char c) {
+        return c == ';';
     }
 
-    public static boolean isSeparator(char c) {
-        return SEPARATORS.contains(c);
-    }
-
-    public final String separator;
+    public final String content;
     public final SourcePosition sourcePosition;
 
-    public SeparatorToken(SourcePosition sourcePosition, String separator) {
+    public CommentToken(SourcePosition sourcePosition, String content) {
         this.sourcePosition = sourcePosition;
-        this.separator = separator;
+        this.content = content;
     }
 
     @Override
     public String representation() {
-        return separator;
+        return ";" + content;
     }
 
     @Override
     public Optional<Token> nextToken(SourceCharacter character) {
-        return Optional.empty();
+        if (character.character == '\n') {
+            return Optional.empty();
+        } else {
+            return Optional.of(new CommentToken(sourcePosition, content + character.character));
+        }
     }
 
     @Override

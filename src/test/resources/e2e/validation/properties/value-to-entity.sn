@@ -5,6 +5,6 @@ value class HelloMessage(from: string) {
 }
 
 entity class Person(name: string) {
-    # this method should not compile
+    ; this method should not compile
     let salute(person: Person) = println(HelloMessage(self.name).say(person))
 }

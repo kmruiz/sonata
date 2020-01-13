@@ -62,7 +62,7 @@ public class ScriptNode implements Node {
 
         if (nextNode instanceof RequiresNode) {
             try {
-                requiresNotifier.moduleRequired(null, ((RequiresNode) nextNode).module);
+                requiresNotifier.moduleRequired(token.sourcePosition().source, ((RequiresNode) nextNode).module);
                 return new ScriptNode(log, nodes, RootNode.instance(), requiresNotifier);
             } catch (IOException e) {
                 throw new IllegalStateException(e);

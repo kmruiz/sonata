@@ -5,10 +5,10 @@ entity class pinger(times: number) {
         self.times += 1
         if (self.times > 2) {
             self.stop()
-            ponger.stop();
+            ponger.stop()
         } else {
             println(self.times + '> ping')
-            ponger.pong(self);
+            ponger.pong(self)
         }
     }
 }

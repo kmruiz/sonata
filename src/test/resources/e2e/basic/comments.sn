@@ -1,4 +1,4 @@
 requires std.io
 
-# println('This is going to be ignored')
+; println('This is going to be ignored')
 println('Hello World!')

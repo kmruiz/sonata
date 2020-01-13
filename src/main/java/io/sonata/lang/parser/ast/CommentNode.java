@@ -6,9 +6,11 @@ import io.sonata.lang.tokenizer.token.Token;
 
 public class CommentNode implements Expression {
     private final SourcePosition definition;
+    private final String comment;
 
-    public CommentNode(SourcePosition definition) {
+    public CommentNode(SourcePosition definition, String comment) {
         this.definition = definition;
+        this.comment = comment;
     }
 
     @Override
@@ -18,15 +20,11 @@ public class CommentNode implements Expression {
 
     @Override
     public String representation() {
-        return "# <comment>";
+        return ";" + comment;
     }
 
     @Override
     public Expression consume(Token token) {
-        if (token.representation().equals("\n")) {
-            return null;
-        }
-
-        return this;
+        return null;
     }
 }

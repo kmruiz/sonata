@@ -15,10 +15,7 @@ import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
 import io.sonata.lang.source.SourcePosition;
-import io.sonata.lang.tokenizer.token.IdentifierToken;
-import io.sonata.lang.tokenizer.token.OperatorToken;
-import io.sonata.lang.tokenizer.token.SeparatorToken;
-import io.sonata.lang.tokenizer.token.Token;
+import io.sonata.lang.tokenizer.token.*;
 
 public class RootNode implements Node {
     private static final RootNode INSTANCE = new RootNode();
@@ -55,8 +52,8 @@ public class RootNode implements Node {
             return this;
         }
 
-        if (token instanceof OperatorToken && token.representation().equals("#")) {
-            return new CommentNode(token.sourcePosition());
+        if (token instanceof CommentToken) {
+            return new CommentNode(token.sourcePosition(), ((CommentToken) token).content);
         }
         return EmptyExpression.instance().consume(token);
     }

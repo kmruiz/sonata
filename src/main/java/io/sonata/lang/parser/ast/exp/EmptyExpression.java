@@ -11,6 +11,7 @@ import io.sonata.lang.parser.ast.CommentNode;
 import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.CommentToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -46,8 +47,8 @@ public class EmptyExpression implements Expression {
             return PartialIf.initial(token.sourcePosition());
         }
 
-        if (token.representation().equals("#")) {
-            return new CommentNode(token.sourcePosition());
+        if (token instanceof CommentToken) {
+            return new CommentNode(token.sourcePosition(), ((CommentToken) token).content);
         }
 
         if (token instanceof SeparatorToken) {
