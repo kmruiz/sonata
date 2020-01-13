@@ -1,0 +1,10 @@
+requires std.io
+
+value class HelloMessage(from: string) {
+    let say(to: Person) = 'Hi ' + to.name
+}
+
+entity class Person(name: string) {
+    # this method should not compile
+    let salute(person: Person) = println(HelloMessage(self.name).say(person))
+}
