@@ -9,6 +9,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v1
+      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
     - name: Publish Compiler
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
@@ -16,7 +18,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: Dockerfile
-        tags: latest,${GITHUB_REF##*/}
+        tags: latest,${{ env.RELEASE_VERSION }}
     - name: Publish Playground
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
@@ -24,4 +26,4 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: Dockerfile
-        tags: playground,playground_${GITHUB_REF##*/}
+        tags: playground,playground_${{ env.RELEASE_VERSION }}
