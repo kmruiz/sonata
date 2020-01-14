@@ -42,4 +42,9 @@ public final class ValueClassType implements Type {
     public boolean isEntity() {
         return false;
     }
+
+    @Override
+    public boolean isValue() {
+        return true;
+    }
 }

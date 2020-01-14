@@ -9,6 +9,7 @@ package io.sonata.lang.parser.ast;
 import io.sonata.lang.parser.ast.classes.entities.PartialEntityClass;
 import io.sonata.lang.parser.ast.classes.values.PartialValueClass;
 import io.sonata.lang.parser.ast.exp.Atom;
+import io.sonata.lang.parser.ast.exp.CommentNode;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;

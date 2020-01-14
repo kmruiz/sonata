@@ -42,4 +42,9 @@ public final class EntityClassType implements Type {
     public boolean isEntity() {
         return true;
     }
+
+    @Override
+    public boolean isValue() {
+        return false;
+    }
 }

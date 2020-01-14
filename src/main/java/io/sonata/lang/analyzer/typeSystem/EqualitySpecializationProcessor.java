@@ -17,114 +17,98 @@ import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.type.ASTType;
 
-public final class ImmutabilityCheckProcessor implements Processor {
+import java.util.Optional;
+
+import static java.util.stream.Collectors.toList;
+
+public final class EqualitySpecializationProcessor implements Processor {
     private final CompilerLog log;
     private final Scope scope;
 
-    public ImmutabilityCheckProcessor(CompilerLog log, Scope scope) {
+    public EqualitySpecializationProcessor(CompilerLog log, Scope scope) {
         this.log = log;
         this.scope = scope;
     }
 
     @Override
     public Node apply(Node node) {
-        apply(scope, node);
-        return node;
-    }
-
-    private void apply(Scope scope, Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            script.nodes.parallelStream().forEach(n -> this.apply(scope.diveInIfNeeded(n), n));
+            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(toList()), script.currentNode, script.requiresNotifier);
         }
 
         if (node instanceof EntityClass) {
             EntityClass entityClass = (EntityClass) node;
-            entityClass.body.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
+            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.body.stream().map(this::apply).collect(toList()));
         }
 
         if (node instanceof ValueClass) {
             ValueClass valueClass = (ValueClass) node;
-            valueClass.body.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
+            return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, valueClass.body.stream().map(this::apply).collect(toList()));
         }
 
         if (node instanceof LetFunction) {
             LetFunction fn = (LetFunction) node;
-            fn.parameters.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
-            apply(scope.diveInIfNeeded(fn.body), fn.body);
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body));
         }
 
         if (node instanceof LetConstant) {
             LetConstant constant = (LetConstant) node;
-            apply(scope.diveInIfNeeded(constant.body), constant.body);
+            return new LetConstant(constant.definition, constant.letName, constant.returnType, (Expression) apply(constant.body));
         }
 
         if (node instanceof Lambda) {
             Lambda lambda = (Lambda) node;
-            apply(scope.diveInIfNeeded(lambda.body), lambda.body);
+            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body));
         }
 
         if (node instanceof IfElse) {
             IfElse ifElse = (IfElse) node;
-            apply(scope.diveInIfNeeded(ifElse.condition), ifElse.condition);
-            apply(scope.diveInIfNeeded(ifElse.whenTrue), ifElse.whenTrue);
-            apply(scope.diveInIfNeeded(ifElse.whenFalse), ifElse.whenFalse);
+            return new IfElse(ifElse.definition, (Expression) apply(ifElse.condition), (Expression) apply(ifElse.whenTrue), (Expression) apply(ifElse.whenFalse));
         }
 
         if (node instanceof BlockExpression) {
             BlockExpression block = (BlockExpression) node;
-            block.expressions.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
+            return new BlockExpression(block.blockId, block.definition, block.expressions.stream().map(this::apply).map(e -> (Expression) e).collect(toList()));
         }
 
         if (node instanceof SimpleExpression) {
             SimpleExpression expr = (SimpleExpression) node;
-            if (expr.operator.equals("=")) {
-                validate(scope.diveInIfNeeded(expr.leftSide), expr.leftSide);
-            }
+            if (expr.operator.equals("==") || expr.operator.equals("!=")) {
+                if (!isValidEquality(expr.leftSide, expr.rightSide)) {
+                    log.syntaxError(new SonataSyntaxError(expr, "Comparing unrelated types: " + expr.leftSide.type().representation() + " " + expr.operator + " " + expr.rightSide.type().representation()));
+                    return node;
+                }
 
-            apply(scope.diveInIfNeeded(expr.leftSide), expr.leftSide);
-            apply(scope.diveInIfNeeded(expr.rightSide), expr.rightSide);
+                final ASTType typeOfComparison = expr.leftSide.type();
+                final Optional<Type> maybeType = scope.resolveType(typeOfComparison.representation());
+                if (maybeType.isPresent()) {
+                    final Type type = maybeType.get();
+                    if (type.isValue()) {
+                        return new ValueClassEquality(expr.leftSide, expr.rightSide, expr.operator.equals("!="));
+                    }
+                }
+
+                return node;
+            }
         }
 
         if (node instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) node;
-            apply(scope.diveInIfNeeded(fc.receiver), fc.receiver);
-            fc.arguments.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
+            return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), fc.expressionType);
         }
 
-        if (node instanceof MethodReference) {
-            MethodReference ref = (MethodReference) node;
-            apply(scope.diveInIfNeeded(ref.receiver), ref.receiver);
-        }
+        return node;
     }
 
-    private void validate(Scope scope, Expression expr) {
-        if (expr instanceof Atom) {
-            log.syntaxError(new SonataSyntaxError(expr, "Let constants can not be changed."));
-        }
-
-        if (expr instanceof MethodReference) {
-            MethodReference ref = (MethodReference) expr;
-            if (!isEntity(scope, expr)) {
-                log.syntaxError(new SonataSyntaxError(ref, "Value objects, built using a value class, are immutable."));
-            }
-        }
-    }
-
-    private boolean isEntity(Scope scope, Expression expression) {
-        if (expression instanceof Atom) {
-            Atom atom = (Atom) expression;
-            final Scope.Variable variable = scope.resolveVariable(atom.value).get();
-
-            return variable.type.isEntity();
-        }
-
-        return false;
+    private boolean isValidEquality(Expression a, Expression b) {
+        return a.type().representation().equals(b.type().representation());
     }
 
     @Override
     public String phase() {
-        return "IMMUTABILITY CHECKER";
+        return "EQUALITY SPECIALIZATION";
     }
 }

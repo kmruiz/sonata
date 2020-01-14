@@ -9,6 +9,7 @@ package io.sonata.lang.parser.ast.exp;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.List;
@@ -39,6 +40,11 @@ public class Lambda extends ComposedExpression implements Scoped {
     @Override
     public String representation() {
         return "(" + parameters.stream().map(Node::representation).collect(Collectors.joining(",")) + ") => " + body.representation();
+    }
+
+    @Override
+    public ASTType type() {
+        return body.type();
     }
 
     @Override

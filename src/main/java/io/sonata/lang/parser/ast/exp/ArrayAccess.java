@@ -6,6 +6,9 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.GenericASTType;
 import io.sonata.lang.source.SourcePosition;
 
 public class ArrayAccess extends ComposedExpression implements Expression {
@@ -20,6 +23,16 @@ public class ArrayAccess extends ComposedExpression implements Expression {
     @Override
     public String representation() {
         return receiver.representation() + "[" + index + "]";
+    }
+
+    @Override
+    public ASTType type() {
+        final ASTType type = receiver.type();
+        if (type instanceof GenericASTType) {
+            return ((GenericASTType) type).parameters.get(0);
+        }
+
+        return new BasicASTType(receiver.definition(), "any");
     }
 
     @Override

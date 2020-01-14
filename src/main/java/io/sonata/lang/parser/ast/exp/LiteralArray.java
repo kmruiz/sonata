@@ -6,10 +6,15 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.GenericASTType;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
 
 public class LiteralArray extends ComposedExpression implements Expression {
     public final SourcePosition definition;
@@ -23,6 +28,11 @@ public class LiteralArray extends ComposedExpression implements Expression {
     @Override
     public String representation() {
         return "[" + expressions.stream().map(Expression::representation).collect(Collectors.joining(", ")) + "]";
+    }
+
+    @Override
+    public ASTType type() {
+        return new GenericASTType(new BasicASTType(definition, "array"), singletonList(new BasicASTType(definition, "any")));
     }
 
     @Override

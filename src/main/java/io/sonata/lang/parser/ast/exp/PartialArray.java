@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
@@ -54,6 +55,11 @@ public class PartialArray implements Expression {
         }
 
         return new PartialArray(definition, expressions, next);
+    }
+
+    @Override
+    public ASTType type() {
+        return null;
     }
 
     @Override

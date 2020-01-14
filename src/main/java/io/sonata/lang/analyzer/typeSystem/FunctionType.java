@@ -43,4 +43,9 @@ public class FunctionType implements Type {
     public boolean isEntity() {
         return false;
     }
+
+    @Override
+    public boolean isValue() {
+        return false;
+    }
 }

@@ -7,6 +7,8 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Scoped;
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.UUID;
@@ -65,6 +67,11 @@ public class IfElse extends ComposedExpression implements Scoped {
         }
 
         return 0;
+    }
+
+    @Override
+    public ASTType type() {
+        return new BasicASTType(definition, "any");
     }
 
     @Override

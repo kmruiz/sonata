@@ -43,7 +43,7 @@ public final class Scope {
             root.registerType("string", new ValueClassType(null, "string", Collections.emptyMap(), Collections.emptyMap()));
             root.registerType("number", new ValueClassType(null, "number", Collections.emptyMap(), Collections.emptyMap()));
             root.registerType("boolean", new ValueClassType(null, "boolean", Collections.emptyMap(), Collections.emptyMap()));
-            root.registerType("record", new ValueClassType(null, "boolean", Collections.emptyMap(), Collections.emptyMap()));
+            root.registerType("record", new ValueClassType(null, "record", Collections.emptyMap(), Collections.emptyMap()));
             root.registerType("null", new ValueClassType(null, "null", Collections.emptyMap(), Collections.emptyMap()));
             root.registerType("any", new ValueClassType(null, "any", Collections.emptyMap(), Collections.emptyMap()));
         } catch (TypeCanNotBeReassignedException e) {

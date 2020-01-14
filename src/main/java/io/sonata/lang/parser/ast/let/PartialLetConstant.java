@@ -83,6 +83,11 @@ public class PartialLetConstant implements Expression {
     }
 
     @Override
+    public ASTType type() {
+        return null;
+    }
+
+    @Override
     public SourcePosition definition() {
         return definition;
     }

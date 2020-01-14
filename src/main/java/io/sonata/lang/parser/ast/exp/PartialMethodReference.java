@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.Token;
@@ -23,6 +24,11 @@ public class PartialMethodReference implements Expression {
             return new MethodReference(receiver, token.representation());
         }
 
+        return null;
+    }
+
+    @Override
+    public ASTType type() {
         return null;
     }
 

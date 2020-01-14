@@ -9,6 +9,7 @@ package io.sonata.lang.parser.ast.exp.ifelse;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.exp.IfElse;
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -42,6 +43,11 @@ public class PartialIfElse implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public ASTType type() {
+        return null;
     }
 
     @Override

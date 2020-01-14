@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.NumericToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -40,6 +41,11 @@ public class PartialArrayAccess implements Expression {
             }
         }
 
+        return null;
+    }
+
+    @Override
+    public ASTType type() {
         return null;
     }
 

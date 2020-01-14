@@ -6,6 +6,9 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.GenericASTType;
 import io.sonata.lang.source.SourcePosition;
 
 public class TailExtraction extends ComposedExpression implements Expression {
@@ -20,6 +23,16 @@ public class TailExtraction extends ComposedExpression implements Expression {
     @Override
     public String representation() {
         return expression.representation() + "#";
+    }
+
+    @Override
+    public ASTType type() {
+        final ASTType type = expression.type();
+        if (type instanceof GenericASTType) {
+            return ((GenericASTType) type).parameters.get(0);
+        }
+
+        return new BasicASTType(expression.definition(), "any");
     }
 
     @Override

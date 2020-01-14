@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 
 public class PriorityExpression extends ComposedExpression implements Expression {
@@ -18,6 +19,11 @@ public class PriorityExpression extends ComposedExpression implements Expression
     @Override
     public String representation() {
         return "(" + expression.representation() + ")";
+    }
+
+    @Override
+    public ASTType type() {
+        return expression.type();
     }
 
     @Override

@@ -7,6 +7,7 @@
 
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -29,6 +30,11 @@ public class Continuation implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public ASTType type() {
+        return body.type();
     }
 
     @Override

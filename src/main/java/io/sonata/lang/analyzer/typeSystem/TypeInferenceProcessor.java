@@ -12,9 +12,7 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.exp.Atom;
-import io.sonata.lang.parser.ast.exp.BlockExpression;
-import io.sonata.lang.parser.ast.exp.Expression;
+import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.type.ASTType;
@@ -22,9 +20,11 @@ import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.parser.ast.type.EmptyASTType;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-public class TypeInferenceProcessor implements Processor {
+import static java.util.stream.Collectors.toList;
+
+public final class TypeInferenceProcessor implements Processor {
     private final CompilerLog log;
     private final Scope scope;
 
@@ -37,19 +37,19 @@ public class TypeInferenceProcessor implements Processor {
     public Node apply(Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            List<Node> nodes = script.nodes.stream().map(this::apply).collect(Collectors.toList());
+            List<Node> nodes = script.nodes.stream().map(this::apply).collect(toList());
             return new ScriptNode(script.log, nodes, script.currentNode, script.requiresNotifier);
         }
 
         if (node instanceof EntityClass) {
             EntityClass entityClass = (EntityClass) node;
-            List<Node> body = entityClass.body.stream().map(this::apply).collect(Collectors.toList());
+            List<Node> body = entityClass.body.stream().map(this::apply).collect(toList());
             return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, body);
         }
 
         if (node instanceof ValueClass) {
             ValueClass valueClass  = (ValueClass) node;
-            List<Node> body = valueClass.body.stream().map(this::apply).collect(Collectors.toList());
+            List<Node> body = valueClass.body.stream().map(this::apply).collect(toList());
             return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
         }
 
@@ -75,8 +75,26 @@ public class TypeInferenceProcessor implements Processor {
 
         if (node instanceof BlockExpression) {
             BlockExpression blockExpression = (BlockExpression) node;
-            List<Expression> expressions = blockExpression.expressions.stream().map(this::apply).map(t -> (Expression) t).collect(Collectors.toList());
-            return new BlockExpression(blockExpression.definition, expressions);
+            List<Expression> expressions = blockExpression.expressions.stream().map(this::apply).map(t -> (Expression) t).collect(toList());
+            return new BlockExpression(blockExpression.blockId, blockExpression.definition, expressions);
+        }
+
+        if (node instanceof FunctionCall) {
+            FunctionCall fc = (FunctionCall) node;
+            if (fc.receiver instanceof Atom) {
+                Atom name = (Atom) fc.receiver;
+                final Optional<Type> type = scope.resolveType(name.value);
+                if (type.isPresent()) {
+                    return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), new BasicASTType(type.get().definition(), type.get().name()));
+                }
+            }
+
+            return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), fc.expressionType);
+        }
+
+        if (node instanceof SimpleExpression) {
+            SimpleExpression expr = (SimpleExpression) node;
+            return new SimpleExpression((Expression) apply(expr.leftSide), expr.operator, (Expression) apply(expr.rightSide));
         }
 
         return node;

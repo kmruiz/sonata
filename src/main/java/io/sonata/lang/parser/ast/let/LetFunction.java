@@ -10,6 +10,7 @@ import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.EmptyASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -46,6 +47,15 @@ public class LetFunction implements Expression, Scoped {
     @Override
     public Expression consume(Token token) {
         return null;
+    }
+
+    @Override
+    public ASTType type() {
+        if (returnType == EmptyASTType.instance()) {
+            return body.type();
+        }
+
+        return returnType;
     }
 
     @Override

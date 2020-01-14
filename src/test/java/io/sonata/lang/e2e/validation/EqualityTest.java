@@ -5,33 +5,19 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package io.sonata.lang.parser.ast;
+package io.sonata.lang.e2e.validation;
 
-import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.source.SourcePosition;
-import io.sonata.lang.tokenizer.token.Token;
+import io.sonata.lang.e2e.E2ETest;
+import org.junit.jupiter.api.Test;
 
-public class CommentNode implements Expression {
-    private final SourcePosition definition;
-    private final String comment;
-
-    public CommentNode(SourcePosition definition, String comment) {
-        this.definition = definition;
-        this.comment = comment;
+public class EqualityTest extends E2ETest {
+    @Test
+    public void canNotCompareUnrelatedTypes() {
+        assertSyntaxError("Comparing unrelated types: number == record", "validation/equality/compare-unrelated-objects");
     }
 
-    @Override
-    public SourcePosition definition() {
-        return definition;
-    }
-
-    @Override
-    public String representation() {
-        return ";" + comment;
-    }
-
-    @Override
-    public Expression consume(Token token) {
-        return null;
+    @Test
+    public void canNotCompareUnrelatedTypesWithNegation() {
+        assertSyntaxError("Comparing unrelated types: number != record", "validation/equality/negated-compare-unrelated-objects");
     }
 }

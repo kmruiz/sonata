@@ -13,4 +13,5 @@ public interface Type {
     String name();
     boolean canBeReassigned();
     boolean isEntity();
+    boolean isValue();
 }

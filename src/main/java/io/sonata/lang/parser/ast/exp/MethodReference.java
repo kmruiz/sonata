@@ -6,6 +6,8 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.source.SourcePosition;
 
 public class MethodReference extends ComposedExpression implements Expression {
@@ -20,6 +22,11 @@ public class MethodReference extends ComposedExpression implements Expression {
     @Override
     public String representation() {
         return receiver.representation() + "." + methodName;
+    }
+
+    @Override
+    public ASTType type() {
+        return new BasicASTType(receiver.definition(), "any");
     }
 
     @Override

@@ -135,6 +135,10 @@ public class JavaScriptBackend implements CompilerBackend {
         if (node instanceof Record) {
             emitRecord((Record) node, context);
         }
+
+        if (node instanceof ValueClassEquality) {
+            emitValueClassEquality((ValueClassEquality) node, context);
+        }
     }
 
     private void emitLetFunction(LetFunction base, Context context) {
@@ -357,6 +361,18 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("})");
     }
 
+    private void emitValueClassEquality(ValueClassEquality node, Context context) {
+        emit(node.negate ? "!" : "", "(VCE(");
+        emitNode(node.left, context.inExpression());
+        emit(",");
+        emitNode(node.right, context.inExpression());
+        emit("))");
+
+        if (!context.isInExpression) {
+            emit(";");
+        }
+    }
+
     private void emitPreface() {
         emit("\"use strict\";");
         emit("function ECP(c){let o={};o._p$=false;o.class=c;o._m$=[];o._i$=SI(DQ(o),0);return o}");
@@ -369,6 +385,7 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("s._m$.push(function(){r(f.apply(null,a))});");
         emit("return p}}");
         emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
+        emit("function VCE(a,b){return JSON.stringify(a)==JSON.stringify(b)}");
     }
 
     private void emitEnqueueFunctionFor(String baseName, String internalFunctionName) {

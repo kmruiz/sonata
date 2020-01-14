@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
@@ -59,6 +60,11 @@ public class PartialFunctionCall implements Expression {
     @Override
     public String representation() {
         return "";
+    }
+
+    @Override
+    public ASTType type() {
+        return null;
     }
 
     @Override

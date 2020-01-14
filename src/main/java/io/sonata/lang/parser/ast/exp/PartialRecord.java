@@ -9,6 +9,7 @@ package io.sonata.lang.parser.ast.exp;
 import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.javaext.Maps;
 import io.sonata.lang.parser.ast.RootNode;
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -86,6 +87,11 @@ public class PartialRecord implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public ASTType type() {
+        return null;
     }
 
     @Override

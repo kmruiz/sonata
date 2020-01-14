@@ -7,6 +7,7 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.exception.ParserException;
+import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -66,6 +67,11 @@ public class PartialBlockExpression implements Expression {
         }
 
         return new PartialBlockExpression(definition, nodes, nextNode);
+    }
+
+    @Override
+    public ASTType type() {
+        return null;
     }
 
     @Override

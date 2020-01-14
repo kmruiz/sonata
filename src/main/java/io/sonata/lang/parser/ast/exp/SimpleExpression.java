@@ -6,6 +6,8 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -39,6 +41,11 @@ public class SimpleExpression implements Expression {
     @Override
     public String representation() {
         return leftSide.representation() + " " + operator + " " + rightSide.representation();
+    }
+
+    @Override
+    public ASTType type() {
+        return new BasicASTType(leftSide.definition(), "any");
     }
 
     @Override

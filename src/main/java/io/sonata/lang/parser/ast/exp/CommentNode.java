@@ -4,15 +4,21 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.sonata.lang.analyzer.typeSystem;
 
+package io.sonata.lang.parser.ast.exp;
+
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.Token;
 
-public final class MutableType implements Type {
+public class CommentNode implements Expression {
     private final SourcePosition definition;
+    private final String comment;
 
-    public MutableType(SourcePosition definition) {
+    public CommentNode(SourcePosition definition, String comment) {
         this.definition = definition;
+        this.comment = comment;
     }
 
     @Override
@@ -21,17 +27,17 @@ public final class MutableType implements Type {
     }
 
     @Override
-    public String name() {
-        return "final";
+    public String representation() {
+        return ";" + comment;
     }
 
     @Override
-    public boolean canBeReassigned() {
-        return true;
+    public ASTType type() {
+        return new BasicASTType(definition, "null");
     }
 
     @Override
-    public boolean isEntity() {
-        return false;
+    public Expression consume(Token token) {
+        return null;
     }
 }

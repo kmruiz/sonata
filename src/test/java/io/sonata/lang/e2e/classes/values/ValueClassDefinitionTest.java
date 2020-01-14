@@ -35,4 +35,9 @@ public class ValueClassDefinitionTest extends E2ETest {
     public void destructuringValueClassInLetFunction() throws Exception {
         assertResourceScriptOutputs("42E\n$42", "classes/values/value-class-destructuring");
     }
+
+    @Test
+    public void valueClassesShouldCompareTheirFields() throws Exception {
+        assertResourceScriptOutputs("true\nfalse\nfalse\ntrue", "classes/values/value-class-equality");
+    }
 }

@@ -7,6 +7,8 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.Objects;
@@ -60,6 +62,22 @@ public class Atom extends ComposedExpression implements Expression {
     @Override
     public SourcePosition definition() {
         return definition;
+    }
+
+    @Override
+    public ASTType type() {
+        switch (type) {
+            case NUMERIC:
+                return new BasicASTType(definition, "number");
+            case STRING:
+                return new BasicASTType(definition,"string");
+            case BOOLEAN:
+                return new BasicASTType(definition, "boolean");
+            case NULL:
+                return new BasicASTType(definition, "null");
+            default:
+                return new BasicASTType(definition, "any");
+        }
     }
 
     @Override

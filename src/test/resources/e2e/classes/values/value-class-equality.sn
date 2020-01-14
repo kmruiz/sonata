@@ -1,0 +1,8 @@
+requires std.io
+
+value class dice(magicNumber: number)
+
+println(dice(5) == dice(5))
+println(dice(5) != dice(5))
+println(dice(5) == dice(2))
+println(dice(5) != dice(2))

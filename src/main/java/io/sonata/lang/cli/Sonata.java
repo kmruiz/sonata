@@ -38,10 +38,12 @@ public class Sonata {
                 symbolMap,
                 new ClassScopeProcessor(log, scope),
                 new TypeInferenceProcessor(log, scope),
+                new TypeInferenceProcessor(log, scope), // infer in two phases
                 new LetVariableProcessor(log, scope),
                 new ClassRelationshipValidator(log, scope),
                 new PropertyVisibilityProcessor(log, scope),
                 new ImmutabilityCheckProcessor(log, scope),
+                new EqualitySpecializationProcessor(log, scope),
                 new DestructuringProcessor(symbolMap),
                 new QuestionMarkPartialFunctionProcessor(),
                 new ContinuationProcessor(log, scope)
