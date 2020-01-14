@@ -55,8 +55,8 @@ public abstract class NodeDockerTest {
         GenericContainer container = new GenericContainer("node:12-alpine")
                 .withCopyFileToContainer(MountableFile.forHostPath(compiledVersion), "./script.js")
                 .withCommand("node script.js")
-                .withStartupAttempts(1)
-                .withStartupTimeout(Duration.ofSeconds(10));
+                .withStartupAttempts(10)
+                .withStartupTimeout(Duration.ofMinutes(1));
 
         container.start();
         return container;

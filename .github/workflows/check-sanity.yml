@@ -15,4 +15,4 @@ jobs:
           -v "$PWD:$PWD" \
           -w "$PWD" \
           openjdk:13-jdk-alpine \
-          ./mvnw clean install
+          ./mvnw -q clean package
