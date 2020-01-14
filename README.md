@@ -76,7 +76,9 @@ Most Sonata tests are E2E:
 * Create a GraalVM context
 * Run the compiled script into the GraalVM context
 * Check the output.
- 
+
+There are also some integration tests with nodejs, using TestContainers.
+
 Tests are in the `io.sonata.lang.e2e` package.
 
 ### Architecture
