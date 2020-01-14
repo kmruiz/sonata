@@ -1,3 +1,12 @@
 requires std.io
 
-println('Hello World!')
+value class Price(amount: number, currency: string) {
+   let add(amount: number) = Price(self.amount + amount, self.currency)
+   let add(0) = self
+}
+
+let format(price: Price) = price.amount + price.currency
+let format(Price(amount, '$')) = '$' + amount
+
+println(format(Price(42, 'E')))
+println(format(Price(42, '$')))

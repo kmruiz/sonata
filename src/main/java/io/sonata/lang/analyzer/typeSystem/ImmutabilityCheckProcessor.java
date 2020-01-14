@@ -79,7 +79,7 @@ public final class ImmutabilityCheckProcessor implements Processor {
 
         if (node instanceof SimpleExpression) {
             SimpleExpression expr = (SimpleExpression) node;
-            if (expr.operator.equals("=")) {
+            if (expr.operator.endsWith("=")) {
                 validate(scope.diveInIfNeeded(expr.leftSide), expr.leftSide);
             }
 
