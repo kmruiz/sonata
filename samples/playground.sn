@@ -1,6 +1,7 @@
-; Requires the functions and objects that are part of the std.io module, bundled with the compiler.
 requires std.io
 
-; This calls the println function, bundled in the std.io module.
-; Strings are wrapped in simple quotes, and it's the only way to write strings.
-println('Hello World!')
+let f(n: number) = f(n-1) + f(n-2)
+let f(n < 2) = 1
+
+println('f(1) = ' + f(1))
+println('f(10) = ' + f(10))
