@@ -5,7 +5,7 @@ If you want information about the syntax of the language, we have the [language 
 a short summary, based on examples, of the language capabilities.
 
 How to use
---------------
+-----------
 
 ### Using Docker
 
@@ -64,8 +64,10 @@ And you will see the following output:
 
 `Hello World!`
 
-Running the Tests
------------------
+How to Compile
+---------------
+
+### Running the Tests
 
 Most Sonata tests are E2E:
  
@@ -77,8 +79,7 @@ Most Sonata tests are E2E:
  
 Tests are in the `io.sonata.lang.e2e` package.
 
-Architecture
-------------
+### Architecture
 
 The sonata compiler is built by five main modules:
 
@@ -88,8 +89,7 @@ The sonata compiler is built by five main modules:
 * Analyzer: Processors that simplify the AST to generate new smarter structures. For example, generates Lambdas from a partial expression.
 * Backend: Generates the bytecode or binary for a given platform (only JS supported now).
 
-Generating a Docker image
--------------------------
+### Generating a Docker image
 
 To generate a docker image with snc, just build the multistage Dockerfile in the root directory:
 
