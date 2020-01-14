@@ -18,10 +18,10 @@ jobs:
         dockerfile: Dockerfile
         tags: latest,${GITHUB_REF##*/}
     - name: Publish Playground
-        uses: elgohr/Publish-Docker-Github-Action@master
-        with:
-          name: kmruiz/sonata
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          dockerfile: Dockerfile
-          tags: playground,playground_${GITHUB_REF##*/}
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: kmruiz/sonata
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: Dockerfile
+        tags: playground,playground_${GITHUB_REF##*/}
