@@ -41,6 +41,7 @@ public class Sonata {
                 new LetVariableProcessor(log, scope),
                 new ClassRelationshipValidator(log, scope),
                 new PropertyVisibilityProcessor(log, scope),
+                new ImmutabilityCheckProcessor(log, scope),
                 new DestructuringProcessor(symbolMap),
                 new QuestionMarkPartialFunctionProcessor(),
                 new ContinuationProcessor(log, scope)

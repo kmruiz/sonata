@@ -46,7 +46,7 @@ public abstract class E2ETest {
 
         compileToString(mockLog, getLiteralResource(resource));
         boolean found = syntaxErrors.stream().anyMatch(p -> p.message().contains(errorMessage));
-        assertTrue(found, "Could not find a syntax error containing the following error message: " + errorMessage);
+        assertTrue(found, "Could not find a syntax error containing the following error message: " + errorMessage + "\n Found errors: " + syntaxErrors.stream().map(SonataSyntaxError::message).collect(joining("\n")));
     }
 
     private void assertScriptOutputs(String expectedOutput, String literalScript) {

@@ -49,7 +49,9 @@ public final class ClassScopeProcessor implements Processor {
             ValueClass vc = (ValueClass) node;
             final String className = vc.name;
             try {
-                rootScope.registerType(className, new ValueClassType(node.definition(), className, Collections.emptyMap(), Collections.emptyMap()));
+                final ValueClassType type = new ValueClassType(node.definition(), className, Collections.emptyMap(), Collections.emptyMap());
+                rootScope.registerType(className, type);
+                rootScope.diveIn((Scoped) node).registerVariable("self", node, type);
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Value classes can not be redefined, but " + className + " is defined at least twice."));
             }

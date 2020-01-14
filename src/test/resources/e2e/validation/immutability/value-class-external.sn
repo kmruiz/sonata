@@ -1,0 +1,6 @@
+value class Person(name: string)
+
+let rename(person: Person, newName: string) = {
+    person.name = newName
+}
+
