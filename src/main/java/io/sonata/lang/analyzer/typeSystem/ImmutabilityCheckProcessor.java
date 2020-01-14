@@ -106,7 +106,7 @@ public final class ImmutabilityCheckProcessor implements Processor {
 
         if (expr instanceof MethodReference) {
             MethodReference ref = (MethodReference) expr;
-            if (!isEntity(scope, expr)) {
+            if (!isEntity(scope, ref.receiver)) {
                 log.syntaxError(new SonataSyntaxError(ref, "Value objects, built using a value class, are immutable."));
             }
         }
