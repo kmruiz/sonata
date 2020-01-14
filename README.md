@@ -1,21 +1,68 @@
 sonata
 ======
 
-How to compile
+If you want information about the syntax of the language, we have the [language wiki](https://github.com/kmruiz/sonata/wiki/1.-Introduction) which provides
+a short summary, based on examples, of the language capabilities.
+
+How to use
 --------------
 
-To compile you will need a fat-jar or running the io.sonata.lang.Bootstrap class from your IDE with the following
-parameters:
+### Using Docker
 
-```sh
-$> <input-files> -o <output>.js 
+The easiest way to start using Sonata is using one of the provided Docker images that are deployed in dockerhub. There are
+two images:
+
+#### Using the playground
+
+The playground is a docker image that contains both the latest tested version of nodejs, and the Sonata compiler, so you can compile and run your code
+with a single command. 
+
+Create a Sonata file named hello-world.sn (Sonata file extensions are .sn) in your current directory. Write the following code inside:
+
+```
+requires std.io
+
+println('Hello World!')
 ```
 
-For example, if you want to compile one of the samples, you would do (assuming you are in the root folder of the example):
+Now run the following command, from the same directory:
 
-```sh
-$> <snc or java -jar> fibonacci.sn -o fibonacci.js
 ```
+$> docker run -it -v "$(pwd):/code" kmruiz/sonata:playground sne playground.sn
+```
+
+And you will see the following output:
+
+`Hello World!`
+
+#### Using the compiler
+
+We are providing a [a image scratch image with the static binary inside](Dockerfile) so you can run the compiler easily.
+There is already a version in dockerhub so you don't need to build the compiler yourself or to prepare a development environment.
+
+Create a file in your current directory, named hello-world.sn, and write inside:
+
+```
+requires std.io
+
+println('Hello World!')
+```
+
+Now run the compiler:
+
+```
+$> docker run -it -v "$(pwd):/code" kmruiz/sonata snc hello-world.sn -o hello-world.js
+``` 
+
+It will generate a hello-world.js JavaScript image with your code, that you can run with node:
+
+```
+$> node hello-world.js
+```
+
+And you will see the following output:
+
+`Hello World!`
 
 Running the Tests
 -----------------
@@ -42,37 +89,12 @@ The sonata compiler is built by five main modules:
 * Backend: Generates the bytecode or binary for a given platform (only JS supported now).
 
 Generating a Docker image
------------
+-------------------------
 
-To generate a docker image with snc on Windows, just go the build directory and run docker.ps1:
+To generate a docker image with snc, just build the multistage Dockerfile in the root directory:
 
 ```ps1
-$> cd build
-$> ./docker.ps1
+$> docker build -t my-snc .
 ```
 
-On Linux or OSX, run the following commands:
-
-```sh
-$> docker build -t snc .
-```
-
-This will generate a fat-jar, a native-image and put it into a Docker image named snc.
-
-How to use
---------------
-
-The easiest way to try the compiler is to use the samples found in the samples directory. For example, to compile the 
-fibonacci example, go to the fibonacci directory and run the compiler:
-
-### Windows
-```ps1
-$> cd samples/fibonacci/
-$> docker run -it -v "$(pwd):/code/" -w "/code" kmruiz/sonata snc fibonacci.sn -o fibfromdocker.js
-```
-
-### Linux / OSX
-```sh
-$> cd samples/fibonacci/
-$> docker run -it -v "`pwd`:/code/" -w "/code" kmruiz/sonata snc fibonacci.sn -o fibfromdocker.js
-```
+This will generate a fat-jar, a native-image and put it into a Docker image named my-snc.
