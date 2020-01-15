@@ -1,7 +1,7 @@
 sonata
 ======
 
-If you want information about the syntax of the language, we have the [language wiki](https://github.com/kmruiz/sonata/wiki/1.-Introduction) which provides
+If you want information about the syntax of the language, we have the [language wiki](https://github.com/kmruiz/sonata/wiki/01.-Introduction) which provides
 a short summary, based on examples, of the language capabilities.
 
 How to use
