@@ -1,12 +1,7 @@
 requires std.io
 
-value class Price(amount: number, currency: string) {
-   let add(amount: number) = Price(self.amount + amount, self.currency)
-   let add(0) = self
+let TIMES = 10
+
+entity class Pinger(times: number) {
+    let ping(onPinger: Pinger) = onPinger.times += 1
 }
-
-let format(price: Price) = price.amount + price.currency
-let format(Price(amount, '$')) = '$' + amount
-
-println(format(Price(42, 'E')))
-println(format(Price(42, '$')))

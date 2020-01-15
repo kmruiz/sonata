@@ -8,7 +8,7 @@ entity class pinger() {
         ponger.pong(self, time)
     }
 
-    let ping(ponger: ponger, time === TIMES) = {
+    let ping(ponger: ponger, time == TIMES) = {
         println('ping end')
         ponger.pong(self, time)
         self.stop()
@@ -21,7 +21,7 @@ entity class ponger() {
         pinger.ping(self, time + 1)
     }
 
-    let pong(pinger: pinger, time === TIMES) = {
+    let pong(pinger: pinger, time == TIMES) = {
         println('pong end')
         self.stop()
     }
