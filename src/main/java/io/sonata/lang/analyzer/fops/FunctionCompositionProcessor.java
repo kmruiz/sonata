@@ -97,7 +97,7 @@ public class FunctionCompositionProcessor implements Processor {
 
         if (isFunction(expression.leftSide) && isFunction(expression.rightSide)) {
             List<SimpleParameter> newFnParams = parametersOf(expression.leftSide);
-            return compositionOf(newFnParams, expression.leftSide, expression.rightSide);
+            return compositionOf(newFnParams, (Expression) apply(expression.leftSide), (Expression) apply(expression.rightSide));
         }
 
         log.syntaxError(new SonataSyntaxError(expression, "Only functions can be composed."));
@@ -112,6 +112,11 @@ public class FunctionCompositionProcessor implements Processor {
         if (expr instanceof Atom) {
             final Scope.Variable variable = scope.resolveVariable(((Atom) expr).value).get();
             return variable.type instanceof FunctionType;
+        }
+
+        if (expr instanceof SimpleExpression) {
+            SimpleExpression sexpr = (SimpleExpression) expr;
+            return isFunction(sexpr.leftSide) && isFunction(sexpr.rightSide) && sexpr.operator.equals("->");
         }
 
         return false;

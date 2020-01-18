@@ -1,6 +1,8 @@
 requires std.io
 
-let sum10(a: number) = a + 10
-let toString(a: number) = '_' + a
+let uppercase(a: string) = a.toUpperCase()
+let oink = ? + ' Oink!'
+let wrap = '(' + ? + ')'
 
-println([1, 2, 3].map(sum10 -> toString))
+let toOink = uppercase -> oink -> wrap
+println(toOink('Hello World!'))
