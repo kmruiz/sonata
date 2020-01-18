@@ -14,8 +14,11 @@ import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
+import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
 import java.util.Collections;
@@ -37,7 +40,22 @@ public class FunctionCompositionProcessor implements Processor {
     public Node apply(Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(log, script.nodes.stream().map(this::apply).collect(toList()), script.currentNode, script.requiresNotifier);
+            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(toList()), script.currentNode, script.requiresNotifier);
+        }
+
+        if (node instanceof EntityClass) {
+            EntityClass entityClass = (EntityClass) node;
+            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.body.stream().map(this::apply).collect(toList()));
+        }
+
+        if (node instanceof ValueClass) {
+            ValueClass valueClass = (ValueClass) node;
+            return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, valueClass.body.stream().map(this::apply).collect(toList()));
+        }
+
+        if (node instanceof LetFunction) {
+            LetFunction fn = (LetFunction) node;
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body));
         }
 
         if (node instanceof LetConstant) {
@@ -45,9 +63,28 @@ public class FunctionCompositionProcessor implements Processor {
             return new LetConstant(constant.definition, constant.letName, constant.returnType, (Expression) apply(constant.body));
         }
 
+        if (node instanceof Lambda) {
+            Lambda lambda = (Lambda) node;
+            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body));
+        }
+
+        if (node instanceof IfElse) {
+            IfElse ifElse = (IfElse) node;
+            return new IfElse(ifElse.definition, (Expression) apply(ifElse.condition), (Expression) apply(ifElse.whenTrue), (Expression) apply(ifElse.whenFalse));
+        }
+
+        if (node instanceof BlockExpression) {
+            BlockExpression block = (BlockExpression) node;
+            return new BlockExpression(block.blockId, block.definition, block.expressions.stream().map(this::apply).map(e -> (Expression) e).collect(toList()));
+        }
+
         if (node instanceof SimpleExpression) {
-            SimpleExpression expression = (SimpleExpression) node;
-            return composeIfNeeded(expression);
+            return composeIfNeeded((SimpleExpression) node);
+        }
+
+        if (node instanceof FunctionCall) {
+            FunctionCall fc = (FunctionCall) node;
+            return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), fc.expressionType);
         }
 
         return node;

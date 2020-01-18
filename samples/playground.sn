@@ -1,9 +1,6 @@
 requires std.io
 
-let TIMES = 10
-
-let sum(a: number, b: number) = a + b
+let sum(a: number) = a + 10
 let toString(a: number) = '_' + a
 
-let toStringSum = sum -> toString
-println(toStringSum(1, 5))
+println([1, 2, 3].map(sum -> toString))
