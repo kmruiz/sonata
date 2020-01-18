@@ -28,7 +28,7 @@ println('Hello World!')
 Now run the following command, from the same directory:
 
 ```
-$> docker run -it -v "$(pwd):/code" kmruiz/sonata:playground sne playground.sn
+$> docker run -it -v "$(pwd):/code" kmruiz/sonata:playground sne hello-world.sn
 ```
 
 And you will see the following output:
