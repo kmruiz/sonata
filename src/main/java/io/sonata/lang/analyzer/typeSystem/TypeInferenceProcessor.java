@@ -18,6 +18,7 @@ import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.parser.ast.type.EmptyASTType;
+import io.sonata.lang.parser.ast.type.FunctionASTType;
 
 import java.util.List;
 import java.util.Optional;
@@ -101,6 +102,14 @@ public final class TypeInferenceProcessor implements Processor {
     }
 
     public ASTType infer(Expression expression) {
+        if (expression == null) {
+            return new BasicASTType(null, "any");
+        }
+
+        if (expression.type() != null && !(expression.type() instanceof EmptyASTType) && !expression.type().representation().equals("any")) {
+            return expression.type();
+        }
+
         if (expression instanceof Atom) {
             switch (((Atom) expression).type) {
                 case NUMERIC:
@@ -114,8 +123,9 @@ public final class TypeInferenceProcessor implements Processor {
             }
         }
 
-        if (expression == null) {
-            return new BasicASTType(null, "any");
+        if (expression instanceof Lambda) {
+            Lambda lambda = (Lambda) expression;
+            return new FunctionASTType(lambda.definition, lambda.parameters.stream().map(e -> e.astType).collect(toList()), infer(((Lambda) expression).body));
         }
 
         return new BasicASTType(expression.definition(), "any");

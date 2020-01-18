@@ -106,9 +106,10 @@ public final class LetVariableProcessor implements Processor {
         }
 
         if (node instanceof LetConstant) {
-            String letName = ((LetConstant) node).letName;
+            LetConstant constant = (LetConstant) node;
+            String letName = constant.letName;
             try {
-                scope.registerVariable(letName, node, scope.resolveType(((LetConstant) node).returnType.representation()).orElse(scope.resolveType("any").get()));
+                scope.registerVariable(letName, node, scope.resolveType(constant.returnType).orElse(scope.resolveType(constant.body.type()).orElse(Scope.TYPE_ANY)));
                 apply(scope, ((LetConstant) node).body);
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Variable '" + letName + "' has been already defined. Found on " + e.initialAssignment()));
@@ -116,9 +117,12 @@ public final class LetVariableProcessor implements Processor {
         }
 
         if (node instanceof LetFunction) {
-            String letName = ((LetFunction) node).letName;
+            LetFunction fn = (LetFunction) node;
             try {
-                scope.registerVariable(letName, node, scope.resolveType(((LetFunction) node).returnType.representation()).orElse(scope.resolveType("any").get()));
+                Type retType = scope.resolveType(fn.returnType.representation()).orElse(scope.resolveType("any").get());
+                List<Type> paramTypes = fn.parameters.stream().map(e -> scope.resolveType("any").get()).collect(Collectors.toList());
+
+                scope.registerVariable(fn.letName, node, new FunctionType(fn.definition, fn.letName, retType, paramTypes));
             } catch (TypeCanNotBeReassignedException e) {
                 // It's fine, let functions can be overloaded
             }

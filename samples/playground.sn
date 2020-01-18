@@ -2,6 +2,8 @@ requires std.io
 
 let TIMES = 10
 
-entity class Pinger(times: number) {
-    let ping(onPinger: Pinger) = onPinger.times += 1
-}
+let sum(a: number, b: number) = a + b
+let toString(a: number) = '_' + a
+
+let toStringSum = sum -> toString
+println(toStringSum(1, 5))

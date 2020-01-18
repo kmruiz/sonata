@@ -9,10 +9,20 @@ package io.sonata.lang.analyzer.typeSystem;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
+import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.FunctionASTType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Scope {
+    public static final ValueClassType TYPE_ANY = new ValueClassType(null, "any", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_RECORD = new ValueClassType(null, "record", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_BOOLEAN = new ValueClassType(null, "boolean", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_NUMBER = new ValueClassType(null, "number", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_STRING = new ValueClassType(null, "string", Collections.emptyMap(), Collections.emptyMap());
+
     public static class Variable {
         public final Node definition;
         public final Type type;
@@ -40,12 +50,11 @@ public final class Scope {
     public static Scope root() {
         Scope root = new Scope(null, null, new ArrayList<>(), new HashMap<>(), new HashMap<>());
         try {
-            root.registerType("string", new ValueClassType(null, "string", Collections.emptyMap(), Collections.emptyMap()));
-            root.registerType("number", new ValueClassType(null, "number", Collections.emptyMap(), Collections.emptyMap()));
-            root.registerType("boolean", new ValueClassType(null, "boolean", Collections.emptyMap(), Collections.emptyMap()));
-            root.registerType("record", new ValueClassType(null, "record", Collections.emptyMap(), Collections.emptyMap()));
-            root.registerType("null", new ValueClassType(null, "null", Collections.emptyMap(), Collections.emptyMap()));
-            root.registerType("any", new ValueClassType(null, "any", Collections.emptyMap(), Collections.emptyMap()));
+            root.registerType("string", TYPE_STRING);
+            root.registerType("number", TYPE_NUMBER);
+            root.registerType("boolean", TYPE_BOOLEAN);
+            root.registerType("record", TYPE_RECORD);
+            root.registerType("any", TYPE_ANY);
         } catch (TypeCanNotBeReassignedException e) {
             throw new IllegalStateException(e);
         }
@@ -77,6 +86,21 @@ public final class Scope {
         final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
 
         return foundScope.orElse(this);
+    }
+
+    public Optional<Type> resolveType(ASTType astType) {
+        if (astType instanceof BasicASTType) {
+            return resolveType(astType.representation());
+        }
+
+        if (astType instanceof FunctionASTType) {
+            FunctionASTType fn = (FunctionASTType) astType;
+            List<Type> paramTypes = fn.parameters.stream().map(this::resolveType).map(Optional::get).collect(Collectors.toList());
+
+            return Optional.of(new FunctionType(fn.definition, "<anonymous>", resolveType(fn.returnASTType).orElse(TYPE_ANY), paramTypes));
+        }
+
+        return Optional.empty();
     }
 
     public Optional<Type> resolveType(String name) {

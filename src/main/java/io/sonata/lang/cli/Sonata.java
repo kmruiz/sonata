@@ -13,6 +13,7 @@ import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.continuations.ContinuationProcessor;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
+import io.sonata.lang.analyzer.fops.FunctionCompositionProcessor;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.analyzer.typeSystem.*;
@@ -36,6 +37,7 @@ public class Sonata {
         Scope scope = Scope.root();
         Analyzer analyzer = new Analyzer(log,
                 symbolMap,
+                new QuestionMarkPartialFunctionProcessor(),
                 new ClassScopeProcessor(log, scope),
                 new TypeInferenceProcessor(log, scope),
                 new TypeInferenceProcessor(log, scope), // infer in two phases
@@ -45,7 +47,7 @@ public class Sonata {
                 new ImmutabilityCheckProcessor(log, scope),
                 new EqualitySpecializationProcessor(log, scope),
                 new DestructuringProcessor(symbolMap),
-                new QuestionMarkPartialFunctionProcessor(),
+                new FunctionCompositionProcessor(log, scope),
                 new ContinuationProcessor(log, scope)
         );
 

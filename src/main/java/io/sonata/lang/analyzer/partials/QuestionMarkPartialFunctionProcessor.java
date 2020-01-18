@@ -15,6 +15,7 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.ArrayList;
@@ -119,7 +120,7 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
 
         return () -> {
             String name = String.valueOf((char) (base + counter.getAndIncrement()));
-            lambdaParams.add(new SimpleParameter(definition, name, null, SimpleParameter.State.END));
+            lambdaParams.add(new SimpleParameter(definition, name, new BasicASTType(definition, "any"), SimpleParameter.State.END));
 
             return name;
         };

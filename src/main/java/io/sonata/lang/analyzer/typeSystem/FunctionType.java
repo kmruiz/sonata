@@ -7,15 +7,18 @@
 
 package io.sonata.lang.analyzer.typeSystem;
 
+import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class FunctionType implements Type {
-    private final SourcePosition definition;
-    private final String name;
-    private final Type returnType;
-    private final List<Type> parameters;
+    public final SourcePosition definition;
+    public final String name;
+    public final Type returnType;
+    public final List<Type> parameters;
 
     public FunctionType(SourcePosition definition, String name, Type returnType, List<Type> parameters) {
         this.definition = definition;
@@ -47,5 +50,15 @@ public class FunctionType implements Type {
     @Override
     public boolean isValue() {
         return false;
+    }
+
+    public List<SimpleParameter> namedParameters() {
+        AtomicInteger counter = new AtomicInteger(0);
+        char base = 'a';
+
+        return parameters.stream().map(e -> {
+            String name = String.valueOf((char) (base + counter.getAndIncrement()));
+            return new SimpleParameter(e.definition(), name, null, SimpleParameter.State.END);
+        }).collect(Collectors.toList());
     }
 }

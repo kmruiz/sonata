@@ -1,0 +1,8 @@
+requires std.io
+
+let sum = ? + ?
+let result = 'Result is ' + ?
+
+let sumAndResult = sum -> result
+
+println(sumAndResult(3, 2))
