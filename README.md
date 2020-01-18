@@ -37,7 +37,7 @@ And you will see the following output:
 
 #### Using the compiler
 
-We are providing a [a image scratch image with the static binary inside](Dockerfile) so you can run the compiler easily.
+We are providing [scratch image with the static binary inside](Dockerfile) so you can run the compiler easily.
 There is already a version in dockerhub so you don't need to build the compiler yourself or to prepare a development environment.
 
 Create a file in your current directory, named hello-world.sn, and write inside:

@@ -4,5 +4,5 @@ let uppercase(a: string) = a.toUpperCase()
 let oink = ? + ' Oink!'
 let wrap = '(' + ? + ')'
 
-let toOink = uppercase -> oink -> wrap
+let toOink = uppercase -> oink -> wrap -> wrap -> wrap
 println(toOink('Hello World!'))
