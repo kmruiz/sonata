@@ -23,5 +23,6 @@ FROM node
 WORKDIR /usr/bin
 COPY --from=graalvm snc ./
 ADD ./build/playground/eval.sh ./sne
+RUN chmod +x ./sne
 WORKDIR /code
 CMD /usr/bin/sne

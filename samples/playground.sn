@@ -1,6 +1,6 @@
 requires std.io
 
-let sum(a: number) = a + 10
+let sum10(a: number) = a + 10
 let toString(a: number) = '_' + a
 
-println([1, 2, 3].map(sum -> toString))
+println([1, 2, 3].map(sum10 -> toString))
