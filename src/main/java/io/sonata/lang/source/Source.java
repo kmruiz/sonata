@@ -55,7 +55,7 @@ public class Source implements AutoCloseable {
         return Flowable.create(emitter -> {
             SourcePosition position = SourcePosition.initial(this);
 
-            do {
+            while (true) {
                 final int readByte = inputStream.read(buffer);
                 if (readByte == -1) {
                     emitEof(emitter, position);
@@ -68,7 +68,7 @@ public class Source implements AutoCloseable {
 
                     emitter.onNext(new SourceCharacter(position, toEmit));
                 }
-            } while (true);
+            }
 
             emitter.onComplete();
             close();
