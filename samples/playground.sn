@@ -1,8 +1,8 @@
 requires std.io
+requires lib.sum
 
-let uppercase(a: string) = a.toUpperCase()
-let oink = ? + ' Oink!'
-let wrap = '(' + ? + ')'
+let multBy5 = ? * 5
 
-let toOink = uppercase -> oink -> wrap -> wrap -> wrap
-println(toOink('Hello World!'))
+let op = sum -> multBy5
+
+println(op([5, 5])) ; 50

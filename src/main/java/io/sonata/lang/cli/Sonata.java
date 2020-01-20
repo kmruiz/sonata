@@ -21,6 +21,7 @@ import io.sonata.lang.backend.CompilerBackend;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.Parser;
 import io.sonata.lang.parser.ast.RequiresNodeNotifier;
+import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.parser.ast.RxRequiresNodeNotifier;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.source.Source;
@@ -31,7 +32,7 @@ import java.util.HashMap;
 import static io.reactivex.BackpressureStrategy.BUFFER;
 
 public class Sonata {
-    public static Completable compile(CompilerLog log, Flowable<Source> sources, CompilerBackend backend) {
+    public static Completable compile(CompilerLog log, Flowable<Source> sources, RequiresPaths requiresPaths, CompilerBackend backend) {
         SymbolMap symbolMap = new SymbolMap(new HashMap<>());
         Tokenizer tokenizer = new Tokenizer();
         Scope scope = Scope.root();
@@ -52,7 +53,7 @@ public class Sonata {
         );
 
         Subject<Source> requires = ReplaySubject.create();
-        RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(log, requires);
+        RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(log, requires, requiresPaths);
 
         notifier.mainModules(sources.map(e -> e.name).toList().blockingGet());
 

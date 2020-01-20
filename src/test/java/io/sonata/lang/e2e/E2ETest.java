@@ -12,6 +12,7 @@ import io.sonata.lang.backend.js.JavaScriptBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
+import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
 import org.graalvm.polyglot.Context;
 import org.mockito.Mockito;
@@ -69,7 +70,7 @@ public abstract class E2ETest {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos));
 
         Source literalSource = Source.fromLiteral(literalScript);
-        Sonata.compile(log, Flowable.just(literalSource), new JavaScriptBackend(writer)).blockingAwait();
+        Sonata.compile(log, Flowable.just(literalSource), RequiresPaths.are(), new JavaScriptBackend(writer)).blockingAwait();
 
         return new String(baos.toByteArray());
     }

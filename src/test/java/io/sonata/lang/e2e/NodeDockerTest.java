@@ -11,6 +11,7 @@ import io.reactivex.Flowable;
 import io.sonata.lang.backend.js.JavaScriptBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.log.CompilerLog;
+import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -67,7 +68,7 @@ public abstract class NodeDockerTest {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos));
 
         Source literalSource = Source.fromLiteral(literalScript);
-        Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), new JavaScriptBackend(writer)).blockingAwait();
+        Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), RequiresPaths.are(), new JavaScriptBackend(writer)).blockingAwait();
         String output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
 
         Files.write(Paths.get(output), baos.toByteArray(), CREATE, TRUNCATE_EXISTING);

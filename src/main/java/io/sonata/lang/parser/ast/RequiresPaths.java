@@ -4,26 +4,28 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.sonata.lang;
 
-import io.sonata.lang.cli.command.Compile;
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.Namespace;
+package io.sonata.lang.parser.ast;
 
+import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class Bootstrap {
-    public static void main(String[] args) throws Exception {
-        ArgumentParser parser = ArgumentParsers.newFor("snc").build();
-        parser.addArgument("input").nargs("*");
-        parser.addArgument("-r", "--requires").setDefault("");
-        parser.addArgument("-o", "--output");
+public final class RequiresPaths {
+    public final List<File> directories;
 
-        Namespace namespace = parser.parseArgs(args);
+    private RequiresPaths(List<File> directories) {
+        this.directories = Collections.unmodifiableList(directories);
+    }
 
-        final List<String> requires = Arrays.asList(namespace.getString("requires").split(","));
-        Compile.execute(namespace.getList("input"), requires, namespace.getString("output"));
+    public static RequiresPaths are(String... directories) {
+        return new RequiresPaths(Arrays.stream(directories).map(File::new).collect(Collectors.toList()));
+    }
+
+    @Override
+    public String toString() {
+        return directories.stream().map(File::getAbsolutePath).collect(Collectors.joining("\n"));
     }
 }

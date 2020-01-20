@@ -1,0 +1,8 @@
+requires std.testing
+requires std.stream
+
+_.describe('stream', let (it) = {
+    it('should be transformed from and to an array', let (assert) = {
+        assert('Streams are not equal', stream(range(1, 5)).array() == range(1, 5))
+    })
+})

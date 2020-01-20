@@ -10,10 +10,14 @@ import io.reactivex.subjects.Subject;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.source.Source;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
@@ -21,10 +25,12 @@ public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
     private final Subject<Source> sources;
     private final Set<String> modulesRequested;
     private final Set<String> modulesFound;
+    private final RequiresPaths requiresPaths;
 
-    public RxRequiresNodeNotifier(CompilerLog log, Subject<Source> sources) {
+    public RxRequiresNodeNotifier(CompilerLog log, Subject<Source> sources, RequiresPaths requiresPaths) {
         this.log = log;
         this.sources = sources;
+        this.requiresPaths = requiresPaths;
         this.modulesRequested = new HashSet<>();
         this.modulesFound = new HashSet<>();
     }
@@ -63,6 +69,17 @@ public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
     }
 
     private Source resolveExternalModule(String module) throws IOException {
-        return Source.fromPath(Paths.get(module.replace('.', '/') + ".sn"));
+        final String fileRelativePath = module.replace('.', '/') + ".sn";
+        final Path sourceFromCurrentProject = Paths.get(fileRelativePath);
+        if (sourceFromCurrentProject.toFile().isFile()) {
+            return Source.fromPath(sourceFromCurrentProject);
+        }
+
+        final Optional<File> file = requiresPaths.directories.stream().map(path -> new File(path, fileRelativePath)).filter(File::isFile).findFirst();
+        if (file.isPresent()) {
+            return Source.fromPath(file.get().toPath());
+        }
+
+        throw new FileNotFoundException("Module " + module + " not found neither in the correct project nor in the requires path:\n" + requiresPaths);
     }
 }
