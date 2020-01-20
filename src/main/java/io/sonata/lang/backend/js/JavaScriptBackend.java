@@ -338,9 +338,10 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitArrayAccess(ArrayAccess node, Context context) {
         emitNode(node.receiver, context);
-        emit("[", node.index, "]", !context.isInExpression ? ";" : "");
+        emit("[");
+        emitNode(node.index, context.inExpression());
+        emit("]", !context.isInExpression ? ";" : "");
     }
-
 
     private void emitRecord(Record node, Context context) {
         emit("({");

@@ -13,9 +13,9 @@ import io.sonata.lang.source.SourcePosition;
 
 public class ArrayAccess extends ComposedExpression implements Expression {
     public final Expression receiver;
-    public final String index;
+    public final Expression index;
 
-    public ArrayAccess(Expression receiver, String index) {
+    public ArrayAccess(Expression receiver, Expression index) {
         this.receiver = receiver;
         this.index = index;
     }

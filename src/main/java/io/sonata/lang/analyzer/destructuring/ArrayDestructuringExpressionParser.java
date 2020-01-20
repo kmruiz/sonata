@@ -37,7 +37,7 @@ public final class ArrayDestructuringExpressionParser implements DestructuringEx
             if (arg instanceof TailExtraction) {
                 return new LetConstant(arg.definition(), ((TailExtraction) arg).expression.representation(), null, new TailExtraction(new Atom(arg.definition(), tp.arrayName), idx));
             } else {
-                return new LetConstant(arg.definition(), value, null, new ArrayAccess(new Atom(arg.definition(), tp.arrayName), String.valueOf(idx)));
+                return new LetConstant(arg.definition(), value, null, new ArrayAccess(new Atom(arg.definition(), tp.arrayName), new Atom(arg.definition(), String.valueOf(idx))));
             }
         }));
     }

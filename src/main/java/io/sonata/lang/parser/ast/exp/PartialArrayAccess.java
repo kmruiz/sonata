@@ -8,40 +8,33 @@ package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.type.ASTType;
 import io.sonata.lang.source.SourcePosition;
-import io.sonata.lang.tokenizer.token.NumericToken;
-import io.sonata.lang.tokenizer.token.SeparatorToken;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class PartialArrayAccess implements Expression {
     public final SourcePosition definition;
     public final Expression receiver;
-    public final String index;
+    public final Expression index;
 
-    private PartialArrayAccess(SourcePosition definition, Expression receiver, String index) {
+    private PartialArrayAccess(SourcePosition definition, Expression receiver, Expression index) {
         this.definition = definition;
         this.receiver = receiver;
         this.index = index;
     }
 
     public static PartialArrayAccess on(SourcePosition definition, Expression receiver) {
-        return new PartialArrayAccess(definition, receiver, null);
+        return new PartialArrayAccess(definition, receiver, EmptyExpression.instance());
     }
 
     @Override
     public Expression consume(Token token) {
-        if (token instanceof NumericToken && index == null) {
-            NumericToken idx = (NumericToken) token;
-            return new PartialArrayAccess(definition, receiver, idx.value);
-        }
-
-        if (token instanceof SeparatorToken && index != null) {
-            SeparatorToken sep = (SeparatorToken) token;
-            if (sep.separator.equals("]")) {
+        Expression nextExpression = index.consume(token);
+        if (nextExpression == null) {
+            if (token.representation().equals("]")) {
                 return new ArrayAccess(receiver, index);
             }
         }
 
-        return null;
+        return new PartialArrayAccess(definition, receiver, nextExpression);
     }
 
     @Override

@@ -82,15 +82,37 @@ public final class TypeInferenceProcessor implements Processor {
 
         if (node instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) node;
+            List<Expression> parameters = fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList());
+
             if (fc.receiver instanceof Atom) {
                 Atom name = (Atom) fc.receiver;
                 final Optional<Type> type = scope.resolveType(name.value);
                 if (type.isPresent()) {
-                    return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), new BasicASTType(type.get().definition(), type.get().name()));
+                    return new FunctionCall(fc.receiver, parameters, new BasicASTType(type.get().definition(), type.get().name()));
+                }
+
+                final Optional<Scope.Variable> maybeVariable = scope.resolveVariable(name.value);
+                if (maybeVariable.isPresent()) {
+                    Scope.Variable variable = maybeVariable.get();
+                    if (variable.type instanceof FunctionType) {
+                        FunctionType fnType = (FunctionType) variable.type;
+                        return new FunctionCall(fc.receiver, parameters, new BasicASTType(fnType.returnType.definition(), fnType.returnType.name()));
+                    }
                 }
             }
 
-            return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), fc.expressionType);
+            return new FunctionCall(fc.receiver, parameters, fc.expressionType);
+        }
+
+        if (node instanceof IfElse) {
+            IfElse ifElse = (IfElse) node;
+
+            return new IfElse(
+                    ifElse.definition,
+                    (Expression) apply(ifElse.condition),
+                    (Expression) apply(ifElse.whenTrue),
+                    ifElse.whenFalse != null ? (Expression) apply(ifElse.whenFalse) : null
+            );
         }
 
         if (node instanceof SimpleExpression) {

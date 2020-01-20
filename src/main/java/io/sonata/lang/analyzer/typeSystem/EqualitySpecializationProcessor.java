@@ -104,7 +104,7 @@ public final class EqualitySpecializationProcessor implements Processor {
     }
 
     private boolean isValidEquality(Expression a, Expression b) {
-        return a.type().representation().equals(b.type().representation());
+        return a.type().representation().equals(b.type().representation()) || a.type().representation().equals("any") || b.type().representation().equals("any");
     }
 
     @Override
