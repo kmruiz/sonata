@@ -18,7 +18,15 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public final class ImmutabilityCheckProcessor implements Processor {
+    private static final Set<String> ASSIGNMENT_OPERATORS = new HashSet<>(Arrays.asList(
+        "=", "+=", "-=", "*=", "/="
+    ));
+
     private final CompilerLog log;
     private final Scope scope;
 
@@ -79,7 +87,7 @@ public final class ImmutabilityCheckProcessor implements Processor {
 
         if (node instanceof SimpleExpression) {
             SimpleExpression expr = (SimpleExpression) node;
-            if (expr.operator.endsWith("=")) {
+            if (isAnAssignmentOperator(expr.operator)) {
                 validate(scope.diveInIfNeeded(expr.leftSide), expr.leftSide);
             }
 
@@ -121,6 +129,10 @@ public final class ImmutabilityCheckProcessor implements Processor {
         }
 
         return false;
+    }
+
+    private boolean isAnAssignmentOperator(String operator) {
+        return ASSIGNMENT_OPERATORS.contains(operator);
     }
 
     @Override

@@ -1,0 +1,7 @@
+value class Stream(data: any[]) {
+    let array() = self.data
+    let take(num: number) = self
+}
+
+let StreamFromArray(array: any[]) = Stream(array)
+let StreamFromFunction(fn: any) = Stream([1, 1, 1, 1, 1])

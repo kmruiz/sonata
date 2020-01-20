@@ -1,8 +1,26 @@
 requires std.testing
 requires std.stream
+requires std.range
+requires std.io
+
+let json(a: any) = JSON.stringify(a)
+
+let _ = Testing(TestRunner([], json -> println))
 
 _.describe('stream', let (it) = {
     it('should be transformed from and to an array', let (assert) = {
-        assert('Streams are not equal', stream(range(1, 5)).array() == range(1, 5))
+        let left = StreamFromArray(Range(1, 5)).array()
+        let right = Range(1, 5)
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
+
+    it('should return the taken elements from a function-backed stream', let (assert) = {
+        let left = StreamFromFunction(let () = 1).take(5).array()
+        let right = [1, 1, 1, 1, 1]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 })
+
+_.run()

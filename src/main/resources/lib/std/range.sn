@@ -1,2 +1,2 @@
-let range(from: number, to: number) = if (from >= to) [] else [from].concat(range(from + 1, to))
+let Range(from: number, to: number) = if (from >= to) [] else [from].concat(Range(from + 1, to))
 

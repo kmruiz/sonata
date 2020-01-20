@@ -13,6 +13,7 @@ import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
@@ -38,14 +39,15 @@ public abstract class NodeDockerTest {
         assertScriptOutputs(expectedOutput, script);
     }
 
+    protected final String runScriptAndGetOutput(String resource) throws Exception {
+        InputStream stream = this.getClass().getResourceAsStream(resource + ".sn");
+        String script = new BufferedReader(new InputStreamReader(stream)).lines().collect(Collectors.joining("\n"));
+
+        return runAndGetOutput(script);
+    }
+
     private void assertScriptOutputs(String expectedOutput, String literalScript) throws Exception {
-        WaitingConsumer waitingConsumer = new WaitingConsumer();
-        GenericContainer container = executeScript(literalScript);
-
-        container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
-        waitingConsumer.waitUntilEnd();
-
-        assertEquals(expectedOutput.trim(), container.getLogs().trim().replaceAll("\\n{2,}", "\n"));
+        assertEquals(expectedOutput.trim(), runAndGetOutput(literalScript));
     }
 
     private GenericContainer executeScript(String literalScript) throws Exception {
@@ -77,5 +79,16 @@ public abstract class NodeDockerTest {
 
     private String readString(Path path) throws IOException {
         return new String(Files.readAllBytes(path));
+    }
+
+    @NotNull
+    private String runAndGetOutput(String script) throws Exception {
+        WaitingConsumer waitingConsumer = new WaitingConsumer();
+        GenericContainer container = executeScript(script);
+
+        container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
+        waitingConsumer.waitUntilEnd();
+
+        return container.getLogs().trim().replaceAll("\\n{2,}", "\n");
     }
 }
