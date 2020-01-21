@@ -1,8 +1,13 @@
 requires std.io
-requires lib.sum
+requires std.stream
 
-let multBy5 = ? * 5
+entity class App() {
+    let do() = {
+        StreamFromFunction(Math.random).take(10).array().forEach(println)
+        self.stop()
+    }
+}
 
-let op = sum -> multBy5
-
-println(op([5, 5])) ; 50
+let a = App()
+a.do()
+a.stop()

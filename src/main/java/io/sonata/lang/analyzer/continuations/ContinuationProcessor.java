@@ -43,13 +43,33 @@ public class ContinuationProcessor implements Processor {
 
         if (node instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) node;
+            if (!(fc.receiver instanceof Atom)) {
+                Expression receiver = (Expression) apply(scope, fc.receiver);
+                fc = new FunctionCall(receiver, fc.arguments);
+            }
+
+            fc = new FunctionCall(fc.receiver, fc.arguments.stream().map(arg -> (Expression) apply(scope, arg)).collect(Collectors.toList()));
+
             if (isInferredTypeEntityClass(scope, fc.receiver)) {
+                return new Continuation(fc.definition(), fc, false);
+            }
+
+            if (scope.inEntityClass()) {
                 return new Continuation(fc.definition(), fc, false);
             }
 
             if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, fc)) {
                 return new Continuation(fc.definition(), fc, true);
             }
+
+            if (fc.receiver instanceof Continuation) {
+                return new Continuation(fc.definition(), fc, false);
+            }
+        }
+
+        if (node instanceof MethodReference) {
+            MethodReference ref = (MethodReference) node;
+            return new MethodReference((Expression) apply(scope, ref.receiver), ref.methodName);
         }
 
         if (node instanceof EntityClass) {
@@ -94,7 +114,7 @@ public class ContinuationProcessor implements Processor {
             Expression whenTrue = (Expression) apply(scope, ie.whenTrue);
 
             if (ie.whenFalse == null) {
-                return new IfElse(ie.ifElseId, ie.definition, condition, whenTrue,null);
+                return new IfElse(ie.ifElseId, ie.definition, condition, whenTrue, null);
             }
 
             Expression whenFalse = (Expression) apply(scope, ie.whenFalse);
@@ -129,7 +149,7 @@ public class ContinuationProcessor implements Processor {
             isMethodReferencingAnEntity(scope, (MethodReference) ref.receiver);
         }
 
-        return false;
+        return true;
     }
 
     @Override

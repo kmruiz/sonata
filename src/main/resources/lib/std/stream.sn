@@ -34,27 +34,28 @@ entity class _WaitForResult(previous: any) {
     let poll(): _StreamToken = {
         let token: _StreamToken = previous.poll()
         if (token == _StreamComplete()) {
-            token
+            []
         } else {
-            [token].concat(self.poll())
+            [token.value].concat(self.poll())
         }
     }
 }
 
 entity class Stream(chain: any[]) {
     let array() = {
-        self.chain.push(_WaitForResult(self.chain[0]))
-        let result = self.chain[0].poll()
+        self.chain.push(_WaitForResult(self.chain[self.chain.length - 1]))
+        let result = self.chain[self.chain.length - 1].poll()
         self.chain.forEach(?.stop())
         self.stop()
         result
     }
 
     let take(num: number) = {
-        self.chain.push(_Take(self.chain[0], num, 0))
+        self.chain.push(_Take(self.chain[self.chain.length - 1], num, 0))
         self
     }
 }
 
-let StreamFromArray(array: any[]) = Stream(_ProvideFromArray(array))
-let StreamFromFunction(fn: any) = Stream(_ProvideFromFunction(fn))
+let StreamFromArray(array: any[]) = Stream([_ProvideFromArray(array)])
+let StreamFromFunction(fn: any) = Stream([_ProvideFromFunction(fn)])
+

@@ -176,6 +176,10 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitContinuation(Continuation continuation, Context context) {
+        if (context.isInExpression) {
+            emit("(");
+        }
+
         emit("await ");
         if (continuation.fanOut) {
             emit("Promise.all(");
@@ -189,6 +193,8 @@ public class JavaScriptBackend implements CompilerBackend {
 
         if (!context.isInExpression) {
             emit(";");
+        } else {
+            emit(")");
         }
     }
 
@@ -324,6 +330,10 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitLambda(Lambda node, Context context) {
+        if (context.isInEntityClass) {
+            emit("async ");
+        }
+
         emit("function(");
         emit(node.parameters.stream().map(p -> p.name).collect(Collectors.joining(",")));
         emit("){return ");
