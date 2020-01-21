@@ -14,8 +14,8 @@ import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.type.BasicASTType;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 
 import java.util.Optional;
 
@@ -48,14 +48,14 @@ public final class ClassRelationshipValidator implements Processor {
     }
 
     private void validateIsNotAnEntity(ValueClass valueClass, Field field) {
-        ASTType fieldASTType = ((SimpleField) field).astType;
+        ASTTypeRepresentation fieldASTTypeRepresentation = ((SimpleField) field).astTypeRepresentation;
 
-        if (fieldASTType instanceof BasicASTType) {
+        if (fieldASTTypeRepresentation instanceof BasicASTTypeRepresentation) {
             String fieldName = ((SimpleField) field).name;
-            String typeName = ((BasicASTType) fieldASTType).name;
-            final Optional<Type> resolution = scope.resolveType(fieldASTType);
+            String typeName = ((BasicASTTypeRepresentation) fieldASTTypeRepresentation).name;
+            final Optional<Type> resolution = scope.resolveType(fieldASTTypeRepresentation);
             if (!resolution.isPresent()) {
-                log.syntaxError(new SonataSyntaxError(fieldASTType, "Couldn't resolve type '" + typeName + "'"));
+                log.syntaxError(new SonataSyntaxError(fieldASTTypeRepresentation, "Couldn't resolve type '" + typeName + "'"));
             } else {
                 Type type = resolution.get();
                 if (type.isEntity()) {

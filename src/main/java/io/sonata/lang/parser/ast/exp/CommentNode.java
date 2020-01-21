@@ -7,8 +7,8 @@
 
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -32,8 +32,8 @@ public class CommentNode implements Expression {
     }
 
     @Override
-    public ASTType type() {
-        return new BasicASTType(definition, "null");
+    public ASTTypeRepresentation type() {
+        return new BasicASTTypeRepresentation(definition, "null");
     }
 
     @Override

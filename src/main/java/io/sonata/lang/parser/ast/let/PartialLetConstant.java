@@ -10,16 +10,16 @@ import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
-import io.sonata.lang.parser.ast.type.FunctionASTType;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class PartialLetConstant implements Expression {
     private final SourcePosition definition;
     private final String letName;
-    private final ASTType astType;
+    private final ASTTypeRepresentation astTypeRepresentation;
     private final State state;
     private final Node value;
 
@@ -28,20 +28,20 @@ public class PartialLetConstant implements Expression {
     }
 
     public static Expression initial(SourcePosition definition, String letName) {
-        return new PartialLetConstant(definition, letName, EmptyASTType.instance(), State.WAITING_TYPE, RootNode.instance());
+        return new PartialLetConstant(definition, letName, EmptyASTTypeRepresentation.instance(), State.WAITING_TYPE, RootNode.instance());
     }
 
-    private PartialLetConstant(SourcePosition definition, String letName, ASTType astType, State state, Node value) {
+    private PartialLetConstant(SourcePosition definition, String letName, ASTTypeRepresentation astTypeRepresentation, State state, Node value) {
         this.definition = definition;
         this.letName = letName;
-        this.astType = astType;
+        this.astTypeRepresentation = astTypeRepresentation;
         this.state = state;
         this.value = value;
     }
 
     @Override
     public String representation() {
-        return "let " + letName + ": " + astType.representation() + " = " + value.representation() + "?" + state;
+        return "let " + letName + ": " + astTypeRepresentation.representation() + " = " + value.representation() + "?" + state;
     }
 
     @Override
@@ -49,41 +49,41 @@ public class PartialLetConstant implements Expression {
         switch (state) {
             case WAITING_TYPE:
                 if (token.representation().equals(":")) {
-                    return new PartialLetConstant(definition, letName, astType, State.IN_TYPE, value);
+                    return new PartialLetConstant(definition, letName, astTypeRepresentation, State.IN_TYPE, value);
                 } else if (token.representation().equals("=")) {
                     return new PartialLetConstant(definition, letName, null, State.IN_BODY, value);
                 }
                 throw new ParserException(this, "Expecting a colon ':' or an equals '=', but got '" + token.representation() + "'");
             case IN_TYPE:
-                ASTType nextASTType = astType.consume(token);
-                if (nextASTType == null) {
-                    return new PartialLetConstant(definition, letName, astType, State.WAITING_EQUALS, value).consume(token);
+                ASTTypeRepresentation nextASTTypeRepresentation = astTypeRepresentation.consume(token);
+                if (nextASTTypeRepresentation == null) {
+                    return new PartialLetConstant(definition, letName, astTypeRepresentation, State.WAITING_EQUALS, value).consume(token);
                 }
 
-                if (nextASTType instanceof FunctionASTType) {
-                    return new PartialLetConstant(definition, letName, nextASTType, State.IN_BODY, value);
+                if (nextASTTypeRepresentation instanceof FunctionASTTypeRepresentation) {
+                    return new PartialLetConstant(definition, letName, nextASTTypeRepresentation, State.IN_BODY, value);
                 }
 
-                return new PartialLetConstant(definition, letName, nextASTType, state, value);
+                return new PartialLetConstant(definition, letName, nextASTTypeRepresentation, state, value);
             case WAITING_EQUALS:
                 if (token.representation().equals("=")) {
-                    return new PartialLetConstant(definition, letName, astType, State.IN_BODY, value);
+                    return new PartialLetConstant(definition, letName, astTypeRepresentation, State.IN_BODY, value);
                 }
                 throw new ParserException(this, "Expecting an equals '=', but got '"+ token.representation() + "'");
             case IN_BODY:
                 Node nextBody = value.consume(token);
                 if (nextBody == null && value instanceof Expression) {
-                    return new LetConstant(definition, letName, astType, (Expression) value);
+                    return new LetConstant(definition, letName, astTypeRepresentation, (Expression) value);
                 }
 
-                return new PartialLetConstant(definition, letName, astType, state, nextBody);
+                return new PartialLetConstant(definition, letName, astTypeRepresentation, state, nextBody);
         }
 
         throw new ParserException(this, "Parser got to an unknown state.");
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         return null;
     }
 

@@ -6,8 +6,8 @@
  */
 package io.sonata.lang.parser.ast.classes.fields;
 
-import io.sonata.lang.parser.ast.type.EmptyASTType;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -18,25 +18,25 @@ public class SimpleField implements Field {
         WAITING_NAME, WAITING_SEPARATOR, WAITING_TYPE, END
     }
 
-    private SimpleField(SourcePosition definition, String name, ASTType astType, State state) {
+    private SimpleField(SourcePosition definition, String name, ASTTypeRepresentation astTypeRepresentation, State state) {
         this.definition = definition;
         this.name = name;
-        this.astType = astType;
+        this.astTypeRepresentation = astTypeRepresentation;
         this.state = state;
     }
 
     public static SimpleField instance(SourcePosition definition) {
-        return new SimpleField(definition, null, EmptyASTType.instance(), State.WAITING_NAME);
+        return new SimpleField(definition, null, EmptyASTTypeRepresentation.instance(), State.WAITING_NAME);
     }
 
     public final SourcePosition definition;
     public final String name;
-    public final ASTType astType;
+    public final ASTTypeRepresentation astTypeRepresentation;
     public final State state;
 
     @Override
     public String representation() {
-        return name + ": " + astType.representation();
+        return name + ": " + astTypeRepresentation.representation();
     }
 
     @Override
@@ -44,7 +44,7 @@ public class SimpleField implements Field {
         switch (state) {
             case WAITING_NAME:
                 if (token instanceof IdentifierToken) {
-                    return new SimpleField(definition, token.representation(), astType, State.WAITING_SEPARATOR);
+                    return new SimpleField(definition, token.representation(), astTypeRepresentation, State.WAITING_SEPARATOR);
                 }
 
                 return null;
@@ -52,15 +52,15 @@ public class SimpleField implements Field {
                 if (token instanceof SeparatorToken) {
                     SeparatorToken sep = (SeparatorToken) token;
                     if (sep.separator.equals(":")) {
-                        return new SimpleField(definition, name, astType, State.WAITING_TYPE);
+                        return new SimpleField(definition, name, astTypeRepresentation, State.WAITING_TYPE);
                     }
                 }
 
                 return null;
             case WAITING_TYPE:
-                ASTType next = astType.consume(token);
+                ASTTypeRepresentation next = astTypeRepresentation.consume(token);
                 if (next == null) {
-                    return new SimpleField(definition, name, astType, State.END);
+                    return new SimpleField(definition, name, astTypeRepresentation, State.END);
                 }
 
                 return new SimpleField(definition, name, next, State.WAITING_TYPE);

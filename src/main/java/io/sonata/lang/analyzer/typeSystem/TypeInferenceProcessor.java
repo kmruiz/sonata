@@ -15,10 +15,10 @@ import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
-import io.sonata.lang.parser.ast.type.FunctionASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,8 +56,8 @@ public final class TypeInferenceProcessor implements Processor {
 
         if (node instanceof LetConstant) {
             LetConstant constant = (LetConstant) node;
-            ASTType type = constant.returnType;
-            if (type == null || type instanceof EmptyASTType) {
+            ASTTypeRepresentation type = constant.returnType;
+            if (type == null || type instanceof EmptyASTTypeRepresentation) {
                 type = infer(constant.body);
             }
 
@@ -66,8 +66,8 @@ public final class TypeInferenceProcessor implements Processor {
 
         if (node instanceof LetFunction) {
             LetFunction fn = (LetFunction) node;
-            ASTType type = fn.returnType;
-            if (type == null || type instanceof EmptyASTType) {
+            ASTTypeRepresentation type = fn.returnType;
+            if (type == null || type instanceof EmptyASTTypeRepresentation) {
                 type = infer(fn.body);
             }
 
@@ -86,9 +86,9 @@ public final class TypeInferenceProcessor implements Processor {
 
             if (fc.receiver instanceof Atom) {
                 Atom name = (Atom) fc.receiver;
-                final Optional<Type> type = scope.resolveType(new BasicASTType(name.definition, name.value));
+                final Optional<Type> type = scope.resolveType(new BasicASTTypeRepresentation(name.definition, name.value));
                 if (type.isPresent()) {
-                    return new FunctionCall(fc.receiver, parameters, new BasicASTType(type.get().definition(), type.get().name()));
+                    return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(type.get().definition(), type.get().name()));
                 }
 
                 final Optional<Scope.Variable> maybeVariable = scope.resolveVariable(name.value);
@@ -96,7 +96,7 @@ public final class TypeInferenceProcessor implements Processor {
                     Scope.Variable variable = maybeVariable.get();
                     if (variable.type instanceof FunctionType) {
                         FunctionType fnType = (FunctionType) variable.type;
-                        return new FunctionCall(fc.receiver, parameters, new BasicASTType(fnType.returnType.definition(), fnType.returnType.name()));
+                        return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(fnType.returnType.definition(), fnType.returnType.name()));
                     }
                 }
             }
@@ -123,34 +123,34 @@ public final class TypeInferenceProcessor implements Processor {
         return node;
     }
 
-    public ASTType infer(Expression expression) {
+    public ASTTypeRepresentation infer(Expression expression) {
         if (expression == null) {
-            return new BasicASTType(null, "any");
+            return new BasicASTTypeRepresentation(null, "any");
         }
 
-        if (expression.type() != null && !(expression.type() instanceof EmptyASTType) && !expression.type().representation().equals("any")) {
+        if (expression.type() != null && !(expression.type() instanceof EmptyASTTypeRepresentation) && !expression.type().representation().equals("any")) {
             return expression.type();
         }
 
         if (expression instanceof Atom) {
             switch (((Atom) expression).type) {
                 case NUMERIC:
-                    return new BasicASTType(expression.definition(), "number");
+                    return new BasicASTTypeRepresentation(expression.definition(), "number");
                 case STRING:
-                    return new BasicASTType(expression.definition(), "string");
+                    return new BasicASTTypeRepresentation(expression.definition(), "string");
                 case BOOLEAN:
-                    return new BasicASTType(expression.definition(), "boolean");
+                    return new BasicASTTypeRepresentation(expression.definition(), "boolean");
                 case NULL:
-                    return new BasicASTType(expression.definition(), "null");
+                    return new BasicASTTypeRepresentation(expression.definition(), "null");
             }
         }
 
         if (expression instanceof Lambda) {
             Lambda lambda = (Lambda) expression;
-            return new FunctionASTType(lambda.definition, lambda.parameters.stream().map(e -> e.astType).collect(toList()), infer(((Lambda) expression).body));
+            return new FunctionASTTypeRepresentation(lambda.definition, lambda.parameters.stream().map(e -> e.astTypeRepresentation).collect(toList()), infer(((Lambda) expression).body));
         }
 
-        return new BasicASTType(expression.definition(), "any");
+        return new BasicASTTypeRepresentation(expression.definition(), "any");
     }
 
     @Override

@@ -7,18 +7,18 @@
 package io.sonata.lang.parser.ast.let;
 
 import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
 public class LetConstant implements Expression {
     public final SourcePosition definition;
     public final String letName;
-    public final ASTType returnType;
+    public final ASTTypeRepresentation returnType;
     public final Expression body;
 
-    public LetConstant(SourcePosition definition, String letName, ASTType returnType, Expression body) {
+    public LetConstant(SourcePosition definition, String letName, ASTTypeRepresentation returnType, Expression body) {
         this.definition = definition;
         this.letName = letName;
         this.returnType = returnType;
@@ -31,8 +31,8 @@ public class LetConstant implements Expression {
     }
 
     @Override
-    public ASTType type() {
-        if (returnType == EmptyASTType.instance()) {
+    public ASTTypeRepresentation type() {
+        if (returnType == EmptyASTTypeRepresentation.instance()) {
             return body.type();
         }
 

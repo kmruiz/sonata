@@ -6,19 +6,28 @@
  */
 package io.sonata.lang.parser.ast.type;
 
-import io.sonata.lang.tokenizer.token.SeparatorToken;
-import io.sonata.lang.tokenizer.token.Token;
+import io.sonata.lang.source.SourcePosition;
 
-public abstract class ComposedASTType implements ASTType {
-    public ASTType consume(Token token) {
-        if (token instanceof SeparatorToken) {
-            SeparatorToken sep = (SeparatorToken) token;
+public class BasicASTTypeRepresentation extends ComposedASTTypeRepresentation implements ASTTypeRepresentation {
+    public final SourcePosition definition;
+    public final String name;
 
-            if (sep.separator.equals("[")) {
-                return PartialGenericASTType.on(this);
-            }
-        }
+    public BasicASTTypeRepresentation(SourcePosition definition, String name) {
+        this.definition = definition;
+        this.name = name;
+    }
 
-        return null;
+    public static BasicASTTypeRepresentation named(SourcePosition definition, String name) {
+        return new BasicASTTypeRepresentation(definition, name);
+    }
+
+    @Override
+    public String representation() {
+        return name;
+    }
+
+    @Override
+    public SourcePosition definition() {
+        return definition;
     }
 }

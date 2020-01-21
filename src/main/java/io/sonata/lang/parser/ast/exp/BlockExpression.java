@@ -8,8 +8,8 @@ package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -43,9 +43,9 @@ public class BlockExpression implements Expression, Scoped {
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         if (expressions.isEmpty()) {
-            return new BasicASTType(definition, "any");
+            return new BasicASTTypeRepresentation(definition, "any");
         }
 
         return expressions.get(expressions.size() - 1).type();

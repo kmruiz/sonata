@@ -6,7 +6,7 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 public class PriorityExpression extends ComposedExpression implements Expression {
@@ -22,7 +22,7 @@ public class PriorityExpression extends ComposedExpression implements Expression
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         return expression.type();
     }
 

@@ -8,7 +8,7 @@ package io.sonata.lang.parser.ast.let;
 
 import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -60,7 +60,7 @@ public class PartialLet implements Expression {
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         return null;
     }
 

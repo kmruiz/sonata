@@ -8,7 +8,7 @@ package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.CommentToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -58,7 +58,7 @@ public class EmptyExpression implements Expression {
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         return null;
     }
 

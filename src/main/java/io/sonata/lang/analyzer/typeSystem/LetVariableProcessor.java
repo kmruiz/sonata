@@ -21,7 +21,7 @@ import io.sonata.lang.parser.ast.exp.BlockExpression;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
-import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +66,7 @@ public final class LetVariableProcessor implements Processor {
                     registerMethods(classScope, methods, method)
             );
 
-            final Optional<Type> incompleteType = classScope.resolveType(new BasicASTType(entity.definition, className));
+            final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(entity.definition, className));
             if (!incompleteType.isPresent()) {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
             }
@@ -91,7 +91,7 @@ public final class LetVariableProcessor implements Processor {
                     registerMethods(classScope, methods, method)
             );
 
-            final Optional<Type> incompleteType = classScope.resolveType(new BasicASTType(vc.definition, className));
+            final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(vc.definition, className));
             if (!incompleteType.isPresent()) {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this value class. Please fill a bug with a sample code.");
             }
@@ -132,7 +132,7 @@ public final class LetVariableProcessor implements Processor {
             ((LetFunction) node).parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
                 String paramName = ((SimpleParameter) parameter).name;
                 try {
-                    letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astType).orElse(Scope.TYPE_ANY));
+                    letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astTypeRepresentation).orElse(Scope.TYPE_ANY));
                 } catch (TypeCanNotBeReassignedException e) {
                     log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
                 }
@@ -142,8 +142,8 @@ public final class LetVariableProcessor implements Processor {
     }
 
     private void registerFields(Scope scope, Node owner, Map<String, Type> fields, SimpleField field) {
-        final String typeName = field.astType.representation();
-        Optional<Type> refType = scope.resolveType(field.astType);
+        final String typeName = field.astTypeRepresentation.representation();
+        Optional<Type> refType = scope.resolveType(field.astTypeRepresentation);
         if (!refType.isPresent()) {
             log.syntaxError(new SonataSyntaxError(owner, "Field '" + field.name + "' refers to a type '" + typeName + "', which does not exist."));
         } else {
@@ -158,7 +158,7 @@ public final class LetVariableProcessor implements Processor {
         }
 
         List<Type> parameters = method.parameters.stream().map(p -> (SimpleParameter) p).map(param -> {
-            Optional<Type> paramType = scope.resolveType(param.astType);
+            Optional<Type> paramType = scope.resolveType(param.astTypeRepresentation);
             return paramType.orElse(Scope.TYPE_ANY);
         }).collect(Collectors.toList());
         Type returnType = scope.resolveType(method.returnType).orElse(Scope.TYPE_ANY);

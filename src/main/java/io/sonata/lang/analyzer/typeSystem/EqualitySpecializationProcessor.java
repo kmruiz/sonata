@@ -17,7 +17,7 @@ import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 
 import java.util.Optional;
 
@@ -82,7 +82,7 @@ public final class EqualitySpecializationProcessor implements Processor {
                     return node;
                 }
 
-                final ASTType typeOfComparison = expr.leftSide.type();
+                final ASTTypeRepresentation typeOfComparison = expr.leftSide.type();
                 final Optional<Type> maybeType = scope.resolveType(typeOfComparison);
                 if (maybeType.isPresent()) {
                     final Type type = maybeType.get();

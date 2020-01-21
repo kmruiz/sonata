@@ -9,10 +9,10 @@ package io.sonata.lang.analyzer.typeSystem;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.ArrayASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
-import io.sonata.lang.parser.ast.type.FunctionASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.ArrayASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -89,20 +89,20 @@ public final class Scope {
         return foundScope.orElse(this);
     }
 
-    public Optional<Type> resolveType(ASTType astType) {
-        if (astType instanceof FunctionASTType) {
-            FunctionASTType fn = (FunctionASTType) astType;
+    public Optional<Type> resolveType(ASTTypeRepresentation astTypeRepresentation) {
+        if (astTypeRepresentation instanceof FunctionASTTypeRepresentation) {
+            FunctionASTTypeRepresentation fn = (FunctionASTTypeRepresentation) astTypeRepresentation;
             List<Type> paramTypes = fn.parameters.stream().map(this::resolveType).map(Optional::get).collect(Collectors.toList());
 
-            return Optional.of(new FunctionType(fn.definition, "<anonymous>", resolveType(fn.returnASTType).orElse(TYPE_ANY), paramTypes));
+            return Optional.of(new FunctionType(fn.definition, "<anonymous>", resolveType(fn.returnASTTypeRepresentation).orElse(TYPE_ANY), paramTypes));
         }
 
-        if (astType instanceof ArrayASTType) {
+        if (astTypeRepresentation instanceof ArrayASTTypeRepresentation) {
             return Optional.of(TYPE_ANY);
         }
 
-        if (astType instanceof BasicASTType) {
-            BasicASTType basicType = (BasicASTType) astType;
+        if (astTypeRepresentation instanceof BasicASTTypeRepresentation) {
+            BasicASTTypeRepresentation basicType = (BasicASTTypeRepresentation) astTypeRepresentation;
             Type typeIfAny = typeContext.get(basicType.name);
             if (typeIfAny == null) {
                 return Optional.ofNullable(parent).flatMap(scope -> scope.resolveType(basicType));

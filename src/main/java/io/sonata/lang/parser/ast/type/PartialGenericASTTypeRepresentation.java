@@ -15,42 +15,42 @@ import java.util.List;
 
 import static io.sonata.lang.javaext.Lists.append;
 
-public class PartialGenericASTType implements ASTType {
-    public final ASTType base;
-    public final List<ASTType> parameters;
-    public final ASTType current;
+public class PartialGenericASTTypeRepresentation implements ASTTypeRepresentation {
+    public final ASTTypeRepresentation base;
+    public final List<ASTTypeRepresentation> parameters;
+    public final ASTTypeRepresentation current;
 
-    private PartialGenericASTType(ASTType base, List<ASTType> parameters, ASTType current) {
+    private PartialGenericASTTypeRepresentation(ASTTypeRepresentation base, List<ASTTypeRepresentation> parameters, ASTTypeRepresentation current) {
         this.base = base;
         this.parameters = parameters;
         this.current = current;
     }
 
-    public static PartialGenericASTType on(ASTType base) {
-        return new PartialGenericASTType(base, Collections.emptyList(), EmptyASTType.instance());
+    public static PartialGenericASTTypeRepresentation on(ASTTypeRepresentation base) {
+        return new PartialGenericASTTypeRepresentation(base, Collections.emptyList(), EmptyASTTypeRepresentation.instance());
     }
 
     @Override
-    public ASTType consume(Token token) {
-        ASTType next = current.consume(token);
+    public ASTTypeRepresentation consume(Token token) {
+        ASTTypeRepresentation next = current.consume(token);
         if (next == null) {
             if (token instanceof SeparatorToken) {
                 SeparatorToken sep = (SeparatorToken) token;
                 if (sep.separator.equals(",")) {
-                    return new PartialGenericASTType(base, append(parameters, current), EmptyASTType.instance());
+                    return new PartialGenericASTTypeRepresentation(base, append(parameters, current), EmptyASTTypeRepresentation.instance());
                 }
 
                 if (sep.separator.equals("]")) {
-                    if (parameters.size() == 0 && current instanceof EmptyASTType) {
-                        return new ArrayASTType(base);
+                    if (parameters.size() == 0 && current instanceof EmptyASTTypeRepresentation) {
+                        return new ArrayASTTypeRepresentation(base);
                     }
 
-                    return new GenericASTType(base, append(parameters, current));
+                    return new GenericASTTypeRepresentation(base, append(parameters, current));
                 }
             }
         }
 
-        return new PartialGenericASTType(base, parameters, next);
+        return new PartialGenericASTTypeRepresentation(base, parameters, next);
     }
 
     @Override

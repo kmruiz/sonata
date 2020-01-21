@@ -7,8 +7,8 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.List;
@@ -17,16 +17,16 @@ import java.util.stream.Collectors;
 public class FunctionCall extends ComposedExpression implements Expression {
     public final Expression receiver;
     public final List<Expression> arguments;
-    public final ASTType expressionType;
+    public final ASTTypeRepresentation expressionType;
 
-    public FunctionCall(Expression receiver, List<Expression> arguments, ASTType expressionType) {
+    public FunctionCall(Expression receiver, List<Expression> arguments, ASTTypeRepresentation expressionType) {
         this.receiver = receiver;
         this.arguments = arguments;
         this.expressionType = expressionType;
     }
 
     public FunctionCall(Expression receiver, List<Expression> arguments) {
-        this(receiver, arguments, EmptyASTType.instance());
+        this(receiver, arguments, EmptyASTTypeRepresentation.instance());
     }
 
     @Override
@@ -35,7 +35,7 @@ public class FunctionCall extends ComposedExpression implements Expression {
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         return expressionType;
     }
 

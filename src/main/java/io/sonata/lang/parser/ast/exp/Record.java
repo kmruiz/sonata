@@ -6,8 +6,8 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.Map;
@@ -34,7 +34,7 @@ public class Record extends ComposedExpression implements Expression {
     }
 
     @Override
-    public ASTType type() {
-        return new BasicASTType(definition, "record");
+    public ASTTypeRepresentation type() {
+        return new BasicASTTypeRepresentation(definition, "record");
     }
 }

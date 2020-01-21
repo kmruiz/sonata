@@ -9,8 +9,8 @@ package io.sonata.lang.parser.ast.let;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -23,10 +23,10 @@ public class LetFunction implements Expression, Scoped {
     public final SourcePosition definition;
     public final String letName;
     public final List<Parameter> parameters;
-    public final ASTType returnType;
+    public final ASTTypeRepresentation returnType;
     public final Expression body;
 
-    public LetFunction(String letId, SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnType, Expression body) {
+    public LetFunction(String letId, SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body) {
         this.letId = letId;
         this.definition = definition;
         this.letName = letName;
@@ -35,7 +35,7 @@ public class LetFunction implements Expression, Scoped {
         this.body = body;
     }
 
-    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTType returnType, Expression body) {
+    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body) {
         this(UUID.randomUUID().toString(), definition, letName, parameters, returnType, body);
     }
 
@@ -50,8 +50,8 @@ public class LetFunction implements Expression, Scoped {
     }
 
     @Override
-    public ASTType type() {
-        if (returnType == EmptyASTType.instance()) {
+    public ASTTypeRepresentation type() {
+        if (returnType == EmptyASTTypeRepresentation.instance()) {
             return body.type();
         }
 

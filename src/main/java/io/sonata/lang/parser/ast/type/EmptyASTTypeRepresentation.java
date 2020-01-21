@@ -7,21 +7,42 @@
 package io.sonata.lang.parser.ast.type;
 
 import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.IdentifierToken;
+import io.sonata.lang.tokenizer.token.OperatorToken;
+import io.sonata.lang.tokenizer.token.SeparatorToken;
+import io.sonata.lang.tokenizer.token.Token;
 
-public class ArrayASTType extends ComposedASTType implements ASTType {
-    public final ASTType base;
+public class EmptyASTTypeRepresentation implements ASTTypeRepresentation {
+    private static final EmptyASTTypeRepresentation INSTANCE = new EmptyASTTypeRepresentation();
 
-    public ArrayASTType(ASTType base) {
-        this.base = base;
+    public static EmptyASTTypeRepresentation instance() {
+        return INSTANCE;
+    }
+
+    @Override
+    public ASTTypeRepresentation consume(Token token) {
+        if (token instanceof IdentifierToken) {
+            return BasicASTTypeRepresentation.named(token.sourcePosition(), token.representation());
+        }
+
+        if (token instanceof SeparatorToken && token.representation().equals("(")) {
+            return PartialFunctionASTTypeRepresentation.inParameterList(token.sourcePosition());
+        }
+
+        if (token instanceof OperatorToken && token.representation().equals("->")) {
+            return PartialFunctionASTTypeRepresentation.withoutParameters(token.sourcePosition());
+        }
+
+        return null;
     }
 
     @Override
     public String representation() {
-        return base.representation() + "[]";
+        return "<empty type>";
     }
 
     @Override
     public SourcePosition definition() {
-        return base.definition();
+        return null;
     }
 }

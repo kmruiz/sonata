@@ -6,9 +6,9 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
-import io.sonata.lang.parser.ast.type.GenericASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.GenericASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.List;
@@ -31,8 +31,8 @@ public class LiteralArray extends ComposedExpression implements Expression {
     }
 
     @Override
-    public ASTType type() {
-        return new GenericASTType(new BasicASTType(definition, "array"), singletonList(new BasicASTType(definition, "any")));
+    public ASTTypeRepresentation type() {
+        return new GenericASTTypeRepresentation(new BasicASTTypeRepresentation(definition, "array"), singletonList(new BasicASTTypeRepresentation(definition, "any")));
     }
 
     @Override

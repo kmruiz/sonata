@@ -8,27 +8,20 @@ package io.sonata.lang.parser.ast.type;
 
 import io.sonata.lang.source.SourcePosition;
 
-import java.util.List;
-import java.util.stream.Collectors;
+public class ArrayASTTypeRepresentation extends ComposedASTTypeRepresentation implements ASTTypeRepresentation {
+    public final ASTTypeRepresentation base;
 
-public class FunctionASTType extends ComposedASTType implements ASTType {
-    public final SourcePosition definition;
-    public final List<ASTType> parameters;
-    public final ASTType returnASTType;
-
-    public FunctionASTType(SourcePosition definition, List<ASTType> parameters, ASTType returnASTType) {
-        this.definition = definition;
-        this.parameters = parameters;
-        this.returnASTType = returnASTType;
+    public ArrayASTTypeRepresentation(ASTTypeRepresentation base) {
+        this.base = base;
     }
 
     @Override
     public String representation() {
-        return "let(" + parameters.stream().map(Object::toString).collect(Collectors.joining(",")) + "): " + returnASTType.toString();
+        return base.representation() + "[]";
     }
 
     @Override
     public SourcePosition definition() {
-        return definition;
+        return base.definition();
     }
 }

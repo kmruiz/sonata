@@ -7,8 +7,8 @@
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.Objects;
@@ -65,18 +65,18 @@ public class Atom extends ComposedExpression implements Expression {
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         switch (type) {
             case NUMERIC:
-                return new BasicASTType(definition, "number");
+                return new BasicASTTypeRepresentation(definition, "number");
             case STRING:
-                return new BasicASTType(definition,"string");
+                return new BasicASTTypeRepresentation(definition,"string");
             case BOOLEAN:
-                return new BasicASTType(definition, "boolean");
+                return new BasicASTTypeRepresentation(definition, "boolean");
             case NULL:
-                return new BasicASTType(definition, "null");
+                return new BasicASTTypeRepresentation(definition, "null");
             default:
-                return new BasicASTType(definition, "any");
+                return new BasicASTTypeRepresentation(definition, "any");
         }
     }
 

@@ -7,42 +7,26 @@
 package io.sonata.lang.parser.ast.type;
 
 import io.sonata.lang.source.SourcePosition;
-import io.sonata.lang.tokenizer.token.IdentifierToken;
-import io.sonata.lang.tokenizer.token.OperatorToken;
-import io.sonata.lang.tokenizer.token.SeparatorToken;
-import io.sonata.lang.tokenizer.token.Token;
 
-public class EmptyASTType implements ASTType {
-    private static final EmptyASTType INSTANCE = new EmptyASTType();
+import java.util.List;
+import java.util.stream.Collectors;
 
-    public static EmptyASTType instance() {
-        return INSTANCE;
-    }
+public class GenericASTTypeRepresentation extends ComposedASTTypeRepresentation implements ASTTypeRepresentation {
+    public final ASTTypeRepresentation base;
+    public final List<ASTTypeRepresentation> parameters;
 
-    @Override
-    public ASTType consume(Token token) {
-        if (token instanceof IdentifierToken) {
-            return BasicASTType.named(token.sourcePosition(), token.representation());
-        }
-
-        if (token instanceof SeparatorToken && token.representation().equals("(")) {
-            return PartialFunctionASTType.inParameterList(token.sourcePosition());
-        }
-
-        if (token instanceof OperatorToken && token.representation().equals("->")) {
-            return PartialFunctionASTType.withoutParameters(token.sourcePosition());
-        }
-
-        return null;
+    public GenericASTTypeRepresentation(ASTTypeRepresentation base, List<ASTTypeRepresentation> parameters) {
+        this.base = base;
+        this.parameters = parameters;
     }
 
     @Override
     public String representation() {
-        return "<empty type>";
+        return base.representation() + "[" + parameters.stream().map(ASTTypeRepresentation::representation).collect(Collectors.joining(", ")) + "]";
     }
 
     @Override
     public SourcePosition definition() {
-        return null;
+        return base.definition();
     }
 }

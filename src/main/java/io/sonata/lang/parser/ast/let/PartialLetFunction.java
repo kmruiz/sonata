@@ -13,8 +13,8 @@ import io.sonata.lang.parser.ast.exp.Expression;
 import io.sonata.lang.parser.ast.exp.Lambda;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.OperatorToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -31,13 +31,13 @@ public class PartialLetFunction implements Expression {
         IN_PARAMETER, WAITING_DEFINITION, IN_RETURN_TYPE, IN_BODY
     }
 
-    private PartialLetFunction(SourcePosition definition, String letName, State state, List<Parameter> parameters, Parameter currentParameter, ASTType returnASTType, Expression body) {
+    private PartialLetFunction(SourcePosition definition, String letName, State state, List<Parameter> parameters, Parameter currentParameter, ASTTypeRepresentation returnASTTypeRepresentation, Expression body) {
         this.definition = definition;
         this.letName = letName;
         this.state = state;
         this.parameters = parameters;
         this.currentParameter = currentParameter;
-        this.returnASTType = returnASTType;
+        this.returnASTTypeRepresentation = returnASTTypeRepresentation;
         this.body = body;
     }
 
@@ -46,7 +46,7 @@ public class PartialLetFunction implements Expression {
     public final State state;
     public final List<Parameter> parameters;
     public final Parameter currentParameter;
-    public final ASTType returnASTType;
+    public final ASTTypeRepresentation returnASTTypeRepresentation;
     public final Expression body;
 
     public static PartialLetFunction anonymous(SourcePosition definition) {
@@ -54,7 +54,7 @@ public class PartialLetFunction implements Expression {
     }
 
     public static PartialLetFunction initial(SourcePosition definition, String letName) {
-        return new PartialLetFunction(definition, letName, State.IN_PARAMETER, emptyList(), SimpleParameter.instance(definition), EmptyASTType.instance(), EmptyExpression.instance());
+        return new PartialLetFunction(definition, letName, State.IN_PARAMETER, emptyList(), SimpleParameter.instance(definition), EmptyASTTypeRepresentation.instance(), EmptyExpression.instance());
     }
 
     @Override
@@ -72,53 +72,53 @@ public class PartialLetFunction implements Expression {
                         SeparatorToken separator = (SeparatorToken) token;
                         switch (separator.separator) {
                             case ",":
-                                return new PartialLetFunction(definition, letName, State.IN_PARAMETER, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
+                                return new PartialLetFunction(definition, letName, State.IN_PARAMETER, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTTypeRepresentation, body);
                             case ")":
                                 if (nextParam == null) {
-                                    return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, parameters, SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
+                                    return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, parameters, SimpleParameter.instance(token.sourcePosition()), returnASTTypeRepresentation, body);
                                 } else {
-                                    return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTType, body);
+                                    return new PartialLetFunction(definition, letName, State.WAITING_DEFINITION, append(parameters, requireNonNullElse(nextParam, currentParameter)), SimpleParameter.instance(token.sourcePosition()), returnASTTypeRepresentation, body);
                                 }
                             default:
-                                return new PartialLetFunction(definition, letName, state, parameters, requireNonNullElse(nextParam, currentParameter), returnASTType, body);
+                                return new PartialLetFunction(definition, letName, state, parameters, requireNonNullElse(nextParam, currentParameter), returnASTTypeRepresentation, body);
                         }
                     }
                 }
-                return new PartialLetFunction(definition, letName, State.IN_PARAMETER, parameters, nextParam, returnASTType, body);
+                return new PartialLetFunction(definition, letName, State.IN_PARAMETER, parameters, nextParam, returnASTTypeRepresentation, body);
             case WAITING_DEFINITION:
                 if (token instanceof OperatorToken && token.representation().equals("=")) {
-                    return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTType, body);
+                    return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTTypeRepresentation, body);
                 } else if (token instanceof SeparatorToken && token.representation().equals("\n")) {
-                    return new LetFunction(definition, letName, parameters, returnASTType, null);
-                } else if (token instanceof SeparatorToken && token.representation().equals(":") && returnASTType instanceof EmptyASTType) {
-                    return new PartialLetFunction(definition, letName, State.IN_RETURN_TYPE, parameters, currentParameter, returnASTType, body);
+                    return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, null);
+                } else if (token instanceof SeparatorToken && token.representation().equals(":") && returnASTTypeRepresentation instanceof EmptyASTTypeRepresentation) {
+                    return new PartialLetFunction(definition, letName, State.IN_RETURN_TYPE, parameters, currentParameter, returnASTTypeRepresentation, body);
                 }
                 throw new ParserException(this, "Expecting an equals '=', a new line or a colon ':', but got '" + token.representation() + "'");
             case IN_RETURN_TYPE:
-                ASTType nextASTType = returnASTType.consume(token);
-                if (nextASTType == null) {
-                    return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTType, body);
+                ASTTypeRepresentation nextASTTypeRepresentation = returnASTTypeRepresentation.consume(token);
+                if (nextASTTypeRepresentation == null) {
+                    return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTTypeRepresentation, body);
                 }
 
-                return new PartialLetFunction(definition, letName, state, parameters, currentParameter, nextASTType, body);
+                return new PartialLetFunction(definition, letName, state, parameters, currentParameter, nextASTTypeRepresentation, body);
             case IN_BODY:
                 Expression nextBody = body.consume(token);
                 if (nextBody == null || nextBody instanceof BlockExpression) {
                     if (letName.equals("")) {
                         return Lambda.synthetic(definition, (List) parameters, requireNonNullElse(nextBody, body));
                     } else {
-                        return new LetFunction(definition, letName, parameters, returnASTType, requireNonNullElse(nextBody, body));
+                        return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, requireNonNullElse(nextBody, body));
                     }
                 }
 
-                return new PartialLetFunction(definition, letName, state, parameters, currentParameter, returnASTType, nextBody);
+                return new PartialLetFunction(definition, letName, state, parameters, currentParameter, returnASTTypeRepresentation, nextBody);
         }
 
         throw new ParserException(this, "Parser got to an unknown state.");
     }
 
     @Override
-    public ASTType type() {
+    public ASTTypeRepresentation type() {
         return null;
     }
 

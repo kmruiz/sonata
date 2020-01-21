@@ -6,8 +6,8 @@
  */
 package io.sonata.lang.parser.ast.exp;
 
-import io.sonata.lang.parser.ast.type.ASTType;
-import io.sonata.lang.parser.ast.type.BasicASTType;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 public class MethodReference extends ComposedExpression implements Expression {
@@ -25,8 +25,8 @@ public class MethodReference extends ComposedExpression implements Expression {
     }
 
     @Override
-    public ASTType type() {
-        return new BasicASTType(receiver.definition(), "any");
+    public ASTTypeRepresentation type() {
+        return new BasicASTTypeRepresentation(receiver.definition(), "any");
     }
 
     @Override

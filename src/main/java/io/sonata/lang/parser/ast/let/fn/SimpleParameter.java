@@ -8,9 +8,9 @@ package io.sonata.lang.parser.ast.let.fn;
 
 import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
-import io.sonata.lang.parser.ast.type.EmptyASTType;
-import io.sonata.lang.parser.ast.type.FunctionASTType;
-import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -23,25 +23,25 @@ public class SimpleParameter implements Parameter {
         WAITING_NAME, WAITING_SEPARATOR, WAITING_TYPE, END
     }
 
-    public SimpleParameter(SourcePosition definition, String name, ASTType astType, State state) {
+    public SimpleParameter(SourcePosition definition, String name, ASTTypeRepresentation astTypeRepresentation, State state) {
         this.definition = definition;
         this.name = name;
-        this.astType = astType;
+        this.astTypeRepresentation = astTypeRepresentation;
         this.state = state;
     }
 
     public static SimpleParameter instance(SourcePosition definition) {
-        return new SimpleParameter(definition, null, EmptyASTType.instance(), State.WAITING_NAME);
+        return new SimpleParameter(definition, null, EmptyASTTypeRepresentation.instance(), State.WAITING_NAME);
     }
 
     public final SourcePosition definition;
     public final String name;
-    public final ASTType astType;
+    public final ASTTypeRepresentation astTypeRepresentation;
     public final State state;
 
     @Override
     public String representation() {
-        return name + ": " + astType.representation();
+        return name + ": " + astTypeRepresentation.representation();
     }
 
     @Override
@@ -49,7 +49,7 @@ public class SimpleParameter implements Parameter {
         switch (state) {
             case WAITING_NAME:
                 if (token instanceof IdentifierToken) {
-                    return new SimpleParameter(definition, token.representation(), astType, State.WAITING_SEPARATOR);
+                    return new SimpleParameter(definition, token.representation(), astTypeRepresentation, State.WAITING_SEPARATOR);
                 }
 
                 if (token instanceof SeparatorToken && token.representation().equals(")")) {
@@ -61,19 +61,19 @@ public class SimpleParameter implements Parameter {
                 if (token instanceof SeparatorToken) {
                     SeparatorToken sep = (SeparatorToken) token;
                     if (sep.separator.equals(":")) {
-                        return new SimpleParameter(definition, name, astType, State.WAITING_TYPE);
+                        return new SimpleParameter(definition, name, astTypeRepresentation, State.WAITING_TYPE);
                     }
 
                     if (sep.separator.equals(")") || sep.separator.equals(",")) {
-                        return new SimpleParameter(definition, name, astType, State.END);
+                        return new SimpleParameter(definition, name, astTypeRepresentation, State.END);
                     }
                 }
 
                 return ExpressionParameter.of(new Atom(definition, name).consume(token));
             case WAITING_TYPE:
-                ASTType next = astType.consume(token);
-                if (next == null || next instanceof FunctionASTType) {
-                    return new SimpleParameter(definition, name, requireNonNullElse(next, astType), State.END);
+                ASTTypeRepresentation next = astTypeRepresentation.consume(token);
+                if (next == null || next instanceof FunctionASTTypeRepresentation) {
+                    return new SimpleParameter(definition, name, requireNonNullElse(next, astTypeRepresentation), State.END);
                 }
 
                 return new SimpleParameter(definition, name, next, State.WAITING_TYPE);
