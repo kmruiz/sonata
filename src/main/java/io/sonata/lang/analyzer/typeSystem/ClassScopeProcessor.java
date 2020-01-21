@@ -60,10 +60,6 @@ public final class ClassScopeProcessor implements Processor {
         return node;
     }
 
-    private Type willBeAny() {
-        return rootScope.resolveType("any").get();
-    }
-
     @Override
     public String phase() {
         return "CLASS PROCESSING";

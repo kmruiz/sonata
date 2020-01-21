@@ -86,7 +86,7 @@ public final class TypeInferenceProcessor implements Processor {
 
             if (fc.receiver instanceof Atom) {
                 Atom name = (Atom) fc.receiver;
-                final Optional<Type> type = scope.resolveType(name.value);
+                final Optional<Type> type = scope.resolveType(new BasicASTType(name.definition, name.value));
                 if (type.isPresent()) {
                     return new FunctionCall(fc.receiver, parameters, new BasicASTType(type.get().definition(), type.get().name()));
                 }

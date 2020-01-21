@@ -53,7 +53,7 @@ public final class ClassRelationshipValidator implements Processor {
         if (fieldASTType instanceof BasicASTType) {
             String fieldName = ((SimpleField) field).name;
             String typeName = ((BasicASTType) fieldASTType).name;
-            final Optional<Type> resolution = scope.resolveType(typeName);
+            final Optional<Type> resolution = scope.resolveType(fieldASTType);
             if (!resolution.isPresent()) {
                 log.syntaxError(new SonataSyntaxError(fieldASTType, "Couldn't resolve type '" + typeName + "'"));
             } else {

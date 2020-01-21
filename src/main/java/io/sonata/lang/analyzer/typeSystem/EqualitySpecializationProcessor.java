@@ -83,7 +83,7 @@ public final class EqualitySpecializationProcessor implements Processor {
                 }
 
                 final ASTType typeOfComparison = expr.leftSide.type();
-                final Optional<Type> maybeType = scope.resolveType(typeOfComparison.representation());
+                final Optional<Type> maybeType = scope.resolveType(typeOfComparison);
                 if (maybeType.isPresent()) {
                     final Type type = maybeType.get();
                     if (type.isValue()) {

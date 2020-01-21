@@ -10,6 +10,7 @@ import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedExcept
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.type.ASTType;
+import io.sonata.lang.parser.ast.type.ArrayASTType;
 import io.sonata.lang.parser.ast.type.BasicASTType;
 import io.sonata.lang.parser.ast.type.FunctionASTType;
 
@@ -89,10 +90,6 @@ public final class Scope {
     }
 
     public Optional<Type> resolveType(ASTType astType) {
-        if (astType instanceof BasicASTType) {
-            return resolveType(astType.representation());
-        }
-
         if (astType instanceof FunctionASTType) {
             FunctionASTType fn = (FunctionASTType) astType;
             List<Type> paramTypes = fn.parameters.stream().map(this::resolveType).map(Optional::get).collect(Collectors.toList());
@@ -100,37 +97,21 @@ public final class Scope {
             return Optional.of(new FunctionType(fn.definition, "<anonymous>", resolveType(fn.returnASTType).orElse(TYPE_ANY), paramTypes));
         }
 
+        if (astType instanceof ArrayASTType) {
+            return Optional.of(TYPE_ANY);
+        }
+
+        if (astType instanceof BasicASTType) {
+            BasicASTType basicType = (BasicASTType) astType;
+            Type typeIfAny = typeContext.get(basicType.name);
+            if (typeIfAny == null) {
+                return Optional.ofNullable(parent).flatMap(scope -> scope.resolveType(basicType));
+            }
+
+            return Optional.of(typeIfAny);
+        }
+
         return Optional.empty();
-    }
-
-    public Optional<Type> resolveType(String name) {
-        if (name.endsWith("[]")) {
-            return resolveType(name.substring(0, name.length() - 2));
-        }
-
-        final Type typeInThisScope = typeContext.get(name);
-        if (typeInThisScope == null) {
-            if (parent != null) {
-                return parent.resolveType(name);
-            }
-
-            return Optional.empty();
-        }
-
-        return Optional.of(typeInThisScope);
-    }
-
-    public Optional<Variable> resolveVariable(String name) {
-        final Variable typeInThisScope = variableContext.get(name);
-        if (typeInThisScope == null) {
-            if (parent != null) {
-                return parent.resolveVariable(name);
-            }
-
-            return Optional.empty();
-        }
-
-        return Optional.of(typeInThisScope);
     }
 
     public void enrichType(String name, Type type) {
@@ -156,6 +137,19 @@ public final class Scope {
         }
 
         throw new TypeCanNotBeReassignedException(typeInThisScope.definition());
+    }
+
+    public Optional<Variable> resolveVariable(String name) {
+        final Variable typeInThisScope = variableContext.get(name);
+        if (typeInThisScope == null) {
+            if (parent != null) {
+                return parent.resolveVariable(name);
+            }
+
+            return Optional.empty();
+        }
+
+        return Optional.of(typeInThisScope);
     }
 
     public void registerVariable(String name, Node definition, Type type) throws TypeCanNotBeReassignedException {
