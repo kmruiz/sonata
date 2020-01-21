@@ -10,7 +10,7 @@ import io.sonata.lang.source.SourcePosition;
 
 import java.util.Map;
 
-public class ValueClassType implements Type {
+public final class ValueClassType implements Type {
     public final SourcePosition definition;
     public final String name;
     public final Map<String, Type> fields;
