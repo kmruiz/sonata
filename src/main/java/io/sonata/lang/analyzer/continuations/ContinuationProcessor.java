@@ -32,9 +32,7 @@ public class ContinuationProcessor implements Processor {
 
     @Override
     public Node apply(Node node) {
-        Node r = apply(rootScope, node);
-        System.out.println("Done!");
-        return r;
+        return apply(rootScope, node);
     }
 
     public Node apply(Scope scope, Node node) {
