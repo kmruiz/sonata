@@ -33,7 +33,7 @@ public final class ArrayDestructuringExpressionParser implements DestructuringEx
         AtomicInteger argIdx = new AtomicInteger(0);
         return whenIsArrayParameter(parameterName, parameter, tp -> tp.literalArray.expressions.stream().map(arg -> {
             int idx = argIdx.getAndIncrement();
-            String value = (arg instanceof Atom && ((Atom) arg).type == Atom.Type.IDENTIFIER) ? arg.representation() : identifierFor(idx);
+            String value = (arg instanceof Atom && ((Atom) arg).kind == Atom.Kind.IDENTIFIER) ? arg.representation() : identifierFor(idx);
             if (arg instanceof TailExtraction) {
                 return new LetConstant(arg.definition(), ((TailExtraction) arg).expression.representation(), null, new TailExtraction(new Atom(arg.definition(), tp.arrayName), idx));
             } else {
@@ -58,11 +58,11 @@ public final class ArrayDestructuringExpressionParser implements DestructuringEx
         AtomicInteger argIdx = new AtomicInteger(0);
         return whenIsArrayParameter(parameterName, parameter, tp -> tp.literalArray.expressions.stream().map(arg -> {
             int idx = argIdx.getAndIncrement();
-            String value = (arg instanceof Atom && ((Atom) arg).type == Atom.Type.IDENTIFIER) ? arg.representation() : identifierFor(idx);
+            String value = (arg instanceof Atom && ((Atom) arg).kind == Atom.Kind.IDENTIFIER) ? arg.representation() : identifierFor(idx);
 
             if (arg instanceof Atom) {
                 Atom atom = ((Atom) arg);
-                if (atom.type != Atom.Type.IDENTIFIER) {
+                if (atom.kind != Atom.Kind.IDENTIFIER) {
                     return new SimpleExpression(new Atom(arg.definition(), value), "===", arg);
                 } else {
                     return new Atom(arg.definition(), value);

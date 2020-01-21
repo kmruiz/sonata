@@ -32,7 +32,9 @@ public class ContinuationProcessor implements Processor {
 
     @Override
     public Node apply(Node node) {
-        return apply(rootScope, node);
+        Node r = apply(rootScope, node);
+        System.out.println("Done!");
+        return r;
     }
 
     public Node apply(Scope scope, Node node) {
@@ -139,7 +141,7 @@ public class ContinuationProcessor implements Processor {
     private boolean isMethodReferencingAnEntity(Scope scope, MethodReference ref) {
         if (ref.receiver instanceof Atom) {
             Atom receiver = (Atom) ref.receiver;
-            if (receiver.type != Atom.Type.IDENTIFIER) {
+            if (receiver.kind != Atom.Kind.IDENTIFIER) {
                 return false;
             }
 

@@ -37,7 +37,7 @@ public class PartialBlockExpression implements Expression {
         if (token.representation().equals(":")) {
             if (this.currentNode instanceof Atom && nodes.isEmpty()) {
                 final Atom atom = (Atom) this.currentNode;
-                if (atom.type == Atom.Type.IDENTIFIER) {
+                if (atom.kind == Atom.Kind.IDENTIFIER) {
                     return PartialRecord.waitingValue(definition, atom);
                 }
 

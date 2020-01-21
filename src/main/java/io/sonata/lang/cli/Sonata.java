@@ -42,7 +42,6 @@ public class Sonata {
                 new ClassScopeProcessor(log, scope),
                 new LetVariableProcessor(log, scope),
                 new TypeInferenceProcessor(log, scope),
-                new TypeInferenceProcessor(log, scope), // infer in two phases
                 new ClassRelationshipValidator(log, scope),
                 new PropertyVisibilityProcessor(log, scope),
                 new ImmutabilityCheckProcessor(log, scope),

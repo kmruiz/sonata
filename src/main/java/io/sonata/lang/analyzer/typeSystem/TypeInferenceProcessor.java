@@ -16,90 +16,85 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
-import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
-import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
 
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
 public final class TypeInferenceProcessor implements Processor {
     private final CompilerLog log;
-    private final Scope scope;
+    private final Scope rootScope;
 
-    public TypeInferenceProcessor(CompilerLog log, Scope scope) {
+    public TypeInferenceProcessor(CompilerLog log, Scope rootScope) {
         this.log = log;
-        this.scope = scope;
+        this.rootScope = rootScope;
     }
 
     @Override
     public Node apply(Node node) {
+        return apply(rootScope, node);
+    }
+
+    private Node apply(Scope scope, Node node) {
+        final Scope currentScope = scope.diveInIfNeeded(node);
+
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            List<Node> nodes = script.nodes.stream().map(this::apply).collect(toList());
+            List<Node> nodes = script.nodes.stream().map(e -> this.apply(currentScope, e)).collect(toList());
             return new ScriptNode(script.log, nodes, script.currentNode, script.requiresNotifier);
         }
 
         if (node instanceof EntityClass) {
             EntityClass entityClass = (EntityClass) node;
-            List<Node> body = entityClass.body.stream().map(this::apply).collect(toList());
+            List<Node> body = entityClass.body.stream().map(e -> this.apply(currentScope, e)).collect(toList());
             return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, body);
         }
 
         if (node instanceof ValueClass) {
             ValueClass valueClass  = (ValueClass) node;
-            List<Node> body = valueClass.body.stream().map(this::apply).collect(toList());
+            List<Node> body = valueClass.body.stream().map(e -> this.apply(currentScope, e)).collect(toList());
             return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
         }
 
         if (node instanceof LetConstant) {
             LetConstant constant = (LetConstant) node;
-            ASTTypeRepresentation type = constant.returnType;
-            if (type == null || type instanceof EmptyASTTypeRepresentation) {
-                type = infer(constant.body);
+            ASTTypeRepresentation typeRepresentation = constant.returnType;
+            Type constantType = null;
+            if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
+                constantType = infer(constant.body);
+            } else {
+                constantType = currentScope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
             }
 
-            return new LetConstant(constant.definition, constant.letName, type, (Expression) apply(constant.body));
+            currentScope.enrichVariable(constant.letName,constant, constantType);
+            return new LetConstant(constant.definition, constant.letName, typeRepresentation, (Expression) apply(currentScope, constant.body));
         }
 
         if (node instanceof LetFunction) {
             LetFunction fn = (LetFunction) node;
-            ASTTypeRepresentation type = fn.returnType;
-            if (type == null || type instanceof EmptyASTTypeRepresentation) {
-                type = infer(fn.body);
+            ASTTypeRepresentation typeRepresentation = fn.returnType;
+            Type returnType = null;
+            if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
+                returnType = infer(fn.body);
+            } else {
+                returnType = currentScope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
             }
 
-            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, type, (Expression) apply(fn.body));
+            final List<Type> paramTypes = fn.parameters.stream().map(e -> Scope.TYPE_ANY).collect(toList());
+            currentScope.enrichVariable(fn.letName, fn, new FunctionType(node.definition(), fn.letName, returnType, paramTypes));
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, typeRepresentation, (Expression) apply(currentScope, fn.body));
         }
 
         if (node instanceof BlockExpression) {
             BlockExpression blockExpression = (BlockExpression) node;
-            List<Expression> expressions = blockExpression.expressions.stream().map(this::apply).map(t -> (Expression) t).collect(toList());
+            List<Expression> expressions = blockExpression.expressions.stream().map(e -> this.apply(currentScope, e)).map(t -> (Expression) t).collect(toList());
             return new BlockExpression(blockExpression.blockId, blockExpression.definition, expressions);
         }
 
         if (node instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) node;
-            List<Expression> parameters = fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList());
-
-            if (fc.receiver instanceof Atom) {
-                Atom name = (Atom) fc.receiver;
-                final Optional<Type> type = scope.resolveType(new BasicASTTypeRepresentation(name.definition, name.value));
-                if (type.isPresent()) {
-                    return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(type.get().definition(), type.get().name()));
-                }
-
-                final Optional<Scope.Variable> maybeVariable = scope.resolveVariable(name.value);
-                if (maybeVariable.isPresent()) {
-                    Scope.Variable variable = maybeVariable.get();
-                    if (variable.type instanceof FunctionType) {
-                        FunctionType fnType = (FunctionType) variable.type;
-                        return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(fnType.returnType.definition(), fnType.returnType.name()));
-                    }
-                }
-            }
+            List<Expression> parameters = fc.arguments.stream().map(e -> this.apply(currentScope, e)).map(e -> (Expression) e).collect(toList());
 
             return new FunctionCall(fc.receiver, parameters, fc.expressionType);
         }
@@ -109,48 +104,68 @@ public final class TypeInferenceProcessor implements Processor {
 
             return new IfElse(
                     ifElse.definition,
-                    (Expression) apply(ifElse.condition),
-                    (Expression) apply(ifElse.whenTrue),
-                    ifElse.whenFalse != null ? (Expression) apply(ifElse.whenFalse) : null
+                    (Expression) apply(currentScope, ifElse.condition),
+                    (Expression) apply(currentScope, ifElse.whenTrue),
+                    ifElse.whenFalse != null ? (Expression) apply(currentScope, ifElse.whenFalse) : null
             );
         }
 
         if (node instanceof SimpleExpression) {
             SimpleExpression expr = (SimpleExpression) node;
-            return new SimpleExpression((Expression) apply(expr.leftSide), expr.operator, (Expression) apply(expr.rightSide));
+            return new SimpleExpression((Expression) apply(currentScope, expr.leftSide), expr.operator, (Expression) apply(currentScope, expr.rightSide));
         }
 
         return node;
     }
 
-    public ASTTypeRepresentation infer(Expression expression) {
+    public Type infer(Expression expression) {
         if (expression == null) {
-            return new BasicASTTypeRepresentation(null, "any");
-        }
-
-        if (expression.type() != null && !(expression.type() instanceof EmptyASTTypeRepresentation) && !expression.type().representation().equals("any")) {
-            return expression.type();
+            return Scope.TYPE_ANY;
         }
 
         if (expression instanceof Atom) {
-            switch (((Atom) expression).type) {
+            switch (((Atom) expression).kind) {
                 case NUMERIC:
-                    return new BasicASTTypeRepresentation(expression.definition(), "number");
+                    return Scope.TYPE_NUMBER;
                 case STRING:
-                    return new BasicASTTypeRepresentation(expression.definition(), "string");
+                    return Scope.TYPE_STRING;
                 case BOOLEAN:
-                    return new BasicASTTypeRepresentation(expression.definition(), "boolean");
-                case NULL:
-                    return new BasicASTTypeRepresentation(expression.definition(), "null");
+                    return Scope.TYPE_BOOLEAN;
             }
         }
 
         if (expression instanceof Lambda) {
             Lambda lambda = (Lambda) expression;
-            return new FunctionASTTypeRepresentation(lambda.definition, lambda.parameters.stream().map(e -> e.astTypeRepresentation).collect(toList()), infer(((Lambda) expression).body));
+            return rootScope.resolveType(lambda.type()).orElse(Scope.TYPE_ANY);
         }
 
-        return new BasicASTTypeRepresentation(expression.definition(), "any");
+        if (expression instanceof FunctionCall) {
+            FunctionCall fc = (FunctionCall) expression;
+            if (fc.receiver instanceof Atom) {
+                Atom fnName = (Atom) fc.receiver;
+                return rootScope.resolveVariable(fnName.value)
+                        .filter(var -> var.type instanceof FunctionType)
+                        .map(var -> ((FunctionType) var.type).returnType)
+                        .orElse(Scope.TYPE_ANY);
+            }
+        }
+
+        if (expression instanceof BlockExpression) {
+            BlockExpression be = (BlockExpression) expression;
+            return infer(be.expressions.get(be.expressions.size() - 1));
+        }
+
+        if (expression instanceof PriorityExpression) {
+            PriorityExpression pe = (PriorityExpression) expression;
+            return infer(pe.expression);
+        }
+
+        if (expression instanceof IfElse) {
+            IfElse ifElse = (IfElse) expression;
+            return infer(ifElse.whenTrue);
+        }
+
+        return Scope.TYPE_ANY;
     }
 
     @Override

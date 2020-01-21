@@ -167,6 +167,19 @@ public final class Scope {
         throw new TypeCanNotBeReassignedException(variableInThisScope.definition.definition());
     }
 
+    public void enrichVariable(String name, Node definition, Type type) {
+        final Variable varInScope = variableContext.get(name);
+        if (varInScope == null) {
+            if (parent == null) {
+                throw new IllegalStateException("Could not find variable " + name + " in scope " + anchor + ". Defined in " + definition.definition() + ": " + definition.representation());
+            }
+            parent.enrichVariable(name, definition, type);
+            return;
+        }
+
+        variableContext.put(name, new Scope.Variable(definition, type));
+    }
+
     public boolean inEntityClass() {
         if (this.anchor == null) {
             return false;

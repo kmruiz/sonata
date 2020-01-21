@@ -48,7 +48,7 @@ public class PartialRecord implements Expression {
                 final Expression maybeAtom = EmptyExpression.instance().consume(token);
                 if (maybeAtom instanceof Atom) {
                     Atom atom = (Atom) maybeAtom;
-                    if (atom.type == Atom.Type.IDENTIFIER) {
+                    if (atom.kind == Atom.Kind.IDENTIFIER) {
                         if (values.containsKey(atom)) {
                             throw new ParserException(this, "Literal records can not contain duplicate keys, but " + atom.value + " has been registered at least twice.");
                         }

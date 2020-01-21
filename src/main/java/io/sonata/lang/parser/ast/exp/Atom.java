@@ -14,25 +14,24 @@ import io.sonata.lang.source.SourcePosition;
 import java.util.Objects;
 
 public class Atom extends ComposedExpression implements Expression {
-    public enum Type {
+    public enum Kind {
         NUMERIC,
         STRING,
         IDENTIFIER,
         BOOLEAN,
-        NULL,
         UNKNOWN
     }
 
     public final SourcePosition definition;
     public final String value;
-    public final Type type;
+    public final Kind kind;
 
     public static Atom unknown(SourcePosition definition) {
         return new Atom(definition, "?");
     }
 
     public static boolean isUnknownAtom(Node node) {
-        return node instanceof Atom && ((Atom) node).type == Type.UNKNOWN;
+        return node instanceof Atom && ((Atom) node).kind == Kind.UNKNOWN;
     }
 
     public Atom(SourcePosition definition, String value) {
@@ -40,17 +39,15 @@ public class Atom extends ComposedExpression implements Expression {
         this.value = value;
 
         if (value.matches("\\d+(\\.\\d+)?")) {
-            type = Type.NUMERIC;
+            kind = Kind.NUMERIC;
         } else if (value.startsWith("'") && value.endsWith("'")) {
-            type = Type.STRING;
+            kind = Kind.STRING;
         } else if (value.equals("?")) {
-            type = Type.UNKNOWN;
+            kind = Kind.UNKNOWN;
         } else if (value.equals("true") || value.equals("false")) {
-            type = Type.BOOLEAN;
-        } else if (value.equals("null")) {
-            type = Type.NULL;
+            kind = Kind.BOOLEAN;
         } else {
-            type = Type.IDENTIFIER;
+            kind = Kind.IDENTIFIER;
         }
     }
 
@@ -66,15 +63,13 @@ public class Atom extends ComposedExpression implements Expression {
 
     @Override
     public ASTTypeRepresentation type() {
-        switch (type) {
+        switch (kind) {
             case NUMERIC:
                 return new BasicASTTypeRepresentation(definition, "number");
             case STRING:
                 return new BasicASTTypeRepresentation(definition,"string");
             case BOOLEAN:
                 return new BasicASTTypeRepresentation(definition, "boolean");
-            case NULL:
-                return new BasicASTTypeRepresentation(definition, "null");
             default:
                 return new BasicASTTypeRepresentation(definition, "any");
         }
@@ -85,11 +80,11 @@ public class Atom extends ComposedExpression implements Expression {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Atom atom = (Atom) o;
-        return value.equals(atom.value) && type == atom.type;
+        return value.equals(atom.value) && kind == atom.kind;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, type);
+        return Objects.hash(value, kind);
     }
 }

@@ -18,6 +18,8 @@ import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.BlockExpression;
+import io.sonata.lang.parser.ast.exp.IfElse;
+import io.sonata.lang.parser.ast.exp.Lambda;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
@@ -71,7 +73,16 @@ public final class LetVariableProcessor implements Processor {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
             }
 
-            classScope.enrichType(className, new EntityClassType(node.definition(), className, fields, methods));
+            final EntityClassType entityClassType = new EntityClassType(node.definition(), className, fields, methods);
+            List<Type> paramTypes = entity.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
+            classScope.enrichType(className, entityClassType);
+
+            try {
+                scope.registerVariable(className, node, new FunctionType(entity.definition, className, entityClassType, paramTypes));
+            } catch (TypeCanNotBeReassignedException e) {
+                log.syntaxError(new SonataSyntaxError(node, "Redefined entity class " + className + ". It was initially defined in " + e.initialAssignment()));
+            }
+
             entity.body.forEach(b -> apply(classScope, b));
         }
 
@@ -96,7 +107,14 @@ public final class LetVariableProcessor implements Processor {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this value class. Please fill a bug with a sample code.");
             }
 
-            classScope.enrichType(className, new ValueClassType(node.definition(), className, fields, methods));
+            final ValueClassType vcType = new ValueClassType(node.definition(), className, fields, methods);
+            classScope.enrichType(className, vcType);
+            List<Type> paramTypes = vc.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
+            try {
+                scope.registerVariable(className, node, new FunctionType(vc.definition, className, vcType, paramTypes));
+            } catch (TypeCanNotBeReassignedException e) {
+                log.syntaxError(new SonataSyntaxError(node, "Redefined value class " + className + ". It was initially defined in " + e.initialAssignment()));
+            }
 
             vc.body.forEach(b -> apply(classScope, b));
         }
@@ -138,6 +156,20 @@ public final class LetVariableProcessor implements Processor {
                 }
             });
             apply(letScope, ((LetFunction) node).body);
+        }
+
+        if (node instanceof IfElse) {
+            IfElse ifElse = (IfElse) node;
+            apply(scope, ifElse.condition);
+            apply(scope, ifElse.whenTrue);
+            if (ifElse.whenFalse != null) {
+                apply(scope, ifElse.whenFalse);
+            }
+        }
+
+        if (node instanceof Lambda) {
+            Lambda lambda = (Lambda) node;
+            apply(scope, lambda.body);
         }
     }
 

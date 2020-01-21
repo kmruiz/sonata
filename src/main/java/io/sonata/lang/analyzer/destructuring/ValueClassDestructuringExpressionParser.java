@@ -68,7 +68,7 @@ public final class ValueClassDestructuringExpressionParser implements Destructur
 
             if (arg instanceof Atom) {
                 Atom atom = ((Atom) arg);
-                if (atom.type != Atom.Type.IDENTIFIER) {
+                if (atom.kind != Atom.Kind.IDENTIFIER) {
                     return new SimpleExpression(new Atom(atom.definition(), tp.valueClass.definedFields.get(field).name()), "===", arg);
                 }
             } else if (arg instanceof Expression) {
