@@ -50,6 +50,10 @@ public class ContinuationProcessor implements Processor {
 
             fc = new FunctionCall(fc.receiver, fc.arguments.stream().map(arg -> (Expression) apply(scope, arg)).collect(Collectors.toList()));
 
+            if (scope.isTopLevel()) {
+                return fc;
+            }
+
             if (isInferredTypeEntityClass(scope, fc.receiver)) {
                 return new Continuation(fc.definition(), fc, false);
             }
@@ -149,7 +153,7 @@ public class ContinuationProcessor implements Processor {
             isMethodReferencingAnEntity(scope, (MethodReference) ref.receiver);
         }
 
-        return true;
+        return false;
     }
 
     @Override

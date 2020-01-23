@@ -187,4 +187,8 @@ public final class Scope {
 
         return this.anchor.startsWith("entity class") || parent.inEntityClass();
     }
+
+    public boolean isTopLevel() {
+        return this.anchor == null;
+    }
 }
