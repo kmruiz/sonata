@@ -107,6 +107,11 @@ public class AsyncFunctionProcessor implements Processor {
             return new IfElse(ie.ifElseId, ie.definition, condition, whenTrue, whenFalse);
         }
 
+        if (node instanceof Continuation) {
+            Continuation cont = (Continuation) node;
+            return new Continuation(cont.definition, (Expression) apply(scope.diveInIfNeeded(cont.body), cont.body), cont.fanOut);
+        }
+
         return node;
     }
 

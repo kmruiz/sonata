@@ -150,6 +150,17 @@ public final class TypeInferenceProcessor implements Processor {
             }
         }
 
+        if (expression instanceof ArrayAccess) {
+            ArrayAccess ac = (ArrayAccess) expression;
+            Type receiverType = infer(ac.receiver);
+            if (receiverType instanceof ArrayType) {
+                ArrayType arrayType = (ArrayType) receiverType;
+                return arrayType.references;
+            }
+
+            return Scope.TYPE_ANY;
+        }
+
         if (expression instanceof BlockExpression) {
             BlockExpression be = (BlockExpression) expression;
             return infer(be.expressions.get(be.expressions.size() - 1));

@@ -102,7 +102,8 @@ public final class Scope {
         }
 
         if (astTypeRepresentation instanceof ArrayASTTypeRepresentation) {
-            return Optional.of(TYPE_ANY);
+            ArrayASTTypeRepresentation arrayRepr = (ArrayASTTypeRepresentation) astTypeRepresentation;
+            return Optional.of(new ArrayType(resolveType(arrayRepr.base).orElse(TYPE_ANY), arrayRepr.definition()));
         }
 
         if (astTypeRepresentation instanceof BasicASTTypeRepresentation) {
