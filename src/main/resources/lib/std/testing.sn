@@ -3,10 +3,10 @@ requires std.testing.test
 requires std.testing.runner
 
 entity class Testing(runner: TestRunner) {
-    let describe(suiteName: string, suiteDefinition: any) = {
+    let describe(suiteName: string, suiteDefinition: (any) -> any) = {
         let suite = TestSuite(suiteName, [])
         self.runner.register(suite)
-        suiteDefinition(let (testName: string, testDefinition: any) = {
+        suiteDefinition(let (testName: string, testDefinition: (any) -> any) = {
             let test = Test(testName, null, [], false)
             suite.register(test)
             test.register(let () = testDefinition(let (message: string, condition: boolean) = test.asserted(AssertionStatus(message, condition))))

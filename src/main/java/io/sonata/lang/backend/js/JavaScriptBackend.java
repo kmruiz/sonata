@@ -156,7 +156,7 @@ public class JavaScriptBackend implements CompilerBackend {
             emit("=");
         }
 
-        if (context.isInEntityClass) {
+        if (context.isInEntityClass || base.isAsync) {
             emit("async ");
         }
 
@@ -330,14 +330,14 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitLambda(Lambda node, Context context) {
-        if (context.isInEntityClass) {
+        if (node.isAsync) {
             emit("async ");
         }
 
         emit("function(");
         emit(node.parameters.stream().map(p -> p.name).collect(Collectors.joining(",")));
         emit("){return ");
-        emitNode(node.body, context.inExpression());
+        emitNode(node.body, (node.isAsync ? context.inExpression().inEntityClass() : context.inExpression()));
         emit("}");
     }
 

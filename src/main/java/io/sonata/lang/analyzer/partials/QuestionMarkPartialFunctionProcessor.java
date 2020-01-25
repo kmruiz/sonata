@@ -43,7 +43,7 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
 
         if (node instanceof LetFunction) {
             LetFunction let = (LetFunction) node;
-            return new LetFunction(let.letId, let.definition, let.letName, let.parameters, let.returnType, (Expression) apply(let.body));
+            return new LetFunction(let.letId, let.definition, let.letName, let.parameters, let.returnType, (Expression) apply(let.body), false);
         }
 
         if (node instanceof ValueClass) {

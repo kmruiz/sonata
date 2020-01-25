@@ -55,7 +55,7 @@ public class FunctionCompositionProcessor implements Processor {
 
         if (node instanceof LetFunction) {
             LetFunction fn = (LetFunction) node;
-            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body));
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body), false);
         }
 
         if (node instanceof LetConstant) {
@@ -65,7 +65,7 @@ public class FunctionCompositionProcessor implements Processor {
 
         if (node instanceof Lambda) {
             Lambda lambda = (Lambda) node;
-            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body));
+            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body), false);
         }
 
         if (node instanceof IfElse) {

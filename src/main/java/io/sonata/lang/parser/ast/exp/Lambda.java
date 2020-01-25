@@ -22,16 +22,18 @@ public class Lambda extends ComposedExpression implements Scoped {
     public final SourcePosition definition;
     public final List<SimpleParameter> parameters;
     public final Expression body;
+    public final boolean isAsync;
 
-    public Lambda(String lambdaId, SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
+    public Lambda(String lambdaId, SourcePosition definition, List<SimpleParameter> parameters, Expression body, boolean isAsync) {
         this.lambdaId = lambdaId;
         this.definition = definition;
         this.parameters = parameters;
         this.body = body;
+        this.isAsync = isAsync;
     }
 
     public Lambda(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
-        this(UUID.randomUUID().toString(), definition, parameters, body);
+        this(UUID.randomUUID().toString(), definition, parameters, body, false);
     }
 
     public static Lambda synthetic(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {

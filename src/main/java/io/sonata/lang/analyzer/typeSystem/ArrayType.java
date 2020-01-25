@@ -4,32 +4,42 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.sonata.lang.source;
 
-public final class SourcePosition {
-    public final Source source;
-    public final int line;
-    public final int column;
+package io.sonata.lang.analyzer.typeSystem;
 
-    public SourcePosition(Source source, int line, int column) {
-        this.source = source;
-        this.line = line;
-        this.column = column;
-    }
+import io.sonata.lang.source.SourcePosition;
 
-    public static SourcePosition initial(Source source) {
-        return new SourcePosition(source, 1, 0);
-    }
+public class ArrayType implements Type {
+    public final Type references;
+    public final SourcePosition definition;
 
-    public final SourcePosition next(char byChar) {
-        if (byChar == '\n') {
-            return new SourcePosition(source, line + 1, 0);
-        }
-        return new SourcePosition(source, line, column + 1);
+    public ArrayType(Type references, SourcePosition definition) {
+        this.references = references;
+        this.definition = definition;
     }
 
     @Override
-    public String toString() {
-        return String.format("[%s:%d:%d]", source.name, line, column);
+    public SourcePosition definition() {
+        return definition;
+    }
+
+    @Override
+    public String name() {
+        return references.name() + "[]";
+    }
+
+    @Override
+    public boolean canBeReassigned() {
+        return false;
+    }
+
+    @Override
+    public boolean isEntity() {
+        return false;
+    }
+
+    @Override
+    public boolean isValue() {
+        return true;
     }
 }

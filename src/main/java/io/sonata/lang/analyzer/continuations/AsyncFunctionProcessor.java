@@ -7,7 +7,6 @@
 package io.sonata.lang.analyzer.continuations;
 
 import io.sonata.lang.analyzer.Processor;
-import io.sonata.lang.analyzer.typeSystem.FunctionType;
 import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
@@ -19,15 +18,13 @@ import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-
-public class ContinuationProcessor implements Processor {
+public class AsyncFunctionProcessor implements Processor {
     private final CompilerLog log;
     private final Scope rootScope;
 
-    public ContinuationProcessor(CompilerLog log, Scope rootScope) {
+    public AsyncFunctionProcessor(CompilerLog log, Scope rootScope) {
         this.log = log;
         this.rootScope = rootScope;
     }
@@ -40,39 +37,12 @@ public class ContinuationProcessor implements Processor {
     public Node apply(Scope scope, Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.log, script.nodes.stream().map(n -> this.apply(scope, n)).collect(toList()), script.currentNode, script.requiresNotifier);
+            return new ScriptNode(script.log, script.nodes.stream().map(n -> this.apply(scope, n)).collect(Collectors.toList()), script.currentNode, script.requiresNotifier);
         }
 
         if (node instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) node;
-            if (!(fc.receiver instanceof Atom)) {
-                Expression receiver = (Expression) apply(scope, fc.receiver);
-                fc = new FunctionCall(receiver, fc.arguments);
-            }
-
-            fc = new FunctionCall(fc.receiver, fc.arguments.stream().map(arg -> (Expression) apply(scope, arg)).collect(toList()));
-
-            if (scope.isTopLevel()) {
-                return fc;
-            }
-
-            if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, fc)) {
-                return new Continuation(fc.definition(), fc, true);
-            }
-
-            if (isInferredTypeEntityClass(scope, fc)) {
-                return new Continuation(fc.definition(), fc, false);
-            }
-
-            if (scope.inEntityClass() && !fc.receiver.representation().contains("some")) {
-                return new Continuation(fc.definition(), fc, false);
-            }
-
-            if (fc.receiver instanceof Continuation) {
-                return new Continuation(fc.definition(), fc, false);
-            }
-
-            return fc;
+            return new FunctionCall((Expression) apply(scope, fc.receiver), fc.arguments.stream().map(arg -> (Expression) apply(scope, arg)).collect(Collectors.toList()));
         }
 
         if (node instanceof MethodReference) {
@@ -82,19 +52,19 @@ public class ContinuationProcessor implements Processor {
 
         if (node instanceof EntityClass) {
             EntityClass ec = (EntityClass) node;
-            List<Node> body = ec.body.stream().map(b -> apply(scope.diveIn(ec), b)).collect(toList());
+            List<Node> body = ec.body.stream().map(b -> apply(scope.diveIn(ec), b)).collect(Collectors.toList());
             return new EntityClass(ec.definition, ec.name, ec.definedFields, body);
         }
 
         if (node instanceof ValueClass) {
             ValueClass vc = (ValueClass) node;
-            List<Node> body = vc.body.stream().map(b -> apply(scope.diveIn(vc), b)).collect(toList());
+            List<Node> body = vc.body.stream().map(b -> apply(scope.diveIn(vc), b)).collect(Collectors.toList());
             return new ValueClass(vc.definition, vc.name, vc.definedFields, body);
         }
 
         if (node instanceof BlockExpression) {
             BlockExpression bc = (BlockExpression) node;
-            List<Expression> body = bc.expressions.stream().map(b -> apply(scope.diveIn(bc), b)).map(b -> (Expression) b).collect(toList());
+            List<Expression> body = bc.expressions.stream().map(b -> apply(scope.diveIn(bc), b)).map(b -> (Expression) b).collect(Collectors.toList());
 
             return new BlockExpression(bc.definition, body);
         }
@@ -108,12 +78,20 @@ public class ContinuationProcessor implements Processor {
             LetFunction lf = (LetFunction) node;
             Scope lfScope = scope.diveIn(lf);
 
-            return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false);
+            if (hasContinuations(lf.body)) {
+                return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), true);
+            } else {
+                return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false);
+            }
         }
 
         if (node instanceof Lambda) {
             Lambda ld = (Lambda) node;
-            return new Lambda(ld.lambdaId, ld.definition, ld.parameters, (Expression) apply(scope.diveIn(ld), ld.body), false);
+            if (hasContinuations(ld.body)) {
+                return new Lambda(ld.lambdaId, ld.definition, ld.parameters, (Expression) apply(scope.diveInIfNeeded(ld), ld.body), true);
+            }
+
+            return new Lambda(ld.lambdaId, ld.definition, ld.parameters, (Expression) apply(scope.diveInIfNeeded(ld), ld.body), false);
         }
 
         if (node instanceof IfElse) {
@@ -132,49 +110,48 @@ public class ContinuationProcessor implements Processor {
         return node;
     }
 
-    private boolean shouldWaitForAllContinuations(Scope scope, FunctionCall fc) {
-        return fc.receiver.representation().endsWith("map");
-    }
-
-    private boolean isInferredTypeEntityClass(Scope scope, Expression expression) {
-        if (expression instanceof MethodReference) {
-            MethodReference ref = (MethodReference) expression;
-
-            if (ref.methodName.equals("some")) {
-                return false;
-            }
-
-            if (ref.receiver instanceof Atom) {
-                Atom receiver = (Atom) ref.receiver;
-                if (receiver.kind != Atom.Kind.IDENTIFIER) {
-                    return false;
-                }
-
-                final Optional<Scope.Variable> variable = scope.resolveVariable(receiver.value);
-                return variable.map(v -> v.type.isEntity()).orElse(false);
-            }
-
-            if (ref.receiver instanceof MethodReference) {
-                return isInferredTypeEntityClass(scope, ref.receiver);
-            }
-
-            if (ref.receiver instanceof Continuation) {
-                return true;
-            }
+    private boolean hasContinuations(Expression node) {
+        if (node == null) {
+            return false;
         }
 
-        if (expression instanceof FunctionCall) {
-            final FunctionCall fc = (FunctionCall) expression;
-            if (fc.receiver instanceof Atom) {
-                final Atom name = (Atom) fc.receiver;
+        if (node instanceof Continuation) {
+            return true;
+        }
 
-                return scope.resolveVariable(name.value)
-                        .map(variable -> (FunctionType) variable.type)
-                        .map(fcType -> fcType.returnType.isEntity())
-                        .orElse(false);
-            }
+        if (node instanceof FunctionCall) {
+            FunctionCall fc = (FunctionCall) node;
+            return hasContinuations(fc.receiver) || fc.arguments.stream().anyMatch(this::hasContinuations);
+        }
 
-            return isInferredTypeEntityClass(scope, fc.receiver);
+        if (node instanceof MethodReference) {
+            MethodReference ref = (MethodReference) node;
+            return ref.receiver instanceof Continuation;
+        }
+
+        if (node instanceof BlockExpression) {
+            BlockExpression bc = (BlockExpression) node;
+            return bc.expressions.stream().anyMatch(this::hasContinuations);
+        }
+
+        if (node instanceof LetConstant) {
+            LetConstant lc = (LetConstant) node;
+            return hasContinuations(lc.body);
+        }
+
+        if (node instanceof LetFunction) {
+            LetFunction lf = (LetFunction) node;
+            return hasContinuations(lf.body);
+        }
+
+        if (node instanceof Lambda) {
+            Lambda ld = (Lambda) node;
+            return hasContinuations(ld.body);
+        }
+
+        if (node instanceof IfElse) {
+            IfElse ie = (IfElse) node;
+            return hasContinuations(ie.whenFalse) || hasContinuations(ie.whenTrue) || hasContinuations(ie.condition);
         }
 
         return false;
@@ -182,6 +159,6 @@ public class ContinuationProcessor implements Processor {
 
     @Override
     public String phase() {
-        return "CONTINUATIONS";
+        return "ASYNC FUNCTIONS";
     }
 }

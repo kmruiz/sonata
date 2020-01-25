@@ -25,18 +25,20 @@ public class LetFunction implements Expression, Scoped {
     public final List<Parameter> parameters;
     public final ASTTypeRepresentation returnType;
     public final Expression body;
+    public final boolean isAsync;
 
-    public LetFunction(String letId, SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body) {
+    public LetFunction(String letId, SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body, boolean isAsync) {
         this.letId = letId;
         this.definition = definition;
         this.letName = letName;
         this.parameters = parameters;
         this.returnType = returnType;
         this.body = body;
+        this.isAsync = isAsync;
     }
 
-    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body) {
-        this(UUID.randomUUID().toString(), definition, letName, parameters, returnType, body);
+    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body, boolean isAsync) {
+        this(UUID.randomUUID().toString(), definition, letName, parameters, returnType, body, isAsync);
     }
 
     @Override

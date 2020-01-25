@@ -11,6 +11,7 @@ import io.reactivex.Flowable;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
+import io.sonata.lang.analyzer.continuations.AsyncFunctionProcessor;
 import io.sonata.lang.analyzer.continuations.ContinuationProcessor;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.fops.FunctionCompositionProcessor;
@@ -48,7 +49,8 @@ public class Sonata {
                 new EqualitySpecializationProcessor(log, scope),
                 new DestructuringProcessor(symbolMap),
                 new FunctionCompositionProcessor(log, scope),
-                new ContinuationProcessor(log, scope)
+                new ContinuationProcessor(log, scope),
+                new AsyncFunctionProcessor(log, scope)
         );
 
         Subject<Source> requires = ReplaySubject.create();

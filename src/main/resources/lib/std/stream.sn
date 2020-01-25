@@ -3,6 +3,8 @@ value class _StreamToken(value: any, complete: boolean)
 let _StreamValue(value: any): _StreamToken = _StreamToken(value, false)
 let _StreamComplete(): _StreamToken = _StreamToken('', true)
 
+entity class _Provider() { }
+
 entity class _ProvideFromArray(data: any[], index: number) {
     let poll(): _StreamToken = if (self.index >= self.data.length) {
             _StreamComplete()
@@ -20,7 +22,7 @@ entity class _ProvideFromFunction(provider: any) {
     let poll(): _StreamToken = _StreamValue(provider())
 }
 
-entity class _Take(previous: any, number: number, processed: number) {
+entity class _Take(previous: _Provider, number: number, processed: number) {
     let poll(): _StreamToken = if (self.processed >= self.number) {
             _StreamComplete()
         } else {
@@ -30,7 +32,7 @@ entity class _Take(previous: any, number: number, processed: number) {
     }
 }
 
-entity class _WaitForResult(previous: any) {
+entity class _WaitForResult(previous: _Provider) {
     let poll(): _StreamToken = {
         let token: _StreamToken = previous.poll()
         if (token == _StreamComplete()) {
@@ -41,7 +43,7 @@ entity class _WaitForResult(previous: any) {
     }
 }
 
-entity class Stream(chain: any[]) {
+entity class Stream(chain: _Provider[]) {
     let array() = {
         self.chain.push(_WaitForResult(self.chain[self.chain.length - 1]))
         let result = self.chain[self.chain.length - 1].poll()
@@ -56,6 +58,6 @@ entity class Stream(chain: any[]) {
     }
 }
 
-let StreamFromArray(array: any[]) = Stream([_ProvideFromArray(array)])
+let StreamFromArray(array: any[]) = Stream([_ProvideFromArray(array, 0)])
 let StreamFromFunction(fn: any) = Stream([_ProvideFromFunction(fn)])
 

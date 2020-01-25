@@ -13,16 +13,20 @@ import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.ArrayASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
+import io.sonata.lang.source.Source;
+import io.sonata.lang.source.SourcePosition;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Scope {
-    public static final ValueClassType TYPE_ANY = new ValueClassType(null, "any", Collections.emptyMap(), Collections.emptyMap());
-    public static final ValueClassType TYPE_RECORD = new ValueClassType(null, "record", Collections.emptyMap(), Collections.emptyMap());
-    public static final ValueClassType TYPE_BOOLEAN = new ValueClassType(null, "boolean", Collections.emptyMap(), Collections.emptyMap());
-    public static final ValueClassType TYPE_NUMBER = new ValueClassType(null, "number", Collections.emptyMap(), Collections.emptyMap());
-    public static final ValueClassType TYPE_STRING = new ValueClassType(null, "string", Collections.emptyMap(), Collections.emptyMap());
+    private static final SourcePosition INTERNAL = new SourcePosition(Source.fromLiteral("<internal>"), 1, 1);
+
+    public static final ValueClassType TYPE_ANY = new ValueClassType(INTERNAL, "any", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_RECORD = new ValueClassType(INTERNAL, "record", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_BOOLEAN = new ValueClassType(INTERNAL, "boolean", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_NUMBER = new ValueClassType(INTERNAL, "number", Collections.emptyMap(), Collections.emptyMap());
+    public static final ValueClassType TYPE_STRING = new ValueClassType(INTERNAL, "string", Collections.emptyMap(), Collections.emptyMap());
 
     public static class Variable {
         public final Node definition;

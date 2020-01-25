@@ -41,7 +41,7 @@ public class SimpleParameter implements Parameter {
 
     @Override
     public String representation() {
-        return name + ": " + astTypeRepresentation.representation();
+        return name + ": " + (astTypeRepresentation == null ? "" : astTypeRepresentation.representation());
     }
 
     @Override

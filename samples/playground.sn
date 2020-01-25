@@ -1,13 +1,19 @@
-requires std.io
+requires std.testing
 requires std.stream
+requires std.range
+requires std.io
 
-entity class App() {
-    let do() = {
-        StreamFromFunction(Math.random).take(10).array().forEach(println)
-        self.stop()
-    }
-}
+let json(a: any) = JSON.stringify(a)
 
-let a = App()
-a.do()
-a.stop()
+let _ = Testing(TestRunner([], json -> println))
+
+_.describe('stream', let (it) = {
+    it('should be transformed from and to an array', let (assert) = {
+        let left = StreamFromArray(Range(1, 5)).array()
+        let right = Range(1, 5)
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
+})
+
+_.run()

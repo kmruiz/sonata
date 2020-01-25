@@ -89,7 +89,7 @@ public class PartialLetFunction implements Expression {
                 if (token instanceof OperatorToken && token.representation().equals("=")) {
                     return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTTypeRepresentation, body);
                 } else if (token instanceof SeparatorToken && token.representation().equals("\n")) {
-                    return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, null);
+                    return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, null, false);
                 } else if (token instanceof SeparatorToken && token.representation().equals(":") && returnASTTypeRepresentation instanceof EmptyASTTypeRepresentation) {
                     return new PartialLetFunction(definition, letName, State.IN_RETURN_TYPE, parameters, currentParameter, returnASTTypeRepresentation, body);
                 }
@@ -107,7 +107,7 @@ public class PartialLetFunction implements Expression {
                     if (letName.equals("")) {
                         return Lambda.synthetic(definition, (List) parameters, requireNonNullElse(nextBody, body));
                     } else {
-                        return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, requireNonNullElse(nextBody, body));
+                        return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, requireNonNullElse(nextBody, body), false);
                     }
                 }
 
