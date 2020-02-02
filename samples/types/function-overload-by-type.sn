@@ -15,9 +15,9 @@ let say(a: Amazing) = println('Amazing')
 let this1 = This()
 let other2 = Other()
 
+say('')
 say(1)
 say(Price(1))
-say('')
 say(this1)
 say(other2)
 
