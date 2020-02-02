@@ -7,9 +7,9 @@
 package io.sonata.lang.parser.ast.classes.entities;
 
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -17,55 +17,52 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class EntityClass implements Node, Scoped {
-    public final SourcePosition definition;
-    public final String name;
-    public final List<Field> definedFields;
-    public final List<ASTTypeRepresentation> implementingContracts;
-    public final List<Node> body;
+import static io.sonata.lang.javaext.Lists.append;
 
-    public EntityClass(SourcePosition definition, String name, List<Field> definedFields) {
-        this(definition, name, definedFields, Collections.emptyList(), Collections.emptyList());
-    }
+public class PartialEntityClassWithContracts implements Node {
+    private final SourcePosition definition;
+    private final String name;
+    private final List<Field> definedFields;
+    private final List<ASTTypeRepresentation> contracts;
+    private final ASTTypeRepresentation current;
 
-    public EntityClass(SourcePosition definition, String name, List<Field> definedFields, List<ASTTypeRepresentation> contracts, List<Node> body) {
+    private PartialEntityClassWithContracts(SourcePosition definition, String name, List<Field> definedFields, List<ASTTypeRepresentation> contracts, ASTTypeRepresentation current) {
         this.definition = definition;
         this.name = name;
         this.definedFields = definedFields;
-        this.implementingContracts = contracts;
-        this.body = body;
+        this.contracts = contracts;
+        this.current = current;
     }
 
-    @Override
-    public Node consume(Token token) {
-        if (token.representation().equals("implements")) {
-            return PartialEntityClassWithContracts.initial(definition, name, definedFields);
-        }
-
-        if (token.representation().equals("{")) {
-            return PartialEntityClassWithBody.initial(definition, name, implementingContracts, definedFields);
-        }
-
-        return null;
+    public static PartialEntityClassWithContracts initial(SourcePosition definition, String name, List<Field> definedFields) {
+        return new PartialEntityClassWithContracts(definition, name, definedFields, Collections.emptyList(), EmptyASTTypeRepresentation.instance());
     }
 
     @Override
     public String representation() {
-        return String.format("entity class %s(%s) %s {\n\t%s\n}",
+        return String.format("entity class %s(%s) implements %s",
                 name,
                 definedFields.stream().map(Node::representation).collect(Collectors.joining(", ")),
-                implementingContracts.isEmpty() ? "" : implementingContracts.stream().map(Node::representation).collect(Collectors.joining(",", "implements ", "")),
-                body.stream().map(Node::representation).collect(Collectors.joining("\n\t"))
+                contracts.stream().map(Node::representation).collect(Collectors.joining(", "))
         );
+    }
+
+    @Override
+    public Node consume(Token token) {
+        ASTTypeRepresentation next = current.consume(token);
+        if (next == null) {
+            if (token.representation().equals(",")) {
+                return new PartialEntityClassWithContracts(definition, name, definedFields, append(contracts, current), EmptyASTTypeRepresentation.instance());
+            }
+
+            return new EntityClass(definition, name, definedFields, append(contracts, current), Collections.emptyList()).consume(token);
+        }
+
+        return new PartialEntityClassWithContracts(definition, name, definedFields, contracts, next);
     }
 
     @Override
     public SourcePosition definition() {
         return definition;
-    }
-
-    @Override
-    public String scopeId() {
-        return "entity class " + name;
     }
 }

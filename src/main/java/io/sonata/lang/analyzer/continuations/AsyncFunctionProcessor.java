@@ -53,7 +53,7 @@ public class AsyncFunctionProcessor implements Processor {
         if (node instanceof EntityClass) {
             EntityClass ec = (EntityClass) node;
             List<Node> body = ec.body.stream().map(b -> apply(scope.diveIn(ec), b)).collect(Collectors.toList());
-            return new EntityClass(ec.definition, ec.name, ec.definedFields, body);
+            return new EntityClass(ec.definition, ec.name, ec.definedFields, ec.implementingContracts, body);
         }
 
         if (node instanceof ValueClass) {

@@ -1,0 +1,13 @@
+requires std.io
+
+contract Pinger {
+    let ping(message: string)
+}
+
+entity class Person(name: string) implements Pinger {
+    let ping(message: string) = println(name + ': ' + message)
+}
+
+let morty: Pinger = Person('Morty') ;; all contracts are for entities, so all contracts have the stop method
+morty.ping('Rick')
+morty.stop()

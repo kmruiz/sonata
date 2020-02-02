@@ -56,7 +56,7 @@ public final class DestructuringProcessor implements Processor {
 
             if (e instanceof EntityClass) {
                 EntityClass entity = (EntityClass) e;
-                return new EntityClass(entity.definition, entity.name, entity.definedFields, reduceFunctionsIfAny(entity.body));
+                return new EntityClass(entity.definition, entity.name, entity.definedFields, entity.implementingContracts, reduceFunctionsIfAny(entity.body));
             }
 
             return e;

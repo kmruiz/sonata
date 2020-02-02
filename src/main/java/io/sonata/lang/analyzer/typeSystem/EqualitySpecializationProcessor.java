@@ -41,7 +41,7 @@ public final class EqualitySpecializationProcessor implements Processor {
 
         if (node instanceof EntityClass) {
             EntityClass entityClass = (EntityClass) node;
-            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.body.stream().map(this::apply).collect(toList()));
+            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, entityClass.body.stream().map(this::apply).collect(toList()));
         }
 
         if (node instanceof ValueClass) {

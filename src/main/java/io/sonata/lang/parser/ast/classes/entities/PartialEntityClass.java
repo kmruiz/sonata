@@ -50,7 +50,7 @@ public class PartialEntityClass implements Node {
                 return new PartialEntityClass(definition, token.representation(), emptyList(), SimpleField.instance(token.sourcePosition()), State.WAITING_FIELDS);
             case WAITING_FIELDS:
                 if (token.representation().equals("{")) {
-                    return PartialEntityClassWithBody.initial(definition, name, emptyList());
+                    return PartialEntityClassWithBody.initial(definition, name, emptyList(), emptyList());
                 }
 
                 return new PartialEntityClass(definition, name, emptyList(), SimpleField.instance(token.sourcePosition()), State.IN_FIELDS);

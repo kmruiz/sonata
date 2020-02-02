@@ -10,10 +10,12 @@ package io.sonata.lang.e2e;
 import io.reactivex.Flowable;
 import io.sonata.lang.backend.js.JavaScriptBackend;
 import io.sonata.lang.cli.Sonata;
+import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
 import org.jetbrains.annotations.NotNull;
+import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
@@ -24,19 +26,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class NodeDockerTest {
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
-        InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
-        String script = new BufferedReader(new InputStreamReader(stream))
-                .lines().collect(Collectors.joining("\n"));
-
-        assertScriptOutputs(expectedOutput, script);
+        assertScriptOutputs(expectedOutput, getLiteralResource(resource));
     }
 
     protected final String runScriptAndGetOutput(String resource) throws Exception {
@@ -50,8 +52,36 @@ public abstract class NodeDockerTest {
         assertEquals(expectedOutput.trim(), runAndGetOutput(literalScript));
     }
 
+    protected final void assertSyntaxError(String errorMessage, String resource) throws Exception {
+        List<SonataSyntaxError> syntaxErrors = new ArrayList<>();
+        CompilerLog mockLog = Mockito.mock(CompilerLog.class);
+        Mockito.doAnswer(e -> {
+            syntaxErrors.add(e.getArgument(0, SonataSyntaxError.class));
+            return null;
+        }).when(mockLog).syntaxError(Mockito.any());
+
+        String output = compileToString(mockLog, getLiteralResource(resource));
+        System.out.println(">> JavaScript:\n" + output);
+        boolean found = syntaxErrors.stream().anyMatch(p -> p.message().contains(errorMessage));
+        assertTrue(found, "Could not find a syntax error containing the following error message: " + errorMessage + "\n Found errors: " + syntaxErrors.stream().map(SonataSyntaxError::message).collect(joining("\n")));
+    }
+
+    protected final void assertCompiles(String resource) throws Exception {
+        List<SonataSyntaxError> syntaxErrors = new ArrayList<>();
+        CompilerLog mockLog = Mockito.mock(CompilerLog.class);
+        Mockito.doAnswer(e -> {
+            syntaxErrors.add(e.getArgument(0, SonataSyntaxError.class));
+            return null;
+        }).when(mockLog).syntaxError(Mockito.any());
+
+        String output = compileToString(mockLog, getLiteralResource(resource));
+        System.out.println(">> JavaScript:\n" + output);
+        boolean empty = syntaxErrors.isEmpty();
+        assertTrue(empty, "Could not compile script.\n Found errors: " + syntaxErrors.stream().map(SonataSyntaxError::message).collect(joining("\n")));
+    }
+
     private GenericContainer executeScript(String literalScript) throws Exception {
-        String compiledVersion = compileToTemporalPath(literalScript);
+        String compiledVersion = compileToTemporalPath(CompilerLog.console(), literalScript);
         System.out.println(">> Source Code:\n" + literalScript);
         System.out.println(">> JavaScript:\n" + readString(Paths.get(compiledVersion)));
 
@@ -65,12 +95,17 @@ public abstract class NodeDockerTest {
         return container;
     }
 
-    private String compileToTemporalPath(String literalScript) throws Exception {
+    private String compileToString(CompilerLog log, String literalScript) throws Exception {
+        Path path = Paths.get(compileToTemporalPath(log, literalScript));
+        return readString(path);
+    }
+
+    private String compileToTemporalPath(CompilerLog log, String literalScript) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos));
 
         Source literalSource = Source.fromLiteral(literalScript);
-        Sonata.compile(CompilerLog.console(), Flowable.just(literalSource), RequiresPaths.are(), new JavaScriptBackend(writer)).blockingAwait();
+        Sonata.compile(log, Flowable.just(literalSource), RequiresPaths.are(), new JavaScriptBackend(writer)).blockingAwait();
         String output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
 
         Files.write(Paths.get(output), baos.toByteArray(), CREATE, TRUNCATE_EXISTING);
@@ -90,5 +125,10 @@ public abstract class NodeDockerTest {
         waitingConsumer.waitUntilEnd();
 
         return container.getLogs().trim().replaceAll("\\n{2,}", "\n");
+    }
+
+    private String getLiteralResource(String resource) {
+        InputStream stream = this.getClass().getResourceAsStream("/e2e/" + resource + ".sn");
+        return new BufferedReader(new InputStreamReader(stream)).lines().collect(joining("\n"));
     }
 }

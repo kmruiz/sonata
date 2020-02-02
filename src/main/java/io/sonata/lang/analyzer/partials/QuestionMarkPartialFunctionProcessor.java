@@ -55,7 +55,7 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
         if (node instanceof EntityClass) {
             EntityClass entity = (EntityClass) node;
             List<Node> body = entity.body.stream().map(this::apply).collect(Collectors.toList());
-            return new EntityClass(entity.definition, entity.name, entity.definedFields, body);
+            return new EntityClass(entity.definition, entity.name, entity.definedFields, entity.implementingContracts, body);
         }
 
         if (node instanceof BlockExpression) {

@@ -9,6 +9,7 @@ package io.sonata.lang.parser.ast.classes.entities;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.parser.ast.classes.fields.Field;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -22,19 +23,21 @@ public class PartialEntityClassWithBody implements Node {
     private final SourcePosition definition;
     private final String name;
     private final List<Field> definedFields;
+    private final List<ASTTypeRepresentation> contracts;
     private final List<Node> declarations;
     private final Node current;
 
-    private PartialEntityClassWithBody(SourcePosition definition, String name, List<Field> definedFields, List<Node> declarations, Node current) {
+    private PartialEntityClassWithBody(SourcePosition definition, String name, List<Field> definedFields, List<ASTTypeRepresentation> contracts, List<Node> declarations, Node current) {
         this.definition = definition;
         this.name = name;
         this.definedFields = definedFields;
+        this.contracts = contracts;
         this.declarations = declarations;
         this.current = current;
     }
 
-    public static PartialEntityClassWithBody initial(SourcePosition definition, String name, List<Field> definedFields) {
-        return new PartialEntityClassWithBody(definition, name, definedFields, Collections.emptyList(), RootNode.instance());
+    public static PartialEntityClassWithBody initial(SourcePosition definition, String name, List<ASTTypeRepresentation> contracts, List<Field> definedFields) {
+        return new PartialEntityClassWithBody(definition, name, definedFields, contracts, Collections.emptyList(), RootNode.instance());
     }
 
     @Override
@@ -52,16 +55,16 @@ public class PartialEntityClassWithBody implements Node {
         if (nextExpr == null) {
             if (token.representation().equals("}")) {
                 if (current instanceof RootNode) {
-                    return new EntityClass(definition, name, definedFields, declarations);
+                    return new EntityClass(definition, name, definedFields, contracts, declarations);
                 }
 
-                return new EntityClass(definition, name, definedFields, append(declarations, current));
+                return new EntityClass(definition, name, definedFields, contracts, append(declarations, current));
             }
 
-            return new PartialEntityClassWithBody(definition, name, definedFields, append(declarations, current), RootNode.instance().consume(token));
+            return new PartialEntityClassWithBody(definition, name, definedFields, contracts, append(declarations, current), RootNode.instance().consume(token));
         }
 
-        return new PartialEntityClassWithBody(definition, name, definedFields, declarations, nextExpr);
+        return new PartialEntityClassWithBody(definition, name, definedFields, contracts, declarations, nextExpr);
     }
 
     @Override

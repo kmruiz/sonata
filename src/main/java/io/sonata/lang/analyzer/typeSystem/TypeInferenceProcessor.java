@@ -49,7 +49,7 @@ public final class TypeInferenceProcessor implements Processor {
         if (node instanceof EntityClass) {
             EntityClass entityClass = (EntityClass) node;
             List<Node> body = entityClass.body.stream().map(e -> this.apply(currentScope, e)).collect(toList());
-            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, body);
+            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
         }
 
         if (node instanceof ValueClass) {
