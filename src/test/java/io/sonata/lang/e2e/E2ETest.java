@@ -45,9 +45,24 @@ public abstract class E2ETest {
             return null;
         }).when(mockLog).syntaxError(Mockito.any());
 
-        compileToString(mockLog, getLiteralResource(resource));
+        String output = compileToString(mockLog, getLiteralResource(resource));
+        System.out.println(">> JavaScript:\n" + output);
         boolean found = syntaxErrors.stream().anyMatch(p -> p.message().contains(errorMessage));
         assertTrue(found, "Could not find a syntax error containing the following error message: " + errorMessage + "\n Found errors: " + syntaxErrors.stream().map(SonataSyntaxError::message).collect(joining("\n")));
+    }
+
+    protected final void assertCompiles(String resource) {
+        List<SonataSyntaxError> syntaxErrors = new ArrayList<>();
+        CompilerLog mockLog = Mockito.mock(CompilerLog.class);
+        Mockito.doAnswer(e -> {
+            syntaxErrors.add(e.getArgument(0, SonataSyntaxError.class));
+            return null;
+        }).when(mockLog).syntaxError(Mockito.any());
+
+        String output = compileToString(mockLog, getLiteralResource(resource));
+        System.out.println(">> JavaScript:\n" + output);
+        boolean empty = syntaxErrors.isEmpty();
+        assertTrue(empty, "Could not compile script.\n Found errors: " + syntaxErrors.stream().map(SonataSyntaxError::message).collect(joining("\n")));
     }
 
     private void assertScriptOutputs(String expectedOutput, String literalScript) {

@@ -4,11 +4,10 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.sonata.lang.parser.ast.classes.entities;
+package io.sonata.lang.parser.ast.classes.contracts;
 
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.RootNode;
-import io.sonata.lang.parser.ast.classes.fields.Field;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
@@ -18,30 +17,27 @@ import java.util.stream.Collectors;
 
 import static io.sonata.lang.javaext.Lists.append;
 
-public class PartialEntityClassWithBody implements Node {
+public class PartialContractWithBody implements Node {
     private final SourcePosition definition;
     private final String name;
-    private final List<Field> definedFields;
     private final List<Node> declarations;
     private final Node current;
 
-    private PartialEntityClassWithBody(SourcePosition definition, String name, List<Field> definedFields, List<Node> declarations, Node current) {
+    private PartialContractWithBody(SourcePosition definition, String name, List<Node> declarations, Node current) {
         this.definition = definition;
         this.name = name;
-        this.definedFields = definedFields;
         this.declarations = declarations;
         this.current = current;
     }
 
-    public static PartialEntityClassWithBody initial(SourcePosition definition, String name, List<Field> definedFields) {
-        return new PartialEntityClassWithBody(definition, name, definedFields, Collections.emptyList(), RootNode.instance());
+    public static PartialContractWithBody initial(SourcePosition definition, String name) {
+        return new PartialContractWithBody(definition, name, Collections.emptyList(), RootNode.instance());
     }
 
     @Override
     public String representation() {
-        return String.format("entity class %s(%s) {\n\t%s\n}",
+        return String.format("contract %s {\n\t%s\n}",
                 name,
-                definedFields.stream().map(Node::representation).collect(Collectors.joining(", ")),
                 declarations.stream().map(Node::representation).collect(Collectors.joining("\n\t"))
         );
     }
@@ -52,16 +48,16 @@ public class PartialEntityClassWithBody implements Node {
         if (nextExpr == null) {
             if (token.representation().equals("}")) {
                 if (current instanceof RootNode) {
-                    return new EntityClass(definition, name, definedFields, declarations);
+                    return new Contract(definition, name, declarations);
                 }
 
-                return new EntityClass(definition, name, definedFields, append(declarations, current));
+                return new Contract(definition, name, append(declarations, current));
             }
 
-            return new PartialEntityClassWithBody(definition, name, definedFields, append(declarations, current), RootNode.instance().consume(token));
+            return new PartialContractWithBody(definition, name, append(declarations, current), RootNode.instance().consume(token));
         }
 
-        return new PartialEntityClassWithBody(definition, name, definedFields, declarations, nextExpr);
+        return new PartialContractWithBody(definition, name, declarations, nextExpr);
     }
 
     @Override

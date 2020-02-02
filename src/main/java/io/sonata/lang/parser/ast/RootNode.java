@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.parser.ast;
 
+import io.sonata.lang.parser.ast.classes.contracts.PartialContract;
 import io.sonata.lang.parser.ast.classes.entities.PartialEntityClass;
 import io.sonata.lang.parser.ast.classes.values.PartialValueClass;
 import io.sonata.lang.parser.ast.exp.Atom;
@@ -15,7 +16,10 @@ import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
 import io.sonata.lang.source.SourcePosition;
-import io.sonata.lang.tokenizer.token.*;
+import io.sonata.lang.tokenizer.token.CommentToken;
+import io.sonata.lang.tokenizer.token.IdentifierToken;
+import io.sonata.lang.tokenizer.token.SeparatorToken;
+import io.sonata.lang.tokenizer.token.Token;
 
 public class RootNode implements Node {
     private static final RootNode INSTANCE = new RootNode();
@@ -43,6 +47,8 @@ public class RootNode implements Node {
                     return PartialValueClass.initial(token.sourcePosition());
                 case "if":
                     return PartialIf.initial(token.sourcePosition());
+                case "contract":
+                    return PartialContract.initial(token.sourcePosition());
             }
 
             return new Atom(token.sourcePosition(), token.representation());
