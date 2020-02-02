@@ -53,6 +53,10 @@ public class PartialEntityClass implements Node {
                     return PartialEntityClassWithBody.initial(definition, name, emptyList(), emptyList());
                 }
 
+                if (token.representation().equals("implements")) {
+                    return PartialEntityClassWithContracts.initial(definition, name, emptyList());
+                }
+
                 return new PartialEntityClass(definition, name, emptyList(), SimpleField.instance(token.sourcePosition()), State.IN_FIELDS);
             case IN_FIELDS:
                 Field nextField = currentField.consume(token);

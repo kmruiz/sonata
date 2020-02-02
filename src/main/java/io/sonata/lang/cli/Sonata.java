@@ -40,6 +40,7 @@ public class Sonata {
         Analyzer analyzer = new Analyzer(log,
                 symbolMap,
                 new QuestionMarkPartialFunctionProcessor(),
+                new ContractProcessor(log, scope),
                 new ClassScopeProcessor(log, scope),
                 new LetVariableProcessor(log, scope),
                 new TypeInferenceProcessor(log, scope),

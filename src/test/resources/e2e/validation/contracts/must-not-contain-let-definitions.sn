@@ -1,0 +1,3 @@
+contract Pinger {
+    let ping() = 1
+}

@@ -1,0 +1,7 @@
+contract Pinger {
+    let ping()
+}
+
+entity class Doer implements Pinger {
+
+}
