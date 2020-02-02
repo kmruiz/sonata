@@ -12,13 +12,12 @@ let say(a: Price) = println('Price')
 let say(a: This) = println('This')
 let say(a: Amazing) = println('Amazing')
 
-say(1)
-say(Price(1))
-say('')
-
 let this1 = This()
 let other2 = Other()
 
+say(1)
+say(Price(1))
+say('')
 say(this1)
 say(other2)
 
