@@ -3,7 +3,9 @@ value class _StreamToken(value: any, complete: boolean)
 let _StreamValue(value: any): _StreamToken = _StreamToken(value, false)
 let _StreamComplete(): _StreamToken = _StreamToken('', true)
 
-entity class _Provider() { }
+contract _Provider {
+    let poll(): _StreamToken
+}
 
 entity class _ProvideFromArray(data: any[], index: number) {
     let poll(): _StreamToken = if (self.index >= self.data.length) {

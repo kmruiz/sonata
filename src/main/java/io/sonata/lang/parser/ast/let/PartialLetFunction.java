@@ -97,6 +97,10 @@ public class PartialLetFunction implements Expression {
             case IN_RETURN_TYPE:
                 ASTTypeRepresentation nextASTTypeRepresentation = returnASTTypeRepresentation.consume(token);
                 if (nextASTTypeRepresentation == null) {
+                    if (token.representation().equals("\n")) {
+                        return new LetFunction(definition, letName, parameters, returnASTTypeRepresentation, null, false);
+                    }
+
                     return new PartialLetFunction(definition, letName, State.IN_BODY, parameters, currentParameter, returnASTTypeRepresentation, body);
                 }
 

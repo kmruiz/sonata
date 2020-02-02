@@ -11,7 +11,7 @@ import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 
-public class ContractFulfillmentProcessor implements Processor {
+public final class ContractFulfillmentProcessor implements Processor {
     private final CompilerLog log;
     private final Scope scope;
 

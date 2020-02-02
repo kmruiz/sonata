@@ -54,6 +54,10 @@ public class PartialContractWithBody implements Node {
                 return new Contract(definition, name, append(declarations, current));
             }
 
+            if (current instanceof RootNode) {
+                return this;
+            }
+
             return new PartialContractWithBody(definition, name, append(declarations, current), RootNode.instance().consume(token));
         }
 
