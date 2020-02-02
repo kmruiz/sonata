@@ -52,7 +52,7 @@ public class ContractProcessor implements Processor {
             List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
 
             return new FunctionType(let.definition, let.letName, returnType, parameters);
-        }).collect(Collectors.groupingBy(fn -> fn.name, Collectors.collectingAndThen(Collectors.toList(), v -> v.get(0))));
+        }).collect(Collectors.toMap(k -> k.name, v -> v));
 
         ContractType contractType = new ContractType(contract.definition, contract.name, methods);
         try {
