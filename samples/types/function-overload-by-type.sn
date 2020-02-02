@@ -1,0 +1,26 @@
+requires std.io
+
+contract Amazing {}
+entity class This implements Amazing {}
+entity class Other implements Amazing {}
+
+value class Price(amount: number)
+
+let say(a: string) = println('String')
+let say(a: number) = println('Number')
+let say(a: Price) = println('Price')
+let say(a: This) = println('This')
+let say(a: Amazing) = println('Amazing')
+
+say(1)
+say(Price(1))
+say('')
+
+let this1 = This()
+let other2 = Other()
+
+say(this1)
+say(other2)
+
+this1.stop()
+other2.stop()
