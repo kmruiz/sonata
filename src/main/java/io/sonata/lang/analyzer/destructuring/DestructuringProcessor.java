@@ -8,6 +8,7 @@ package io.sonata.lang.analyzer.destructuring;
 
 import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.analyzer.symbols.SymbolResolver;
+import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
@@ -30,11 +31,11 @@ import static io.sonata.lang.javaext.Lists.append;
 public final class DestructuringProcessor implements Processor {
     private final DestructuringExpressionParser expressionParsers;
 
-    public DestructuringProcessor(SymbolResolver resolver) {
+    public DestructuringProcessor(SymbolResolver resolver, Scope scope) {
         this.expressionParsers = new ComposedDestructuringExpressionParser(
                 new ValueClassDestructuringExpressionParser(resolver),
                 new ArrayDestructuringExpressionParser(),
-                new FunctionOverloadExpressionParser(resolver)
+                new FunctionOverloadExpressionParser(resolver, scope)
         );
     }
 

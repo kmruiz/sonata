@@ -35,4 +35,9 @@ public class FunctionDefinitionTest extends E2ETest {
     public void functionWithBlockBody() throws Exception {
         assertResourceScriptOutputs("a\nb", "let/fn/function-with-block");
     }
+
+    @Test
+    public void functionDefinitionRuntimeDispatchDifferentTypes() throws Exception {
+        assertResourceScriptOutputs("Number\nPrice\nString", "let/fn/function-overload-multiple-types");
+    }
 }

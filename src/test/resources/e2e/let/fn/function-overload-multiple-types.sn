@@ -1,0 +1,11 @@
+requires std.io
+
+value class Price(amount: number)
+
+let say(a: string) = println('String')
+let say(a: number) = println('Number')
+let say(a: Price) = println('Price')
+
+say(1)
+say(Price(1))
+say('')

@@ -6,6 +6,7 @@
  */
 package io.sonata.lang.backend.js;
 
+import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.backend.CompilerBackend;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
@@ -94,6 +95,10 @@ public class JavaScriptBackend implements CompilerBackend {
 
         if (node instanceof BlockExpression) {
             emitBlockExpression((BlockExpression) node, context);
+        }
+
+        if (node instanceof TypeCheckExpression) {
+            emitTypeCheckExpression((TypeCheckExpression) node, context);
         }
 
         if (node instanceof LetConstant) {
@@ -245,6 +250,26 @@ public class JavaScriptBackend implements CompilerBackend {
         }
     }
 
+    private void emitTypeCheckExpression(TypeCheckExpression typecheck, Context context) {
+        if (typecheck.type == Scope.TYPE_NUMBER) {
+            emit("!isNaN(",typecheck.atom,")");
+        } else if (typecheck.type == Scope.TYPE_BOOLEAN) {
+            emit("(",typecheck.atom,"===true||",typecheck.atom,"===false)");
+        } else if (typecheck.type == Scope.TYPE_RECORD) {
+            emit("Object.prototype.toString.call(",typecheck.atom,") === '[object Object]'");
+        } else if (typecheck.type == Scope.TYPE_STRING) {
+            emit("(typeof ", typecheck.atom, "=== 'string')");
+        } else if (typecheck.type.isValue()) {
+            emit(typecheck.atom, ".class==='",typecheck.type.name(),"'");
+        } else if (typecheck.type.isEntity()) {
+            emit("(");
+            emit(typecheck.atom, ".class==='",typecheck.type.name(),"'");
+            emit("||");
+            emit(typecheck.atom, ".contracts.indexOf('",typecheck.type.name(),"')!=-1");
+            emit(")");
+        }
+    }
+
     private void emitLetConstant(LetConstant node, Context context) {
         emit("let ", node.letName, "=");
         emitNode(node.body, context.inExpression());
@@ -312,7 +337,7 @@ public class JavaScriptBackend implements CompilerBackend {
         final List<String> fields = node.definedFields.stream().map(e -> (SimpleField) e).map(e -> e.name).collect(Collectors.toList());
         emit("function ", node.name, "(");
         emit(String.join(",", fields));
-        emit("){let self=ECP('", node.name, "');");
+        emit("){let self=ECP('", node.name, "',[",node.implementingContracts.stream().map(Node::representation).map(e -> "'" + e + "'").collect(Collectors.joining(",")),"]);");
         emit("let $stop$ = ST(self);");
         emitEnqueueFunctionFor("stop", "$stop$");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
@@ -386,7 +411,7 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitPreface() {
         emit("\"use strict\";");
-        emit("function ECP(c){let o={};o._p$=false;o.class=c;o._m$=[];o._i$=SI(DQ(o),0);return o}");
+        emit("function ECP(c,C){let o={};o._p$=false;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
         emit("function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
         emit("function _$(p){return Array.prototype.slice.call(p)}");
         emit("function SI(a,b){return setInterval(a,b)}");

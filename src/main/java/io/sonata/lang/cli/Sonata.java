@@ -49,7 +49,7 @@ public class Sonata {
                 new PropertyVisibilityProcessor(log, scope),
                 new ImmutabilityCheckProcessor(log, scope),
                 new EqualitySpecializationProcessor(log, scope),
-                new DestructuringProcessor(symbolMap),
+                new DestructuringProcessor(symbolMap, scope),
                 new FunctionCompositionProcessor(log, scope),
                 new ContinuationProcessor(log, scope),
                 new AsyncFunctionProcessor(log, scope)

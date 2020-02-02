@@ -7,20 +7,25 @@
 package io.sonata.lang.analyzer.destructuring;
 
 import io.sonata.lang.analyzer.symbols.SymbolResolver;
+import io.sonata.lang.analyzer.typeSystem.Scope;
+import io.sonata.lang.analyzer.typeSystem.Type;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.fn.ExpressionParameter;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
+import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class FunctionOverloadExpressionParser implements DestructuringExpressionParser {
     private final SymbolResolver resolver;
+    private final Scope scope;
 
-    public FunctionOverloadExpressionParser(SymbolResolver resolver) {
+    public FunctionOverloadExpressionParser(SymbolResolver resolver, Scope scope) {
         this.resolver = resolver;
+        this.scope = scope;
     }
 
     private final class ExpressionParameterTouchPoint {
@@ -28,6 +33,14 @@ public final class FunctionOverloadExpressionParser implements DestructuringExpr
 
         private ExpressionParameterTouchPoint(Expression expression) {
             this.expression = expression;
+        }
+    }
+
+    private final class TypedParameterTouchPoint {
+        public final Type type;
+
+        private TypedParameterTouchPoint(Type type) {
+            this.type = type;
         }
     }
 
@@ -43,13 +56,19 @@ public final class FunctionOverloadExpressionParser implements DestructuringExpr
 
     @Override
     public Stream<Expression> generateGuardCondition(String parameterName, Parameter parameter) {
-        return whenIsExpressionParameter(parameter, tp -> {
+        Stream<Expression> result = whenIsExpressionParameter(parameter, tp -> {
             if (tp.expression instanceof Atom) {
                 return Stream.of(new SimpleExpression(new Atom(tp.expression.definition(), parameterName), "===", tp.expression));
             }
 
             return Stream.of(tp.expression);
         });
+
+        if (result == null) {
+            return whenIsTypedParameter(parameter, tp -> Stream.of(TypeCheckExpression.synthetic(parameterName, tp.type)));
+        }
+
+        return result;
     }
 
     private <T> T whenIsExpressionParameter(Parameter parameter, Function<ExpressionParameterTouchPoint, T> fn) {
@@ -61,6 +80,15 @@ public final class FunctionOverloadExpressionParser implements DestructuringExpr
             if (!isArray && !isValueClass) {
                 return fn.apply(new ExpressionParameterTouchPoint(expr));
             }
+        }
+
+        return null;
+    }
+
+    private <T> T whenIsTypedParameter(Parameter parameter, Function<TypedParameterTouchPoint, T> fn) {
+        if (parameter instanceof SimpleParameter) {
+            SimpleParameter simpleParam = (SimpleParameter) parameter;
+            return fn.apply(new TypedParameterTouchPoint(scope.resolveType(simpleParam.astTypeRepresentation).orElse(Scope.TYPE_ANY)));
         }
 
         return null;
