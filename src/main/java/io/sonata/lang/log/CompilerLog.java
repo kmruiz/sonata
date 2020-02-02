@@ -45,11 +45,19 @@ public class CompilerLog {
     public void syntaxError(SonataSyntaxError syntaxError) {
         this.errored = true;
 
-        final SourcePosition definition = syntaxError.whereHappened().definition();
-        final String definitionScript = clearRepresentationOf(syntaxError.whereHappened());
-        final String message = syntaxError.message();
+        if (syntaxError.where != null) {
+            final SourcePosition definition = syntaxError.where.definition();
+            final String definitionScript = clearRepresentationOf(syntaxError.where);
+            final String message = syntaxError.message;
 
-        error.printf("%s %s near '%s': %s\n", ERROR_TAG, definition, definitionScript, message);
+            error.printf("%s %s near '%s': %s\n", ERROR_TAG, definition, definitionScript, message);
+        } else {
+            final SourcePosition definition = syntaxError.definition;
+            final String message = syntaxError.message;
+
+            error.printf("%s %s: %s\n", ERROR_TAG, definition, message);
+        }
+
         error.flush();
     }
 

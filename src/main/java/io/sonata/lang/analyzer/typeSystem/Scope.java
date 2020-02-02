@@ -7,6 +7,8 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
+import io.sonata.lang.exception.SonataSyntaxError;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
@@ -191,6 +193,18 @@ public final class Scope {
         }
 
         return this.anchor.startsWith("entity class") || parent.inEntityClass();
+    }
+
+    public void validateContractFulfillment(CompilerLog log) {
+        typeContext.values().stream().filter(e -> e instanceof EntityClassType).map(e -> (EntityClassType) e).forEach(entityClass -> {
+           entityClass.contracts.forEach(contract -> {
+              contract.methods.values().forEach(contractMethod -> {
+                  if (!entityClass.methods.containsKey(contractMethod.name)) {
+                      log.syntaxError(new SonataSyntaxError(entityClass.definition, "To implement a contract, you must implement all methods defined. Missing method '" + contractMethod.name + "' definition in contract '" + contract.name + "'"));
+                  }
+              });
+           });
+        });
     }
 
     public boolean isTopLevel() {

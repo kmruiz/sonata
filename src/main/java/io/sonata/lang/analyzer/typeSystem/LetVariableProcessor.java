@@ -25,10 +25,7 @@ import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class LetVariableProcessor implements Processor {
@@ -69,11 +66,12 @@ public final class LetVariableProcessor implements Processor {
             );
 
             final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(entity.definition, className));
-            if (!incompleteType.isPresent()) {
+            if (!incompleteType.isPresent() || !(incompleteType.get() instanceof EntityClassType)) {
                 throw new ParserException(node, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
             }
 
-            final EntityClassType entityClassType = new EntityClassType(node.definition(), className, fields, methods);
+            EntityClassType preregisteredClassType = (EntityClassType) incompleteType.get();
+            final EntityClassType entityClassType = new EntityClassType(node.definition(), className, fields, preregisteredClassType.contracts, methods);
             List<Type> paramTypes = entity.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
             classScope.enrichType(className, entityClassType);
 

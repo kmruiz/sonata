@@ -17,6 +17,10 @@ import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class ClassScopeProcessor implements Processor {
     private final CompilerLog log;
@@ -37,7 +41,17 @@ public final class ClassScopeProcessor implements Processor {
             EntityClass entityClass = (EntityClass) node;
             final String className = entityClass.name;
             try {
-                final EntityClassType type = new EntityClassType(node.definition(), className, Collections.emptyMap(), Collections.emptyMap());
+                List<ContractType> contracts = entityClass.implementingContracts.stream().map(ct -> {
+                    Optional<Type> contractType = rootScope.resolveType(ct);
+                    if (!contractType.isPresent()) {
+                        log.syntaxError(new SonataSyntaxError(ct, "Can not implement a contract that has not been defined."));
+                        return null;
+                    } else {
+                        return (ContractType) contractType.get();
+                    }
+                }).filter(Objects::nonNull).collect(Collectors.toList());
+
+                final EntityClassType type = new EntityClassType(node.definition(), className, Collections.emptyMap(), contracts, Collections.emptyMap());
                 rootScope.registerType(className, type);
                 rootScope.diveIn((Scoped) node).registerVariable("self", node, type);
             } catch (TypeCanNotBeReassignedException e) {

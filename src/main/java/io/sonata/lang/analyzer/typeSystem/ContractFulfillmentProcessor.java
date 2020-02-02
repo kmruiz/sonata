@@ -4,26 +4,30 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.sonata.lang.exception;
 
+package io.sonata.lang.analyzer.typeSystem;
+
+import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.source.SourcePosition;
 
+public class ContractFulfillmentProcessor implements Processor {
+    private final CompilerLog log;
+    private final Scope scope;
 
-public final class SonataSyntaxError {
-    public final Node where;
-    public final SourcePosition definition;
-    public final String message;
-
-    public SonataSyntaxError(Node where, String message) {
-        this.definition = null;
-        this.where = where;
-        this.message = message;
+    public ContractFulfillmentProcessor(CompilerLog log, Scope scope) {
+        this.log = log;
+        this.scope = scope;
     }
 
-    public SonataSyntaxError(SourcePosition where, String message) {
-        this.where = null;
-        this.definition = where;
-        this.message = message;
+    @Override
+    public Node apply(Node node) {
+        scope.validateContractFulfillment(log);
+        return node;
+    }
+
+    @Override
+    public String phase() {
+        return "CONTRACT FULFILLMENT";
     }
 }

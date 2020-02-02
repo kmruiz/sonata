@@ -8,18 +8,21 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.List;
 import java.util.Map;
 
 public final class EntityClassType implements Type {
     public final SourcePosition definition;
     public final String name;
     public final Map<String, Type> fields;
+    public final List<ContractType> contracts;
     public final Map<String, FunctionType> methods;
 
-    public EntityClassType(SourcePosition definition, String name, Map<String, Type> fields, Map<String, FunctionType> methods) {
+    public EntityClassType(SourcePosition definition, String name, Map<String, Type> fields, List<ContractType> contracts, Map<String, FunctionType> methods) {
         this.definition = definition;
         this.name = name;
         this.fields = fields;
+        this.contracts = contracts;
         this.methods = methods;
     }
 
