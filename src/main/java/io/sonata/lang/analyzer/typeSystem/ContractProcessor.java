@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ContractProcessor implements Processor {
+public final class ContractProcessor implements Processor {
     private final CompilerLog log;
     private final Scope scope;
 

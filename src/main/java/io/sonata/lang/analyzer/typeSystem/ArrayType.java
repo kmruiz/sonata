@@ -9,7 +9,7 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.source.SourcePosition;
 
-public class ArrayType implements Type {
+public final class ArrayType implements Type {
     public final Type references;
     public final SourcePosition definition;
 

@@ -23,7 +23,7 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
-public class ContinuationProcessor implements Processor {
+public final class ContinuationProcessor implements Processor {
     private final CompilerLog log;
     private final Scope rootScope;
 

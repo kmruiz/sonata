@@ -14,7 +14,7 @@ import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class SymbolMap implements Processor, SymbolResolver {
+public final class SymbolMap implements Processor, SymbolResolver {
     private final Map<String, SymbolDeclaration> dictionary;
 
     public SymbolMap(Map<String, SymbolDeclaration> dictionary) {

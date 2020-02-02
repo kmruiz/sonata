@@ -164,7 +164,7 @@ public final class DestructuringProcessor implements Processor {
     }
 }
 
-class NodeAndOrder {
+final class NodeAndOrder {
     public final List<Node> nodes;
     public final int order;
 

@@ -20,7 +20,7 @@ import io.sonata.lang.parser.ast.let.LetFunction;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AsyncFunctionProcessor implements Processor {
+public final class AsyncFunctionProcessor implements Processor {
     private final CompilerLog log;
     private final Scope rootScope;
 

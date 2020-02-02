@@ -27,7 +27,7 @@ import java.util.List;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
-public class FunctionCompositionProcessor implements Processor {
+public final class FunctionCompositionProcessor implements Processor {
     private final CompilerLog log;
     private final Scope scope;
 
