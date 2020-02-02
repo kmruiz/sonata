@@ -1,10 +1,10 @@
-value class AssertionStatus(message: string, success: boolean)
+value class AssertionStatus(message: string, failed: boolean)
 value class TestResult(test: string, assertions: AssertionStatus[], failed: boolean)
 
 entity class Test(name: string, execution: any, assertions: AssertionStatus[], failed: boolean) {
     let register(exec: any) = self.execution = exec
     let asserted(status: AssertionStatus) = self.assertions.push(status)
-    let asserted(AssertionStatus(message, false)) = {
+    let asserted(AssertionStatus(message, true)) = {
         self.assertions.push(status)
         self.failed = true
     }

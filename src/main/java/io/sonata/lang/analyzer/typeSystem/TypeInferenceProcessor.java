@@ -16,6 +16,7 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 
 import java.util.List;
@@ -96,7 +97,8 @@ public final class TypeInferenceProcessor implements Processor {
             FunctionCall fc = (FunctionCall) node;
             List<Expression> parameters = fc.arguments.stream().map(e -> this.apply(currentScope, e)).map(e -> (Expression) e).collect(toList());
 
-            return new FunctionCall(fc.receiver, parameters, fc.expressionType);
+            Type inferredType = infer(fc);
+            return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(fc.definition(), inferredType.name()));
         }
 
         if (node instanceof IfElse) {

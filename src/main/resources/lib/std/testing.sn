@@ -9,7 +9,7 @@ entity class Testing(runner: TestRunner) {
         suiteDefinition(let (testName: string, testDefinition: (any) -> any) = {
             let test = Test(testName, null, [], false)
             suite.register(test)
-            test.register(let () = testDefinition(let (message: string, condition: boolean) = test.asserted(AssertionStatus(message, condition))))
+            test.register(let () = testDefinition(let (message: string, condition: boolean) = test.asserted(AssertionStatus(message, condition == false))))
         })
     }
 
