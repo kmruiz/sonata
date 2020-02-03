@@ -1,0 +1,6 @@
+requires std.stream.providers._Provider
+
+entity class _ProvideFromFunction(provider: () -> any) implements _Provider {
+    let poll(): _StreamToken = _StreamValue(provider())
+    let close() = self.stop()
+}

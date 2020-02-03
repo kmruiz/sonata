@@ -1,0 +1,9 @@
+value class _StreamToken(value: any, complete: boolean)
+
+let _StreamValue(value: any): _StreamToken = _StreamToken(value, false)
+let _StreamComplete(): _StreamToken = _StreamToken('', true)
+
+contract _Provider {
+    let poll(): _StreamToken
+    let close()
+}

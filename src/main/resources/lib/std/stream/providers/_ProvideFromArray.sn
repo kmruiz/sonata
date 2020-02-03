@@ -1,0 +1,15 @@
+requires std.stream.providers._Provider
+
+entity class _ProvideFromArray(data: any[], index: number) implements _Provider {
+    let poll(): _StreamToken = if (self.index >= self.data.length) {
+            _StreamComplete()
+        } else {
+            let dataIndex = self.index
+            self.index += 1
+
+            let dataValue = self.data[dataIndex]
+            _StreamValue(dataValue)
+        }
+    }
+    let close() = self.stop()
+}

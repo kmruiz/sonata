@@ -129,6 +129,11 @@ public final class ContinuationProcessor implements Processor {
             return new IfElse(ie.ifElseId, ie.definition, condition, whenTrue, whenFalse);
         }
 
+        if (node instanceof SimpleExpression) {
+            SimpleExpression expr = (SimpleExpression) node;
+            return new SimpleExpression((Expression) apply(scope, expr.leftSide), expr.operator, (Expression) apply(scope, expr.rightSide));
+        }
+
         return node;
     }
 
@@ -175,6 +180,10 @@ public final class ContinuationProcessor implements Processor {
             }
 
             return isInferredTypeEntityClass(scope, fc.receiver);
+        }
+
+        if (expression instanceof Atom) {
+            return expression.representation().equals("self") && scope.inEntityClass();
         }
 
         return false;

@@ -46,6 +46,11 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
             return new LetFunction(let.letId, let.definition, let.letName, let.parameters, let.returnType, (Expression) apply(let.body), false);
         }
 
+        if (node instanceof MethodReference) {
+            MethodReference ref = (MethodReference) node;
+            return new MethodReference((Expression) apply(ref.receiver), ref.methodName);
+        }
+
         if (node instanceof ValueClass) {
             ValueClass vc = (ValueClass) node;
             List<Node> body = vc.body.stream().map(this::apply).collect(Collectors.toList());

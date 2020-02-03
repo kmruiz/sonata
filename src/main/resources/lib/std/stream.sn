@@ -1,75 +1,41 @@
-value class _StreamToken(value: any, complete: boolean)
+requires std.stream.providers._Provider
+requires std.stream.providers._ProvideFromArray
+requires std.stream.providers._ProvideFromFunction
+requires std.stream._FlatMap
+requires std.stream._Map
+requires std.stream._Take
+requires std.stream._WaitForResult
 
-let _StreamValue(value: any): _StreamToken = _StreamToken(value, false)
-let _StreamComplete(): _StreamToken = _StreamToken('', true)
-
-contract _Provider {
-    let poll(): _StreamToken
-}
-
-entity class _ProvideFromArray(data: any[], index: number) implements _Provider {
-    let poll(): _StreamToken = if (self.index >= self.data.length) {
-            _StreamComplete()
-        } else {
-            let dataIndex = self.index
-            self.index += 1
-
-            let dataValue = self.data[dataIndex]
-            _StreamValue(dataValue)
-        }
-    }
-}
-
-entity class _ProvideFromFunction(provider: () -> any) implements _Provider {
-    let poll(): _StreamToken = _StreamValue(provider())
-}
-
-entity class _Take(previous: _Provider, number: number, processed: number) implements _Provider {
-    let poll(): _StreamToken = if (self.processed >= self.number) {
-            _StreamComplete()
-        } else {
-            self.processed += 1
-            previous.poll()
-        }
-    }
-}
-
-entity class _Map(previous: _Provider, fn: (any) -> any) implements _Provider {
-    let poll(): _StreamToken = self.process(previous.poll())
-
-    let process(token: _StreamToken) = _StreamValue(fn(token.value))
-    let process(_StreamToken(value, true)) = _StreamComplete()
-}
-
-entity class _WaitForResult(previous: _Provider) implements _Provider {
-    let poll(): _StreamToken = {
-        let token: _StreamToken = previous.poll()
-        if (token == _StreamComplete()) {
-            []
-        } else {
-            [token.value].concat(self.poll())
-        }
-    }
-}
-
-entity class Stream(chain: _Provider[]) {
+entity class Stream(chain: _Provider[]) implements _Provider {
     let array() = {
-        self.chain.push(_WaitForResult(self.chain[self.chain.length - 1]))
-        let result = self.chain[self.chain.length - 1].poll()
-        self.chain.forEach(?.stop())
-        self.stop()
+        self.chain.push(_WaitForResult(self.last()))
+        let result = self.last().poll()
+        self.close()
         result
     }
 
     let take(num: number) = {
-        self.chain.push(_Take(self.chain[self.chain.length - 1], num, 0))
+        self.chain.push(_Take(self.last(), num, 0))
         self
     }
 
     let map(fn: (any) -> any) = {
-        self.chain.push(_Map(self.chain[self.chain.length - 1], fn))
+        self.chain.push(_Map(self.last(), fn))
         self
     }
+
+    let flatMap(fn: (any) -> Stream) = {
+        self.chain.push(_FlatMap(self.last(), StreamFromArray([]), true, fn))
+        self
+    }
+
+    let poll() = self.last().poll()
+    let close() = {
+        self.chain.forEach(?.close())
+        self.stop()
+    }
+
+    let last() = self.chain[self.chain.length - 1]
 }
 
 let StreamFromArray(array: any[]) = Stream([_ProvideFromArray(array, 0)])

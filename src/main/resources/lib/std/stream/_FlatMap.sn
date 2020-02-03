@@ -1,0 +1,36 @@
+requires std.stream.providers._Provider
+
+entity class _FlatMap(previous: _Provider, currentStream: Stream, isCurrentComplete: boolean, fn: (any) -> Stream) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.isCurrentComplete) {
+            self.currentStream.close()
+            let newValue = self.previous.poll()
+            if (newValue.complete) {
+                self.isCurrentComplete = true
+                _StreamComplete()
+            } else {
+                self.isCurrentComplete = false
+                self.currentStream = self.fn(newValue.value)
+                self.pollCurrent()
+            }
+        } else {
+            self.pollCurrent()
+        }
+    }
+
+    let pollCurrent() = {
+        let streamValue = self.currentStream.poll()
+        if (streamValue.complete) {
+            self.isCurrentComplete = true
+            self.poll()
+        } else {
+            self.isCurrentComplete = false
+            streamValue
+        }
+    }
+
+    let close() = {
+        self.currentStream.close()
+        self.stop()
+    }
+}

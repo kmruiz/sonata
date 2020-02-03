@@ -411,14 +411,14 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitPreface() {
         emit("\"use strict\";");
-        emit("function ECP(c,C){let o={};o._p$=false;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
+        emit("function ECP(c,C){let o={};o._p$=false;o._s$=0;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
         emit("function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
         emit("function _$(p){return Array.prototype.slice.call(p)}");
         emit("function SI(a,b){return setInterval(a,b)}");
         emit("function CI(a){clearInterval(a)}");
-        emit("function ST(s){const F=function(){if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}");
+        emit("function ST(s){const F=function(){s._s$=1;if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}");
         emit("function PS(s,f){return function(){const a=_$(arguments);const v=_P();const p=v[0];const r=v[1];");
-        emit("s._m$.push(function(){r(f.apply(null,a))});");
+        emit("if(s._s$==0)s._m$.push(function(){r(f.apply(null,a))});else r(undefined);");
         emit("return p}}");
         emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
         emit("function VCE(a,b){return JSON.stringify(a)==JSON.stringify(b)}");

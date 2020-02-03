@@ -1,0 +1,13 @@
+requires std.stream.providers._Provider
+
+entity class _Take(previous: _Provider, number: number, processed: number) implements _Provider {
+    let poll(): _StreamToken = if (self.processed >= self.number) {
+            _StreamComplete()
+        } else {
+            self.processed += 1
+            self.previous.poll()
+        }
+    }
+
+    let close() = self.stop()
+}

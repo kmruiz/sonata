@@ -1,0 +1,14 @@
+requires std.stream.providers._Provider
+
+entity class _WaitForResult(previous: _Provider) implements _Provider {
+    let poll(): _StreamToken = {
+        let token: _StreamToken = previous.poll()
+        if (token.complete) {
+            []
+        } else {
+            [token.value].concat(self.poll())
+        }
+    }
+
+    let close() = self.stop()
+}
