@@ -34,8 +34,9 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
             return;
         }
 
+        reportResult(module, result);
+
         if (result.failed) {
-            reportResult(module, result);
             fail("At least one of the assertions failed. Please check the report for more information.");
         }
     }

@@ -1,9 +1,33 @@
+requires std.testing
+requires std.stream
+requires std.range
 requires std.io
 
-entity class Foo(a: () -> any) {
-    let foo() = println(a())
-}
+let json(a: any) = JSON.stringify(a)
 
-let x = Foo(let () = 1)
-x.foo()
-x.stop()
+let _ = Testing(TestRunner([], json -> println))
+
+_.describe('stream', let (it) = {
+    it('should be transformed from and to an array', let (assert) = {
+        let left = StreamFromArray(Range(1, 5)).array()
+        let right = Range(1, 5)
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
+
+    it('should return the taken elements from a function-backed stream', let (assert) = {
+        let left = StreamFromFunction(let () = 1).take(5).array()
+        let right = [1, 1, 1, 1, 1]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
+
+    it('should map elements from a stream', let (assert) = {
+        let left = StreamFromArray([1, 2, 3]).map(let (x) = x * 5).array()
+        let right = [5, 10, 15]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
+})
+
+_.run()
