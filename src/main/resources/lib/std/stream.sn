@@ -6,6 +6,7 @@ requires std.stream._Map
 requires std.stream._Take
 requires std.stream._WaitForResult
 requires std.stream._Zip
+requires std.stream._ZipWithIndex
 requires std.range
 
 entity class Stream(chain: _Provider[]) implements _Provider {
@@ -33,6 +34,11 @@ entity class Stream(chain: _Provider[]) implements _Provider {
 
     let zip(other: Stream) = {
         self.chain.push(_Zip(self.last(), other, false))
+        self
+    }
+
+    let zipWithIndex() = {
+        self.chain.push(_ZipWithIndex(self.last(), 0))
         self
     }
 

@@ -1,0 +1,20 @@
+requires std.stream.providers._Provider
+
+entity class _ZipWithIndex(previous: _Provider, count: number) implements _Provider {
+    let poll(): _StreamToken = {
+        let val = self.previous.poll()
+        let index = self.count
+        self.count += 1
+
+        if (val.complete) {
+            _StreamComplete()
+        } else {
+            _StreamValue([val.value, index])
+        }
+    }
+
+    let close() = {
+        self.previous.close()
+        self.stop()
+    }
+}
