@@ -35,6 +35,13 @@ _.describe('stream', let (it) = {
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
+
+    it('should take only needed elements when doing flatMap on streams and taking a number', let (assert) = {
+        let left = StreamFromArray([1, 2, 3]).flatMap(let (x) = StreamFromArray([x, x * 5])).take(4).array()
+        let right = [1, 5, 2, 10]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
 })
 
 _.run()
