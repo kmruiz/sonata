@@ -8,6 +8,7 @@ package io.sonata.lang.parser.ast.classes.fields;
 
 import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.IdentifierToken;
 import io.sonata.lang.tokenizer.token.SeparatorToken;
@@ -61,6 +62,10 @@ public class SimpleField implements Field {
                 ASTTypeRepresentation next = astTypeRepresentation.consume(token);
                 if (next == null) {
                     return new SimpleField(definition, name, astTypeRepresentation, State.END);
+                }
+
+                if (next instanceof FunctionASTTypeRepresentation && token.representation().equals(")")) {
+                    return new SimpleField(definition, name, next, State.END);
                 }
 
                 return new SimpleField(definition, name, next, State.WAITING_TYPE);

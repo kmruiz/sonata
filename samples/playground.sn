@@ -1,19 +1,9 @@
-requires std.testing
-requires std.stream
-requires std.range
 requires std.io
 
-let json(a: any) = JSON.stringify(a)
+entity class Foo(a: () -> any) {
+    let foo() = println(a())
+}
 
-let _ = Testing(TestRunner([], json -> println))
-
-_.describe('stream', let (it) = {
-    it('should be transformed from and to an array', let (assert) = {
-        let left = StreamFromArray(Range(1, 5)).array()
-        let right = Range(1, 5)
-
-        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
-    })
-})
-
-_.run()
+let x = Foo(let () = 1)
+x.foo()
+x.stop()

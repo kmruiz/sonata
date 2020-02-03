@@ -50,6 +50,9 @@ public class PartialFunctionASTTypeRepresentation implements ASTTypeRepresentati
                             case ",":
                                 return new PartialFunctionASTTypeRepresentation(definition, append(parameters, currentParameterASTTypeRepresentation), EmptyASTTypeRepresentation.instance(), returnASTTypeRepresentation, state);
                             case ")":
+                                if (currentParameterASTTypeRepresentation instanceof EmptyASTTypeRepresentation) {
+                                    return new PartialFunctionASTTypeRepresentation(definition, parameters, EmptyASTTypeRepresentation.instance(), returnASTTypeRepresentation, State.WAITING_FOR_RETURN_TYPE);
+                                }
                                 return new PartialFunctionASTTypeRepresentation(definition, append(parameters, currentParameterASTTypeRepresentation), EmptyASTTypeRepresentation.instance(), returnASTTypeRepresentation, State.WAITING_FOR_RETURN_TYPE);
                             default:
                                 return null;
