@@ -114,6 +114,8 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
             if (Atom.isUnknownAtom(expression)) {
                 return new Atom(expression.definition(), paramNameSupplier.get());
             }
+
+            return expression;
         } else if (expression instanceof MethodReference) {
             MethodReference ref = (MethodReference) expression;
             Expression receiver = parseExpressionForLambda(ref.receiver, paramNameSupplier);

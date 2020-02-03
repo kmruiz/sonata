@@ -1,0 +1,18 @@
+requires std.stream.providers._Provider
+
+entity class _Filter(previous: _Provider, fn: (any) -> boolean) implements _Provider {
+    let poll(): _StreamToken = {
+        let val = self.previous.poll()
+        if (val.complete) {
+            _StreamComplete()
+        } else {
+            if (self.fn(val.value)) {
+                val
+            } else {
+                self.poll()
+            }
+        }
+    }
+
+    let close() = self.stop()
+}

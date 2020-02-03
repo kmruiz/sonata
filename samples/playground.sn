@@ -8,9 +8,9 @@ let json(a: any) = JSON.stringify(a)
 let _ = Testing(TestRunner([], json -> println))
 
 _.describe('stream', let (it) = {
-    it('should zip streams and complete when the first stream completes', let (assert) = {
-        let left = StreamFromRange(1, 5).zip(StreamFromRange(5, 8)).array()
-        let right = [[1, 5], [2, 6], [3, 7]]
+    it('should filter out using a predicate stream contents', let (assert) = {
+        let left = StreamFromRange(1, 100).filter(let (n) = n % 2 == 0).take(5).array()
+        let right = [2, 4, 6, 8, 10]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })

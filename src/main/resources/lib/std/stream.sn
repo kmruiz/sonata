@@ -1,6 +1,7 @@
 requires std.stream.providers._Provider
 requires std.stream.providers._ProvideFromArray
 requires std.stream.providers._ProvideFromFunction
+requires std.stream._Filter
 requires std.stream._FlatMap
 requires std.stream._Map
 requires std.stream._Take
@@ -39,6 +40,11 @@ entity class Stream(chain: _Provider[]) implements _Provider {
 
     let zipWithIndex() = {
         self.chain.push(_ZipWithIndex(self.last(), 0))
+        self
+    }
+
+    let filter(predicate: (any) -> boolean) = {
+        self.chain.push(_Filter(self.last(), predicate))
         self
     }
 

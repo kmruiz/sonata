@@ -56,6 +56,13 @@ _.describe('stream', let (it) = {
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
+
+    it('should filter out using a predicate stream contents', let (assert) = {
+        let left = StreamFromRange(1, 100).filter(let (n) = n % 2 == 0).take(5).array()
+        let right = [2, 4, 6, 8, 10]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
 })
 
 _.run()
