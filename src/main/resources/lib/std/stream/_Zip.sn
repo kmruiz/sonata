@@ -1,0 +1,26 @@
+requires std.stream.providers._Provider
+
+entity class _Zip(previous: _Provider, other: Stream, complete: boolean) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.complete) {
+            _StreamComplete()
+        } else {
+            let all = [ self.previous, self.other ].map(?.poll())
+            let left = all[0]
+            let right = all[1]
+
+            if (left.complete || right.complete) {
+                self.complete = true
+                _StreamComplete()
+            } else {
+                _StreamValue([left.value, right.value])
+            }
+        }
+    }
+
+    let close() = {
+        self.previous.close()
+        self.other.close()
+        self.stop()
+    }
+}

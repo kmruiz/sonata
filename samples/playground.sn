@@ -8,30 +8,9 @@ let json(a: any) = JSON.stringify(a)
 let _ = Testing(TestRunner([], json -> println))
 
 _.describe('stream', let (it) = {
-    it('should be transformed from and to an array', let (assert) = {
-        let left = StreamFromArray(Range(1, 5)).array()
-        let right = Range(1, 5)
-
-        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
-    })
-
-    it('should return the taken elements from a function-backed stream', let (assert) = {
-        let left = StreamFromFunction(let () = 1).take(5).array()
-        let right = [1, 1, 1, 1, 1]
-
-        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
-    })
-
-    it('should map elements from a stream', let (assert) = {
-        let left = StreamFromArray([1, 2, 3]).map(let (x) = x * 5).array()
-        let right = [5, 10, 15]
-
-        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
-    })
-
-    it('should flatMap streams', let (assert) = {
-        let left = StreamFromArray([1, 2, 3]).flatMap(let (x) = StreamFromArray([x, x * 5])).array()
-        let right = [1, 5, 2, 10, 3, 15]
+    it('should zip streams and complete when the first stream completes', let (assert) = {
+        let left = StreamFromRange(1, 5).zip(StreamFromRange(5, 8)).array()
+        let right = [[1, 5], [2, 6], [3, 7]]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })

@@ -69,6 +69,15 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
             return new BlockExpression(block.definition, body);
         }
 
+        if (node instanceof IfElse) {
+            IfElse ifElse = (IfElse) node;
+            Expression condition = (Expression) apply(ifElse.condition);
+            Expression whenTrue = (Expression) apply(ifElse.whenTrue);
+            Expression whenFalse = ifElse.whenFalse == null ? null : (Expression) apply(ifElse.whenFalse);
+
+            return new IfElse(ifElse.ifElseId, ifElse.definition, condition, whenTrue, whenFalse);
+        }
+
         if (node instanceof Expression) {
             return buildLambdaIfNeeded((Expression) node);
         }
