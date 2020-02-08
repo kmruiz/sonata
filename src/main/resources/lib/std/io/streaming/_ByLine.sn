@@ -1,0 +1,21 @@
+entity class _ChannelStreamByLine(buffer: string) implements ReadOnlyIOChannelStreamingStrategy {
+    let splitBuffer(buffer: string, eof: boolean): string[] = {
+        self.buffer += buffer
+        let result = self.buffer.split('\n')
+        let amountSplit = StreamFromArray(result).fold(0, let (a, b) = a + b.length) + result.length
+        self.buffer = self.buffer.substring(amountSplit) || ''
+        if (eof) {
+            if (self.buffer == '') {
+                result
+            } else {
+                let toReturn = result.concat([self.buffer])
+                self.buffer = ''
+                toReturn
+            }
+        } else {
+            result
+        }
+    }
+}
+
+let ChannelStreamByLine() = _ChannelStreamByLine('')

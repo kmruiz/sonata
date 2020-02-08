@@ -1,0 +1,26 @@
+requires std.stream
+
+contract WriteIOChannel {
+    let write(data: any)
+}
+
+contract ReadIOChannel {
+    let readAll()
+    let seek(position: number)
+}
+
+contract TwoWayIOChannel {
+    let write(data: any)
+    let readAll()
+    let seek(position: number)
+}
+
+contract ReadOnlyIOChannelStreamingStrategy {
+    let splitBuffer(buffer: string, eof: boolean): string[]
+}
+
+contract ReadOnlyIOChannel {
+    let readAll()
+    let seek(position: number)
+    let stream(strategy: ReadOnlyIOChannelStreamingStrategy): Stream
+}

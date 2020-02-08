@@ -1,3 +1,7 @@
+requires std.stream
+requires std.io.channel._IOChannel
+requires std.io.streaming._ByLine
+
 contract FileDescriptor {
     let write(buffer: string, position: number)
     let read(buffer: any, offset: number, length: number, position: number)
@@ -7,18 +11,26 @@ let _openFile(path: string, flags: string): FileDescriptor = fsPromises.open(pat
 
 entity class File(path: string) {
     let truncate(): File = self
-    let channel(): IOChannel = IOChannel(_openFile(self.path, 'w+'), Buffer.allocUnsafe(1024))
+    let channel(): TwoWayIOChannel = IOChannel(_openFile(self.path, 'w+'), Buffer.allocUnsafe(1024), 0, false, [])
+    let readChannel(): ReadOnlyIOChannel = IOChannel(_openFile(self.path, 'r'), Buffer.allocUnsafe(1024), 0, false, [])
 
     let close() = self.stop()
 }
 
-entity class IOChannel(descriptor: FileDescriptor, buffer: any, position: number) {
+entity class IOChannel(descriptor: FileDescriptor, buffer: any, position: number, streamingStrategy: ReadOnlyIOChannelStreamingStrategy, streamingBuffer: any[], eofFound: boolean) implements WriteIOChannel, ReadOnlyIOChannel, _Provider {
     let write(data: any) = {
         self.position += data.length
         self.descriptor.write(data, position)
     }
+
     let readAll() = {
         let status = self.descriptor.read(self.buffer, 0, 1024, self.position)
+        self.position += status.bytesRead
+        self.buffer.slice(0, status.bytesRead).toString()
+    }
+
+    let read(bytes: number) = {
+        let status = self.descriptor.read(self.buffer, 0, bytes, self.position)
         self.position += status.bytesRead
         self.buffer.slice(0, status.bytesRead).toString()
     }
@@ -28,8 +40,37 @@ entity class IOChannel(descriptor: FileDescriptor, buffer: any, position: number
         self
     }
 
+    let stream(strategy: ReadOnlyIOChannelStreamingStrategy): Stream = {
+        self.streamingStrategy = strategy
+        Stream([self])
+    }
+
+    let poll(): _StreamToken = {
+        if (self.streamingBuffer.length > 0) {
+            let data = self.streamingBuffer[0]
+            self.streamingBuffer = self.streamingBuffer.slice(1)
+            _StreamValue(data)
+        } else {
+            if (self.eofFound) {
+                _StreamComplete()
+            } else {
+                let buffer = self.read(1024)
+                if (buffer.length < 1024) {
+                    self.eofFound = true
+                    self.streamingBuffer = self.streamingBuffer.concat(self.streamingStrategy.splitBuffer(buffer, true))
+                    self.poll()
+                } else {
+                    self.streamingBuffer = self.streamingBuffer.concat(self.streamingStrategy.splitBuffer(buffer, false))
+                    self.poll()
+                }
+            }
+        }
+    }
+
     let close() = {
         self.descriptor.close()
         self.stop()
+        if (self.streamingStrategy) self.streamingStrategy.stop()
     }
+
 }

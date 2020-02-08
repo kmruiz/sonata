@@ -10,7 +10,7 @@ _.describe('file', let (it) = {
     it('should be written and read', let (assert) = {
         let left = 'Hello World!'
 
-        let file = File('tmp/should_be_written_and_read.txt').truncate()
+        let file = File('tmp/test_1.txt').truncate()
         let channel = file.channel()
 
         channel.write(left)
@@ -24,7 +24,7 @@ _.describe('file', let (it) = {
     it('should be written and read at specific positions', let (assert) = {
         let left = 'World!'
 
-        let file = File('tmp/should_be_written_and_read.txt').truncate()
+        let file = File('tmp/test_2.txt').truncate()
         let channel = file.channel()
 
         channel.write('Hello World!')
@@ -32,6 +32,25 @@ _.describe('file', let (it) = {
 
         channel.close()
         file.close()
+        assert('Content is not the expected: ' + left + ' :: ' + right, left == right)
+    })
+
+    it('should generate a stream based on lines only on readonly channels', let (assert) = {
+        ; setup a new file to read
+        let writeFile = File('tmp/test_3.txt').truncate()
+        let writeChannel = writeFile.channel()
+        writeChannel.write('Hello\nWorld\nFoo\nBar')
+
+        writeChannel.close()
+        writeFile.close()
+        ; Now read as a stream
+        let readFile = File('tmp/test_3.txt')
+        let readChannel = readFile.readChannel()
+
+        let left = ['Hello','World','Foo','Bar']
+        let right = readChannel.stream(ChannelStreamByLine()).array()
+
+        readFile.close()
         assert('Content is not the expected: ' + left + ' :: ' + right, left == right)
     })
 })
