@@ -4,6 +4,7 @@ requires std.stream.providers._ProvideFromFunction
 requires std.stream._Concat
 requires std.stream._Filter
 requires std.stream._FlatMap
+requires std.stream._Fold
 requires std.stream._ForEach
 requires std.stream._Map
 requires std.stream._Take
@@ -19,6 +20,13 @@ entity class Stream(chain: _Provider[]) implements _Provider {
         let result = self.last().poll()
         self.close()
         result
+    }
+
+    let fold(initial: any, apply: (any, any) -> any) = {
+        self.chain.push(_Fold(self.last(), apply, initial, false))
+        let result = self.last().poll()
+        self.close()
+        result.value
     }
 
     let forEach(apply: (any) -> any) = {

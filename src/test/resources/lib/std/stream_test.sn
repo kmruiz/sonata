@@ -77,6 +77,13 @@ _.describe('stream', let (it) = {
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
+
+    it('should fold a stream', let (assert) = {
+        let left = StreamFromFunction(0, let (p) = p + 1).take(100).fold(0, let (a, b) = a + b)
+        let right = 5050
+
+        assert('Values are not equal: ' + left + ' :: ' + right, left == right)
+    })
 })
 
 _.run()

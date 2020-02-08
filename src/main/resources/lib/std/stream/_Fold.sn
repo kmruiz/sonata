@@ -1,0 +1,23 @@
+requires std.stream.providers._Provider
+
+entity class _Fold(previous: _Provider, apply: any, current: any, complete: boolean) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.complete) {
+            _StreamComplete()
+        } else {
+            let token: _StreamToken = previous.poll()
+            if (token.complete) {
+                self.complete = true
+                _StreamValue(self.current)
+            } else {
+                self.current = self.apply(self.current, token.value)
+                self.poll()
+            }
+        }
+    }
+
+    let close() = {
+        self.previous.close()
+        self.stop()
+    }
+}
