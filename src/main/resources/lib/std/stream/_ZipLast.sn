@@ -1,0 +1,37 @@
+requires std.stream.providers._Provider
+requires std.io
+
+entity class _ZipLast(previous: _Provider, other: Stream, leftCompleted: boolean, rightCompleted: boolean, leftDefault: any, rightDefault: any) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.complete()) {
+            _StreamComplete()
+        } else {
+            let all = [ self.previous, self.other ].map(?.poll())
+            let left = all[0]
+            let right = all[1]
+
+            self.whenComplete(left, let () = self.leftCompleted = true)
+            self.whenComplete(right, let () = self.rightCompleted = true)
+
+            if (self.complete()) {
+                _StreamComplete()
+            } else {
+                _StreamValue([ self.valueOrDefault(left, self.leftDefault), self.valueOrDefault(right, self.rightDefault) ])
+            }
+        }
+    }
+
+    let complete() = self.leftCompleted && self.rightCompleted
+
+    let valueOrDefault(token: _StreamToken, defaultVal: any) = token.value
+    let valueOrDefault(_StreamToken(value, true), defaultVal: any) = defaultVal
+
+    let whenComplete(token: _StreamToken, apply: () -> any) = {}
+    let whenComplete(_StreamToken(value, true), apply: () -> any) = apply()
+
+    let close() = {
+        self.previous.close()
+        self.other.close()
+        self.stop()
+    }
+}

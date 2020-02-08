@@ -6,6 +6,8 @@
  */
 package io.sonata.lang.backend.js;
 
+import io.sonata.lang.analyzer.typeSystem.ArrayType;
+import io.sonata.lang.analyzer.typeSystem.FunctionType;
 import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.backend.CompilerBackend;
 import io.sonata.lang.parser.ast.Node;
@@ -251,7 +253,9 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitTypeCheckExpression(TypeCheckExpression typecheck, Context context) {
-        if (typecheck.type == Scope.TYPE_NUMBER) {
+        if (typecheck.type == Scope.TYPE_ANY) {
+            emit("true");
+        } else if (typecheck.type == Scope.TYPE_NUMBER) {
             emit("!isNaN(",typecheck.atom,")");
         } else if (typecheck.type == Scope.TYPE_BOOLEAN) {
             emit("(",typecheck.atom,"===true||",typecheck.atom,"===false)");
@@ -259,14 +263,18 @@ public class JavaScriptBackend implements CompilerBackend {
             emit("Object.prototype.toString.call(",typecheck.atom,") === '[object Object]'");
         } else if (typecheck.type == Scope.TYPE_STRING) {
             emit("(typeof ", typecheck.atom, "=== 'string')");
+        } else if (typecheck.type instanceof ArrayType) {
+            emit(typecheck.atom, ".slice!==undefined");
         } else if (typecheck.type.isValue()) {
-            emit(typecheck.atom, ".class==='",typecheck.type.name(),"'");
+            emit(typecheck.atom, ".class==='", typecheck.type.name(), "'");
         } else if (typecheck.type.isEntity()) {
             emit("(");
             emit(typecheck.atom, ".class==='",typecheck.type.name(),"'");
             emit("||");
             emit(typecheck.atom, ".contracts.indexOf('",typecheck.type.name(),"')!=-1");
             emit(")");
+        } else if (typecheck.type instanceof FunctionType) {
+            emit(typecheck.atom, ".apply!==undefined");
         }
     }
 
@@ -300,7 +308,7 @@ public class JavaScriptBackend implements CompilerBackend {
         }
 
         if (context.isInExpression) {
-            emit("})();");
+            emit("}})();");
         } else {
             emit("}");
         }
@@ -367,12 +375,12 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitMethodReference(MethodReference node, Context context) {
-        emitNode(node.receiver, context);
+        emitNode(node.receiver, context.inExpression());
         emit(".", node.methodName, !context.isInExpression ? ";" : "");
     }
 
     private void emitArrayAccess(ArrayAccess node, Context context) {
-        emitNode(node.receiver, context);
+        emitNode(node.receiver, context.inExpression());
         emit("[");
         emitNode(node.index, context.inExpression());
         emit("]", !context.isInExpression ? ";" : "");

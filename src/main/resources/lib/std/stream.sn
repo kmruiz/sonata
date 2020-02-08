@@ -6,7 +6,8 @@ requires std.stream._FlatMap
 requires std.stream._Map
 requires std.stream._Take
 requires std.stream._WaitForResult
-requires std.stream._Zip
+requires std.stream._ZipFirst
+requires std.stream._ZipLast
 requires std.stream._ZipWithIndex
 requires std.range
 
@@ -33,8 +34,13 @@ entity class Stream(chain: _Provider[]) implements _Provider {
         self
     }
 
-    let zip(other: Stream) = {
-        self.chain.push(_Zip(self.last(), other, false))
+    let zipFirst(other: Stream) = {
+        self.chain.push(_ZipFirst(self.last(), other, false))
+        self
+    }
+
+    let zipLast(other: Stream, defaultLeft: any, defaultRight: any) = {
+        self.chain.push(_ZipLast(self.last(), other, false, false, defaultLeft, defaultRight))
         self
     }
 
@@ -60,4 +66,3 @@ entity class Stream(chain: _Provider[]) implements _Provider {
 let StreamFromArray(array: any[]) = Stream([_ProvideFromArray(array, 0)])
 let StreamFromFunction(fn: (any) -> any) = Stream([_ProvideFromFunction(fn)])
 let StreamFromRange(from: number, to: number) = StreamFromArray(Range(from, to))
-

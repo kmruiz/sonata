@@ -44,8 +44,15 @@ _.describe('stream', let (it) = {
     })
 
     it('should zip streams and complete when the first stream completes', let (assert) = {
-        let left = StreamFromRange(1, 5).zip(StreamFromRange(5, 8)).array()
+        let left = StreamFromRange(1, 5).zipFirst(StreamFromRange(5, 8)).array()
         let right = [[1, 5], [2, 6], [3, 7]]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
+
+    it('should zip streams and complete when both streams complete', let (assert) = {
+        let left = StreamFromRange(1, 3).zipLast(StreamFromRange(5, 10), 0, 0).array()
+        let right = [[1, 5], [2, 6], [0, 7], [0, 8], [0, 9]]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })

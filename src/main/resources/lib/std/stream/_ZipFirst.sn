@@ -1,6 +1,6 @@
 requires std.stream.providers._Provider
 
-entity class _Zip(previous: _Provider, other: Stream, complete: boolean) implements _Provider {
+entity class _ZipFirst(previous: _Provider, other: Stream, complete: boolean) implements _Provider {
     let poll(): _StreamToken = {
         if (self.complete) {
             _StreamComplete()

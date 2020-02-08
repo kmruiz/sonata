@@ -18,8 +18,11 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -132,6 +135,18 @@ public final class ContinuationProcessor implements Processor {
         if (node instanceof SimpleExpression) {
             SimpleExpression expr = (SimpleExpression) node;
             return new SimpleExpression((Expression) apply(scope, expr.leftSide), expr.operator, (Expression) apply(scope, expr.rightSide));
+        }
+
+        if (node instanceof Record) {
+            Record record = (Record) node;
+            Map<Atom, Expression> recordData = record.values.entrySet().stream().map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), (Expression) apply(scope, entry.getValue()))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            return new Record(record.definition, recordData);
+        }
+
+
+        if (node instanceof LiteralArray) {
+            LiteralArray array = (LiteralArray) node;
+            return new LiteralArray(array.definition, array.expressions.stream().map(expr -> (Expression) apply(scope, expr)).collect(toList()));
         }
 
         return node;
