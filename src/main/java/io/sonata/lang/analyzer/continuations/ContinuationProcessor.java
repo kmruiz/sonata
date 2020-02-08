@@ -184,6 +184,7 @@ public final class ContinuationProcessor implements Processor {
                 final Atom name = (Atom) fc.receiver;
 
                 return scope.resolveVariable(name.value)
+                        .filter(variable -> variable.type instanceof FunctionType)
                         .map(variable -> (FunctionType) variable.type)
                         .map(fcType -> fcType.returnType.isEntity())
                         .orElse(false);
