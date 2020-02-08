@@ -70,6 +70,13 @@ _.describe('stream', let (it) = {
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
+
+    it('should concatenate two streams', let (assert) = {
+        let left = StreamFromFunction(0, let (p) = p + 1).take(5).concat(StreamFromFunction(6, let (p) = p - 1).take(5)).array()
+        let right = [1, 2, 3, 4, 5, 5, 4, 3, 2, 1]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
 })
 
 _.run()

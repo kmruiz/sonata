@@ -1,0 +1,33 @@
+requires std.stream.providers._Provider
+
+entity class _Concat(previous: _Provider, stream: Stream, isPreviousComplete: boolean, isCurrentComplete: boolean) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.isPreviousComplete && self.isCurrentComplete) {
+            _StreamComplete()
+        } else {
+            if (self.isPreviousComplete) {
+                let val = self.stream.poll()
+                if (val.complete) {
+                    self.isCurrentComplete = true
+                    _StreamComplete()
+                } else {
+                    val
+                }
+            } else {
+                let val = self.previous.poll()
+                if (val.complete) {
+                    self.isPreviousComplete = true
+                    self.poll()
+                } else {
+                    val
+                }
+            }
+        }
+    }
+
+    let close() = {
+        self.previous.close()
+        self.stream.close()
+        self.stop()
+    }
+}
