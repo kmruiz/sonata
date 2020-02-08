@@ -10,15 +10,14 @@ _.describe('file', let (it) = {
     it('should be written and read', let (assert) = {
         let left = 'Hello World!'
 
-        let file = File('tmp/should_be_written_and_read').truncate()
-        let channel = file.writeReadChannel()
+        let file = File('tmp/should_be_written_and_read.txt').truncate()
+        let channel = file.channel()
 
         channel.write(left)
         let right = channel.readAll()
 
-        channel.stop()
-        file.stop()
-
+        channel.close()
+        file.close()
         assert('Content is not the expected: ' + left + ' :: ' + right, left == right)
     })
 })

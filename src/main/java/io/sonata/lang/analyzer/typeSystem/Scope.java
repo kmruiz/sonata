@@ -103,6 +103,10 @@ public final class Scope {
         return foundScope.orElse(this);
     }
 
+    public boolean isClassLoaded(String className) {
+        return resolveType(new BasicASTTypeRepresentation(null, className)).isPresent();
+    }
+
     public Optional<Type> resolveType(ASTTypeRepresentation astTypeRepresentation) {
         if (astTypeRepresentation instanceof FunctionASTTypeRepresentation) {
             FunctionASTTypeRepresentation fn = (FunctionASTTypeRepresentation) astTypeRepresentation;

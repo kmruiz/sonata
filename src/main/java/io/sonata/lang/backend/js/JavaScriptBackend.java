@@ -63,8 +63,8 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     @Override
-    public void compile(ScriptNode node) throws IOException {
-        emitPreface();
+    public void compile(Scope scope, ScriptNode node) throws IOException {
+        emitPreface(scope);
         emit("(async function (){");
         node.nodes.forEach(e -> this.emitNode(e, new Context(false, false, false)));
         emit("})()");
@@ -419,8 +419,11 @@ public class JavaScriptBackend implements CompilerBackend {
         }
     }
 
-    private void emitPreface() {
+    private void emitPreface(Scope scope) {
         emit("\"use strict\";");
+        if (scope.isClassLoaded("IOChannel")) {
+            emit("const fsPromises=require('fs').promises;");
+        }
         emit("function ECP(c,C){let o={};o._p$=false;o._s$=0;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
         emit("function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
         emit("function _$(p){return Array.prototype.slice.call(p)}");

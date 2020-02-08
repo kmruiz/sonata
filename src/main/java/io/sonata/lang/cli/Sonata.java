@@ -70,7 +70,7 @@ public class Sonata {
                 .doOnError(log::compilerError)
                 .filter(e -> !log.hasErrors())
                 .map(e -> (ScriptNode) e)
-                .doOnNext(backend::compile)
+                .doOnNext(script -> backend.compile(scope, script))
                 .firstElement()
                 .toSingle()
                 .ignoreElement();

@@ -1,9 +1,26 @@
-entity class File(path: string) {
-    let truncate(): File = self
-    let writeReadChannel(): IOChannel = IOChannel(0)
+contract FileDescriptor {
+    let write(buffer: string, position: number)
+    let read(buffer: any, offset: number, length: number, position: number)
 }
 
-entity class IOChannel(descriptor: number) {
-    let write(data: any) = ''
-    let readAll() = ''
+let _openFile(path: string, flags: string): FileDescriptor = fsPromises.open(path, flags)
+
+entity class File(path: string) {
+    let truncate(): File = self
+    let channel(): IOChannel = IOChannel(_openFile(self.path, 'w+'), Buffer.allocUnsafe(1024))
+
+    let close() = self.stop()
+}
+
+entity class IOChannel(descriptor: FileDescriptor, buffer: any) {
+    let write(data: any) = self.descriptor.write(data, 0)
+    let readAll() = {
+        let status = self.descriptor.read(self.buffer, 0, 1024, 0)
+        self.buffer.slice(0, status.bytesRead).toString()
+    }
+
+    let close() = {
+        self.descriptor.close()
+        self.stop()
+    }
 }
