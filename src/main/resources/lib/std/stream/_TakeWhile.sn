@@ -1,0 +1,24 @@
+requires std.stream.providers._Provider
+
+entity class _TakeWhile(previous: _Provider, condition: any, complete: boolean) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.complete) {
+            _StreamComplete()
+        } else {
+            let token: _StreamToken = previous.poll()
+            if (token.complete == false) {
+                if (self.condition(token.value)) {
+                    token
+                } else {
+                    self.complete = true
+                    _StreamComplete()
+                }
+            } else {
+                self.complete = true
+                _StreamComplete()
+            }
+        }
+    }
+
+    let close() = self.stop()
+}

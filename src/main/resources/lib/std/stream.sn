@@ -8,6 +8,7 @@ requires std.stream._Fold
 requires std.stream._ForEach
 requires std.stream._Map
 requires std.stream._Take
+requires std.stream._TakeWhile
 requires std.stream._WaitForResult
 requires std.stream._ZipFirst
 requires std.stream._ZipLast
@@ -37,6 +38,11 @@ entity class Stream(chain: _Provider[]) implements _Provider {
 
     let take(num: number) = {
         self.chain.push(_Take(self.last(), num, 0))
+        self
+    }
+
+    let takeWhile(condition: (any) -> boolean) = {
+        self.chain.push(_TakeWhile(self.last(), condition, false))
         self
     }
 
