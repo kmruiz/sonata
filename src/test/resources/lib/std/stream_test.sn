@@ -16,8 +16,8 @@ _.describe('stream', let (it) = {
     })
 
     it('should return the taken elements from a function-backed stream', let (assert) = {
-        let left = StreamFromFunction(let () = 1).take(5).array()
-        let right = [1, 1, 1, 1, 1]
+        let left = StreamFromFunction(0, let (previous) = previous + 1).take(5).array()
+        let right = [1, 2, 3, 4, 5]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
