@@ -12,11 +12,20 @@ entity class File(path: string) {
     let close() = self.stop()
 }
 
-entity class IOChannel(descriptor: FileDescriptor, buffer: any) {
-    let write(data: any) = self.descriptor.write(data, 0)
+entity class IOChannel(descriptor: FileDescriptor, buffer: any, position: number) {
+    let write(data: any) = {
+        self.position += data.length
+        self.descriptor.write(data, position)
+    }
     let readAll() = {
-        let status = self.descriptor.read(self.buffer, 0, 1024, 0)
+        let status = self.descriptor.read(self.buffer, 0, 1024, self.position)
+        self.position += status.bytesRead
         self.buffer.slice(0, status.bytesRead).toString()
+    }
+
+    let seek(position: number) = {
+        self.position = position
+        self
     }
 
     let close() = {

@@ -14,7 +14,21 @@ _.describe('file', let (it) = {
         let channel = file.channel()
 
         channel.write(left)
-        let right = channel.readAll()
+        let right = channel.seek(0).readAll()
+
+        channel.close()
+        file.close()
+        assert('Content is not the expected: ' + left + ' :: ' + right, left == right)
+    })
+
+    it('should be written and read at specific positions', let (assert) = {
+        let left = 'World!'
+
+        let file = File('tmp/should_be_written_and_read.txt').truncate()
+        let channel = file.channel()
+
+        channel.write('Hello World!')
+        let right = channel.seek(6).readAll()
 
         channel.close()
         file.close()
