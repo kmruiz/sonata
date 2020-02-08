@@ -55,10 +55,6 @@ public final class ContinuationProcessor implements Processor {
 
             fc = new FunctionCall(fc.receiver, fc.arguments.stream().map(arg -> (Expression) apply(scope, arg)).collect(toList()));
 
-            if (scope.isTopLevel()) {
-                return fc;
-            }
-
             if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, fc)) {
                 return new Continuation(fc.definition(), fc, true);
             }
@@ -142,7 +138,6 @@ public final class ContinuationProcessor implements Processor {
             Map<Atom, Expression> recordData = record.values.entrySet().stream().map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), (Expression) apply(scope, entry.getValue()))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             return new Record(record.definition, recordData);
         }
-
 
         if (node instanceof LiteralArray) {
             LiteralArray array = (LiteralArray) node;

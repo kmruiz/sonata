@@ -65,7 +65,9 @@ public class JavaScriptBackend implements CompilerBackend {
     @Override
     public void compile(ScriptNode node) throws IOException {
         emitPreface();
+        emit("(async function (){");
         node.nodes.forEach(e -> this.emitNode(e, new Context(false, false, false)));
+        emit("})()");
         outputWriter.flush();
         outputWriter.close();
     }

@@ -1,0 +1,7 @@
+requires std.stream
+requires std.io
+
+let printRandomValue(v: any[]) = 0
+let printRandomValue([ value, index ]) = println({ index: index, value: value })
+
+StreamFromFunction(1, Math.random).zipWithIndex().take(10).forEach(printRandomValue)
