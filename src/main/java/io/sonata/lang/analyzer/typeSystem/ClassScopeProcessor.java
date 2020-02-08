@@ -16,10 +16,7 @@ import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class ClassScopeProcessor implements Processor {
@@ -51,7 +48,7 @@ public final class ClassScopeProcessor implements Processor {
                     }
                 }).filter(Objects::nonNull).collect(Collectors.toList());
 
-                final EntityClassType type = new EntityClassType(node.definition(), className, Collections.emptyMap(), contracts, Collections.emptyMap());
+                final EntityClassType type = new EntityClassType(node.definition(), className, new HashMap<>(), contracts, new HashMap<>());
                 rootScope.registerType(className, type);
                 rootScope.diveIn((Scoped) node).registerVariable("self", node, type);
             } catch (TypeCanNotBeReassignedException e) {
@@ -63,7 +60,7 @@ public final class ClassScopeProcessor implements Processor {
             ValueClass vc = (ValueClass) node;
             final String className = vc.name;
             try {
-                final ValueClassType type = new ValueClassType(node.definition(), className, Collections.emptyMap(), Collections.emptyMap());
+                final ValueClassType type = new ValueClassType(node.definition(), className, new HashMap<>(), new HashMap<>());
                 rootScope.registerType(className, type);
                 rootScope.diveIn((Scoped) node).registerVariable("self", node, type);
             } catch (TypeCanNotBeReassignedException e) {

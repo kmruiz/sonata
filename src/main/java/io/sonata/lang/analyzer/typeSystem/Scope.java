@@ -38,6 +38,14 @@ public final class Scope {
             this.definition = definition;
             this.type = type;
         }
+
+        @Override
+        public String toString() {
+            return "Variable{" +
+                    "definition=" + definition +
+                    ", type=" + type +
+                    '}';
+        }
     }
 
     private final String anchor;
@@ -121,16 +129,6 @@ public final class Scope {
         return Optional.empty();
     }
 
-    public void enrichType(String name, Type type) {
-        final Type typeInThisScope = typeContext.get(name);
-        if (typeInThisScope == null) {
-            parent.enrichType(name, type);
-            return;
-        }
-
-        typeContext.put(name, type);
-    }
-
     public void registerType(String name, Type type) throws TypeCanNotBeReassignedException {
         final Type typeInThisScope = typeContext.get(name);
         if (typeInThisScope == null) {
@@ -207,7 +205,13 @@ public final class Scope {
         });
     }
 
-    public boolean isTopLevel() {
-        return this.anchor == null;
+    @Override
+    public String toString() {
+        return "Scope{" +
+                "anchor='" + anchor + '\'' +
+                ", children=" + children +
+                ", typeContext=" + typeContext +
+                ", variableContext=" + variableContext +
+                '}';
     }
 }

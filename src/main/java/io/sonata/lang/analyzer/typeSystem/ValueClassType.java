@@ -47,4 +47,9 @@ public final class ValueClassType implements Type {
     public boolean isValue() {
         return true;
     }
+
+    @Override
+    public Map<String, FunctionType> methods() {
+        return methods;
+    }
 }

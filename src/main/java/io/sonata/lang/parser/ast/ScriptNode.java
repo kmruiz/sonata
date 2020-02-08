@@ -50,6 +50,10 @@ public class ScriptNode implements Node {
 
         Node nextNode = null;
         try {
+            if (currentNode == null) {
+                throw new ParserException(nodes.get(nodes.size()-1), "Could not parse token before '" + token.representation() + " '. Please fill a bug with sample code.");
+            }
+
             nextNode = currentNode.consume(token);
             if (nextNode == null) {
                 return new ScriptNode(log, append(nodes, currentNode), RootNode.instance().consume(token), requiresNotifier);
@@ -67,7 +71,6 @@ public class ScriptNode implements Node {
                 throw new IllegalStateException(e);
             }
         }
-
 
         return new ScriptNode(log, nodes, nextNode, requiresNotifier);
     }

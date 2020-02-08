@@ -8,10 +8,13 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.Map;
+
 public interface Type {
     SourcePosition definition();
     String name();
     boolean canBeReassigned();
     boolean isEntity();
     boolean isValue();
+    Map<String, FunctionType> methods();
 }

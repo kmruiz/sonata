@@ -9,6 +9,9 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.Collections;
+import java.util.Map;
+
 public final class ArrayType implements Type {
     public final Type references;
     public final SourcePosition definition;
@@ -41,5 +44,10 @@ public final class ArrayType implements Type {
     @Override
     public boolean isValue() {
         return true;
+    }
+
+    @Override
+    public Map<String, FunctionType> methods() {
+        return Collections.emptyMap();
     }
 }

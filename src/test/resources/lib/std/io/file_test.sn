@@ -1,0 +1,26 @@
+requires std.testing
+requires std.io.file
+requires std.io
+
+let json(a: any) = JSON.stringify(a)
+
+let _ = Testing(TestRunner([], json -> println))
+
+_.describe('file', let (it) = {
+    it('should be written and read', let (assert) = {
+        let left = 'Hello World!'
+
+        let file = File('tmp/should_be_written_and_read').truncate()
+        let channel = file.writeReadChannel()
+
+        channel.write(left)
+        let right = channel.readAll()
+
+        channel.stop()
+        file.stop()
+
+        assert('Content is not the expected: ' + left + ' :: ' + right, left == right)
+    })
+})
+
+_.run()

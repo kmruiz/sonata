@@ -50,4 +50,9 @@ public final class EntityClassType implements Type {
     public boolean isValue() {
         return false;
     }
+
+    @Override
+    public Map<String, FunctionType> methods() {
+        return methods;
+    }
 }

@@ -24,6 +24,11 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
         assertTestsRunSuccessfully("stream");
     }
 
+    @Test
+    public void std_lib_io_file() throws Exception {
+        assertTestsRunSuccessfully("io/file");
+    }
+
     private void assertTestsRunSuccessfully(String module) throws Exception {
         String output = runScriptAndGetOutput("/lib/std/" + module + "_test");
         TestSuiteResult result = null;

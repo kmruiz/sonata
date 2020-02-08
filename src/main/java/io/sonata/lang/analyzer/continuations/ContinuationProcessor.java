@@ -81,19 +81,19 @@ public final class ContinuationProcessor implements Processor {
 
         if (node instanceof EntityClass) {
             EntityClass ec = (EntityClass) node;
-            List<Node> body = ec.body.stream().map(b -> apply(scope.diveIn(ec), b)).collect(toList());
+            List<Node> body = ec.body.stream().map(b -> apply(scope.diveInIfNeeded(ec), b)).collect(toList());
             return new EntityClass(ec.definition, ec.name, ec.definedFields, ec.implementingContracts, body);
         }
 
         if (node instanceof ValueClass) {
             ValueClass vc = (ValueClass) node;
-            List<Node> body = vc.body.stream().map(b -> apply(scope.diveIn(vc), b)).collect(toList());
+            List<Node> body = vc.body.stream().map(b -> apply(scope.diveInIfNeeded(vc), b)).collect(toList());
             return new ValueClass(vc.definition, vc.name, vc.definedFields, body);
         }
 
         if (node instanceof BlockExpression) {
             BlockExpression bc = (BlockExpression) node;
-            List<Expression> body = bc.expressions.stream().map(b -> apply(scope.diveIn(bc), b)).map(b -> (Expression) b).collect(toList());
+            List<Expression> body = bc.expressions.stream().map(b -> apply(scope.diveInIfNeeded(bc), b)).map(b -> (Expression) b).collect(toList());
 
             return new BlockExpression(bc.definition, body);
         }
@@ -105,14 +105,14 @@ public final class ContinuationProcessor implements Processor {
 
         if (node instanceof LetFunction) {
             LetFunction lf = (LetFunction) node;
-            Scope lfScope = scope.diveIn(lf);
+            Scope lfScope = scope.diveInIfNeeded(lf);
 
             return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false);
         }
 
         if (node instanceof Lambda) {
             Lambda ld = (Lambda) node;
-            return new Lambda(ld.lambdaId, ld.definition, ld.parameters, (Expression) apply(scope.diveIn(ld), ld.body), false);
+            return new Lambda(ld.lambdaId, ld.definition, ld.parameters, (Expression) apply(scope.diveInIfNeeded(ld), ld.body), false);
         }
 
         if (node instanceof IfElse) {

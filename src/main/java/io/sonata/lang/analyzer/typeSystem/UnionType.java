@@ -8,7 +8,9 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class UnionType implements Type {
@@ -43,5 +45,10 @@ public final class UnionType implements Type {
     @Override
     public boolean isValue() {
         return types.stream().anyMatch(Type::isValue);
+    }
+
+    @Override
+    public Map<String, FunctionType> methods() {
+        return Collections.emptyMap();
     }
 }

@@ -78,11 +78,7 @@ public final class AsyncFunctionProcessor implements Processor {
             LetFunction lf = (LetFunction) node;
             Scope lfScope = scope.diveIn(lf);
 
-            if (hasContinuations(lf.body)) {
-                return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), true);
-            } else {
-                return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false);
-            }
+            return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), hasContinuations(lf.body));
         }
 
         if (node instanceof Lambda) {

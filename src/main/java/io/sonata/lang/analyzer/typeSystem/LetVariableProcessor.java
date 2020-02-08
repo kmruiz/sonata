@@ -18,6 +18,7 @@ import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.BlockExpression;
+import io.sonata.lang.parser.ast.exp.FunctionCall;
 import io.sonata.lang.parser.ast.exp.IfElse;
 import io.sonata.lang.parser.ast.exp.Lambda;
 import io.sonata.lang.parser.ast.let.LetConstant;
@@ -73,7 +74,8 @@ public final class LetVariableProcessor implements Processor {
             EntityClassType preregisteredClassType = (EntityClassType) incompleteType.get();
             final EntityClassType entityClassType = new EntityClassType(node.definition(), className, fields, preregisteredClassType.contracts, methods);
             List<Type> paramTypes = entity.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
-            classScope.enrichType(className, entityClassType);
+            preregisteredClassType.fields.putAll(fields);
+            preregisteredClassType.methods.putAll(methods);
 
             try {
                 scope.registerVariable(className, node, new FunctionType(entity.definition, className, entityClassType, paramTypes));
@@ -106,7 +108,9 @@ public final class LetVariableProcessor implements Processor {
             }
 
             final ValueClassType vcType = new ValueClassType(node.definition(), className, fields, methods);
-            classScope.enrichType(className, vcType);
+            vcType.fields.putAll(fields);
+            vcType.methods.putAll(methods);
+
             List<Type> paramTypes = vc.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
             try {
                 scope.registerVariable(className, node, new FunctionType(vc.definition, className, vcType, paramTypes));
@@ -165,9 +169,15 @@ public final class LetVariableProcessor implements Processor {
             }
         }
 
+        if (node instanceof FunctionCall) {
+            FunctionCall fc = (FunctionCall) node;
+            apply(fc.receiver);
+            fc.arguments.forEach(arg -> apply(scope, arg));
+        }
+
         if (node instanceof Lambda) {
             Lambda lambda = (Lambda) node;
-            apply(scope, lambda.body);
+            apply(scope.diveIn(lambda), lambda.body);
         }
     }
 

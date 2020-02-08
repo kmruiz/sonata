@@ -45,4 +45,9 @@ public final class ContractType implements Type {
     public boolean isValue() {
         return false;
     }
+
+    @Override
+    public Map<String, FunctionType> methods() {
+        return methods;
+    }
 }

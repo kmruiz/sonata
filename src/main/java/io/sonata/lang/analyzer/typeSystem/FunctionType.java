@@ -10,7 +10,9 @@ package io.sonata.lang.analyzer.typeSystem;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -60,5 +62,10 @@ public final class FunctionType implements Type {
             String name = String.valueOf((char) (base + counter.getAndIncrement()));
             return new SimpleParameter(e.definition(), name, null, SimpleParameter.State.END);
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, FunctionType> methods() {
+        return Collections.emptyMap();
     }
 }

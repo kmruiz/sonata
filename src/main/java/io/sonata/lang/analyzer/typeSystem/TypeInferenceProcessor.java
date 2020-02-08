@@ -63,7 +63,7 @@ public final class TypeInferenceProcessor implements Processor {
             ASTTypeRepresentation typeRepresentation = constant.returnType;
             Type constantType = null;
             if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
-                constantType = infer(constant.body);
+                constantType = infer(scope, constant.body);
             } else {
                 constantType = currentScope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
             }
@@ -77,7 +77,7 @@ public final class TypeInferenceProcessor implements Processor {
             ASTTypeRepresentation typeRepresentation = fn.returnType;
             Type returnType = null;
             if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
-                returnType = infer(fn.body);
+                returnType = infer(scope, fn.body);
             } else {
                 returnType = currentScope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
             }
@@ -97,7 +97,7 @@ public final class TypeInferenceProcessor implements Processor {
             FunctionCall fc = (FunctionCall) node;
             List<Expression> parameters = fc.arguments.stream().map(e -> this.apply(currentScope, e)).map(e -> (Expression) e).collect(toList());
 
-            Type inferredType = infer(fc);
+            Type inferredType = infer(scope, fc);
             return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(fc.definition(), inferredType.name()));
         }
 
@@ -117,10 +117,15 @@ public final class TypeInferenceProcessor implements Processor {
             return new SimpleExpression((Expression) apply(currentScope, expr.leftSide), expr.operator, (Expression) apply(currentScope, expr.rightSide));
         }
 
+        if (node instanceof Lambda) {
+            Lambda lambda = (Lambda) node;
+            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(scope.diveInIfNeeded(lambda), lambda.body), lambda.isAsync);
+        }
+
         return node;
     }
 
-    public Type infer(Expression expression) {
+    public Type infer(Scope scope, Expression expression) {
         if (expression == null) {
             return Scope.TYPE_ANY;
         }
@@ -134,27 +139,41 @@ public final class TypeInferenceProcessor implements Processor {
                 case BOOLEAN:
                     return Scope.TYPE_BOOLEAN;
             }
+
+            return scope.resolveVariable(expression.representation()).map(e -> e.type).orElse(Scope.TYPE_ANY);
         }
 
         if (expression instanceof Lambda) {
             Lambda lambda = (Lambda) expression;
-            return rootScope.resolveType(lambda.type()).orElse(Scope.TYPE_ANY);
+            return scope.resolveType(lambda.type()).orElse(Scope.TYPE_ANY);
         }
 
         if (expression instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) expression;
             if (fc.receiver instanceof Atom) {
                 Atom fnName = (Atom) fc.receiver;
-                return rootScope.resolveVariable(fnName.value)
+                return scope.resolveVariable(fnName.value)
                         .filter(var -> var.type instanceof FunctionType)
                         .map(var -> ((FunctionType) var.type).returnType)
                         .orElse(Scope.TYPE_ANY);
+            }
+
+            if (fc.receiver instanceof MethodReference) {
+                MethodReference methodReference = (MethodReference) fc.receiver;
+                Type receiverType = infer(scope, methodReference.receiver);
+
+                FunctionType methodType = receiverType.methods().get(methodReference.methodName);
+                if (methodType == null) {
+                    return Scope.TYPE_ANY;
+                }
+
+                return methodType.returnType;
             }
         }
 
         if (expression instanceof ArrayAccess) {
             ArrayAccess ac = (ArrayAccess) expression;
-            Type receiverType = infer(ac.receiver);
+            Type receiverType = infer(scope, ac.receiver);
             if (receiverType instanceof ArrayType) {
                 ArrayType arrayType = (ArrayType) receiverType;
                 return arrayType.references;
@@ -165,17 +184,17 @@ public final class TypeInferenceProcessor implements Processor {
 
         if (expression instanceof BlockExpression) {
             BlockExpression be = (BlockExpression) expression;
-            return infer(be.expressions.get(be.expressions.size() - 1));
+            return infer(scope, be.expressions.get(be.expressions.size() - 1));
         }
 
         if (expression instanceof PriorityExpression) {
             PriorityExpression pe = (PriorityExpression) expression;
-            return infer(pe.expression);
+            return infer(scope, pe.expression);
         }
 
         if (expression instanceof IfElse) {
             IfElse ifElse = (IfElse) expression;
-            return infer(ifElse.whenTrue);
+            return infer(scope.diveInIfNeeded(ifElse.whenTrue), ifElse.whenTrue);
         }
 
         return Scope.TYPE_ANY;

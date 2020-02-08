@@ -1,0 +1,9 @@
+entity class File(path: string) {
+    let truncate(): File = self
+    let writeReadChannel(): IOChannel = IOChannel(0)
+}
+
+entity class IOChannel(descriptor: number) {
+    let write(data: any) = ''
+    let readAll() = ''
+}
