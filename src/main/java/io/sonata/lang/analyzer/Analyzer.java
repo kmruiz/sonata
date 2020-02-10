@@ -6,7 +6,7 @@
  */
 package io.sonata.lang.analyzer;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 

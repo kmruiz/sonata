@@ -6,7 +6,7 @@
  */
 package io.sonata.lang.cli.command;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 import io.sonata.lang.backend.js.JavaScriptBackend;
 import io.sonata.lang.cli.Sonata;
 import io.sonata.lang.log.CompilerLog;

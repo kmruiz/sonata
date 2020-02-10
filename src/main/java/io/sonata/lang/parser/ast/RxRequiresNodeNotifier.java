@@ -6,7 +6,7 @@
  */
 package io.sonata.lang.parser.ast;
 
-import io.reactivex.subjects.Subject;
+import io.reactivex.rxjava3.subjects.Subject;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.source.Source;
 
@@ -80,6 +80,6 @@ public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
             return Source.fromPath(file.get().toPath());
         }
 
-        throw new FileNotFoundException("Module " + module + " not found neither in the correct project nor in the requires path:\n" + requiresPaths);
+        throw new FileNotFoundException("Module " + module + " not found neither in the current project nor in the requires path:\n" + requiresPaths);
     }
 }

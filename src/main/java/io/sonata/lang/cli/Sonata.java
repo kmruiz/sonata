@@ -6,10 +6,10 @@
  */
 package io.sonata.lang.cli;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.subjects.ReplaySubject;
-import io.reactivex.subjects.Subject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.continuations.AsyncFunctionProcessor;
 import io.sonata.lang.analyzer.continuations.ContinuationProcessor;
@@ -27,10 +27,11 @@ import io.sonata.lang.parser.ast.RxRequiresNodeNotifier;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.source.Source;
 import io.sonata.lang.tokenizer.Tokenizer;
+import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.HashMap;
 
-import static io.reactivex.BackpressureStrategy.BUFFER;
+import static io.reactivex.rxjava3.core.BackpressureStrategy.BUFFER;
 
 public class Sonata {
     public static Completable compile(CompilerLog log, Flowable<Source> sources, RequiresPaths requiresPaths, CompilerBackend backend) {
@@ -61,9 +62,9 @@ public class Sonata {
         notifier.mainModules(sources.map(e -> e.name).toList().blockingGet());
 
         return sources
-                .concatWith(requires.distinct(s -> s.name).toFlowable(BUFFER))
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)
+                .mergeWith(Sonata.withInlineRequirements(requires))
                 .reduce(Parser.initial(log, notifier), Parser::reduce)
                 .toFlowable()
                 .flatMap(analyzer::apply)
@@ -74,5 +75,14 @@ public class Sonata {
                 .firstElement()
                 .toSingle()
                 .ignoreElement();
+    }
+
+    private static Flowable<Token> withInlineRequirements(Subject<Source> requires) {
+        Tokenizer tokenizer = new Tokenizer();
+
+        return requires.distinct(s -> s.name)
+                .toFlowable(BUFFER)
+                .flatMap(Source::read)
+                .flatMap(tokenizer::process);
     }
 }

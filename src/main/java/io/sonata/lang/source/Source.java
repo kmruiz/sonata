@@ -6,9 +6,9 @@
  */
 package io.sonata.lang.source;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

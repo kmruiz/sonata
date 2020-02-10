@@ -6,7 +6,7 @@
  */
 package io.sonata.lang.tokenizer;
 
-import io.reactivex.Flowable;
+import io.reactivex.rxjava3.core.Flowable;
 import io.sonata.lang.source.SourceCharacter;
 import io.sonata.lang.tokenizer.token.RootToken;
 import io.sonata.lang.tokenizer.token.Token;

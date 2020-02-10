@@ -9,91 +9,91 @@ let _ = Testing(TestRunner([], json -> println))
 
 _.describe('stream', let (it) = {
     it('should be transformed from and to an array', let (assert) = {
-        let left = StreamFromArray(Range(1, 5)).array()
+        let left = Stream.fromArray(Range(1, 5)).array()
         let right = Range(1, 5)
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should return the taken elements from a function-backed stream', let (assert) = {
-        let left = StreamFromFunction(0, ? + 1).take(5).array()
+        let left = Stream.fromSupplier(0, ? + 1).take(5).array()
         let right = [1, 2, 3, 4, 5]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should map elements from a stream', let (assert) = {
-        let left = StreamFromArray([1, 2, 3]).map(? * 5).array()
+        let left = Stream.fromArray([1, 2, 3]).map(? * 5).array()
         let right = [5, 10, 15]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should flatMap streams', let (assert) = {
-        let left = StreamFromArray([1, 2, 3]).flatMap(let (x) = StreamFromArray([x, x * 5])).array()
+        let left = Stream.fromArray([1, 2, 3]).flatMap(let (x) = Stream.fromArray([x, x * 5])).array()
         let right = [1, 5, 2, 10, 3, 15]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should take only needed elements when doing flatMap on streams and taking a number', let (assert) = {
-        let left = StreamFromArray([1, 2, 3]).flatMap(let (x) = StreamFromArray([x, x * 5])).take(4).array()
+        let left = Stream.fromArray([1, 2, 3]).flatMap(let (x) = Stream.fromArray([x, x * 5])).take(4).array()
         let right = [1, 5, 2, 10]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should zip streams and complete when the first stream completes', let (assert) = {
-        let left = StreamFromRange(1, 5).zipFirst(StreamFromRange(5, 8)).array()
+        let left = Stream.fromArray(1, 5).zipFirst(Stream.fromRange(5, 8)).array()
         let right = [[1, 5], [2, 6], [3, 7]]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should zip streams and complete when both streams complete', let (assert) = {
-        let left = StreamFromRange(1, 3).zipLast(StreamFromRange(5, 10), 0, 0).array()
+        let left = Stream.fromRange(1, 3).zipLast(Stream.fromRange(5, 10), 0, 0).array()
         let right = [[1, 5], [2, 6], [0, 7], [0, 8], [0, 9]]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should zipWithIndex stream contents', let (assert) = {
-        let left = StreamFromRange(1, 5).zipWithIndex().array()
+        let left = Stream.fromRange(1, 5).zipWithIndex().array()
         let right = [[1, 0], [2, 1], [3, 2], [4, 3]]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should filter out using a predicate stream contents', let (assert) = {
-        let left = StreamFromFunction(0, ? + 1).filter(? % 2 == 0).take(5).array()
+        let left = Stream.fromSupplier(0, ? + 1).filter(? % 2 == 0).take(5).array()
         let right = [2, 4, 6, 8, 10]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should concatenate two streams', let (assert) = {
-        let left = StreamFromFunction(0, ? + 1).take(5).concat(StreamFromFunction(6, ? - 1).take(5)).array()
+        let left = Stream.fromSupplier(0, ? + 1).take(5).concat(Stream.fromSupplier(6, ? - 1).take(5)).array()
         let right = [1, 2, 3, 4, 5, 5, 4, 3, 2, 1]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should fold a stream', let (assert) = {
-        let left = StreamFromFunction(0, ? + 1).take(100).fold(0, ? + ?)
+        let left = Stream.fromSupplier(0, ? + 1).take(100).fold(0, ? + ?)
         let right = 5050
 
         assert('Values are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should filter in elements while the condition is true', let (assert) = {
-        let left = StreamFromFunction(0, ? + 1).takeWhile(? < 10).array()
+        let left = Stream.fromSupplier(0, ? + 1).takeWhile(? < 10).array()
         let right = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should filter in elements until the upstream is done', let (assert) = {
-        let left = StreamFromFunction(0, ? + 1).take(5).takeWhile(? < 10).array()
+        let left = Stream.fromSupplier(0, ? + 1).take(5).takeWhile(? < 10).array()
         let right = [1, 2, 3, 4, 5]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
