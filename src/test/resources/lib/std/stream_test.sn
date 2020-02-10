@@ -16,14 +16,14 @@ _.describe('stream', let (it) = {
     })
 
     it('should return the taken elements from a function-backed stream', let (assert) = {
-        let left = StreamFromFunction(0, let (previous) = previous + 1).take(5).array()
+        let left = StreamFromFunction(0, ? + 1).take(5).array()
         let right = [1, 2, 3, 4, 5]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should map elements from a stream', let (assert) = {
-        let left = StreamFromArray([1, 2, 3]).map(let (x) = x * 5).array()
+        let left = StreamFromArray([1, 2, 3]).map(? * 5).array()
         let right = [5, 10, 15]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
@@ -65,35 +65,35 @@ _.describe('stream', let (it) = {
     })
 
     it('should filter out using a predicate stream contents', let (assert) = {
-        let left = StreamFromRange(1, 100).filter(let (n) = n % 2 == 0).take(5).array()
+        let left = StreamFromRange(1, 100).filter(? % 2 == 0).take(5).array()
         let right = [2, 4, 6, 8, 10]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should concatenate two streams', let (assert) = {
-        let left = StreamFromFunction(0, let (p) = p + 1).take(5).concat(StreamFromFunction(6, let (p) = p - 1).take(5)).array()
+        let left = StreamFromFunction(0, ? + 1).take(5).concat(StreamFromFunction(6, ? - 1).take(5)).array()
         let right = [1, 2, 3, 4, 5, 5, 4, 3, 2, 1]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should fold a stream', let (assert) = {
-        let left = StreamFromFunction(0, let (p) = p + 1).take(100).fold(0, let (a, b) = a + b)
+        let left = StreamFromFunction(0, ? + 1).take(100).fold(0, ? + ?)
         let right = 5050
 
         assert('Values are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should filter in elements while the condition is true', let (assert) = {
-        let left = StreamFromFunction(0, let (p) = p + 1).takeWhile(let (a) = a < 10).array()
+        let left = StreamFromFunction(0, ? + 1).takeWhile(? < 10).array()
         let right = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
 
     it('should filter in elements until the upstream is done', let (assert) = {
-        let left = StreamFromFunction(0, let (p) = p + 1).take(5).takeWhile(let (a) = a < 10).array()
+        let left = StreamFromFunction(0, ? + 1).take(5).takeWhile(? < 10).array()
         let right = [1, 2, 3, 4, 5]
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)

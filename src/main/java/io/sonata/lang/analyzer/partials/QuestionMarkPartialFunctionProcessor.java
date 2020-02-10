@@ -78,7 +78,12 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
             return new IfElse(ifElse.ifElseId, ifElse.definition, condition, whenTrue, whenFalse);
         }
 
-        if (node instanceof Expression) {
+        if (node instanceof Lambda) {
+            Lambda lambda = (Lambda) node;
+            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body), lambda.isAsync);
+        }
+
+        if (node instanceof SimpleExpression) {
             return buildLambdaIfNeeded((Expression) node);
         }
 
@@ -86,8 +91,8 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
     }
 
     private Node processAnonymousParametersOnFunctionCall(FunctionCall fc) {
-        List<Expression> args = fc.arguments.stream().map(this::buildLambdaIfNeeded).collect(Collectors.toList());
-        return new FunctionCall(fc.receiver, args);
+        List<Expression> args = fc.arguments.stream().map(this::apply).map(e -> (Expression) e).map(this::buildLambdaIfNeeded).collect(Collectors.toList());
+        return new FunctionCall((Expression) apply(fc.receiver), args);
     }
 
     private Expression buildLambdaIfNeeded(Expression expression) {
