@@ -14,11 +14,13 @@ public final class ContractType implements Type {
     public final SourcePosition definition;
     public final String name;
     public final Map<String, FunctionType> methods;
+    public final Map<String, FunctionType> classLevelMethods;
 
-    public ContractType(SourcePosition definition, String name, Map<String, FunctionType> methods) {
+    public ContractType(SourcePosition definition, String name, Map<String, FunctionType> methods, Map<String, FunctionType> classLevelMethods) {
         this.definition = definition;
         this.name = name;
         this.methods = methods;
+        this.classLevelMethods = classLevelMethods;
     }
 
     @Override

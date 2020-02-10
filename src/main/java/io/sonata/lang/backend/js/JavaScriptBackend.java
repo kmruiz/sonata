@@ -12,6 +12,7 @@ import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.backend.CompilerBackend;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
@@ -83,6 +84,10 @@ public class JavaScriptBackend implements CompilerBackend {
 
         if (node instanceof Continuation) {
             emitContinuation((Continuation) node, context);
+        }
+
+        if (node instanceof Contract) {
+            emitContract((Contract) node, context);
         }
 
         if (node instanceof TailExtraction) {
@@ -205,6 +210,15 @@ public class JavaScriptBackend implements CompilerBackend {
         } else {
             emit(")");
         }
+    }
+
+    private void emitContract(Contract node, Context context) {
+        emit("let ", node.name, "={};");
+        emit("(function(self){");
+        node.body.stream()
+                .filter(e -> e instanceof LetFunction && ((LetFunction) e).isClassLevel)
+                .forEach(e -> this.emitNode(e, context.inValueClass()));
+        emit("})(", node.name, ");");
     }
 
     private void emitTrailExtraction(TailExtraction node, Context context) {

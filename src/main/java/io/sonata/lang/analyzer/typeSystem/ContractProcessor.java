@@ -47,14 +47,21 @@ public final class ContractProcessor implements Processor {
     }
 
     private void register(Contract contract) {
-        Map<String, FunctionType> methods = contract.body.stream().map(a -> (LetFunction) a).map(let -> {
+        Map<String, FunctionType> methods = contract.body.stream().map(a -> (LetFunction) a).filter(e -> !e.isClassLevel).map(let -> {
             Type returnType = scope.resolveType(let.returnType).orElse(Scope.TYPE_ANY);
             List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
 
             return new FunctionType(let.definition, let.letName, returnType, parameters);
         }).collect(Collectors.toMap(k -> k.name, v -> v));
 
-        ContractType contractType = new ContractType(contract.definition, contract.name, methods);
+        Map<String, FunctionType> classLevelMethods = contract.body.stream().map(a -> (LetFunction) a).filter(e -> e.isClassLevel).map(let -> {
+            Type returnType = scope.resolveType(let.returnType).orElse(Scope.TYPE_ANY);
+            List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
+
+            return new FunctionType(let.definition, let.letName, returnType, parameters);
+        }).collect(Collectors.toMap(k -> k.name, v -> v));
+
+        ContractType contractType = new ContractType(contract.definition, contract.name, methods, classLevelMethods);
         try {
             scope.registerType(contract.name, contractType);
         } catch (TypeCanNotBeReassignedException e) {
@@ -64,12 +71,14 @@ public final class ContractProcessor implements Processor {
 
     private boolean verify(Contract contract) {
         return contract.body.stream().allMatch(e -> {
-            if (!(e instanceof LetFunction)) {
-                log.syntaxError(new SonataSyntaxError(e, "Contracts only allow let function declarations."));
-                return false;
+            LetFunction letFunction = (LetFunction) e;
+            if (e == null) {
+                if (!letFunction.isClassLevel) {
+                    log.syntaxError(new SonataSyntaxError(e, "Contracts only allow let function declarations."));
+                    return false;
+                }
             } else {
-                LetFunction lf = (LetFunction) e;
-                if (lf.body != null) {
+                if (letFunction.body != null && !letFunction.isClassLevel) {
                     log.syntaxError(new SonataSyntaxError(e, "Contracts only allow let function declarations, meaning let functions without body."));
                     return false;
                 }

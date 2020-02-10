@@ -107,7 +107,7 @@ public final class ContinuationProcessor implements Processor {
             LetFunction lf = (LetFunction) node;
             Scope lfScope = scope.diveInIfNeeded(lf);
 
-            return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false);
+            return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false, lf.isClassLevel);
         }
 
         if (node instanceof Lambda) {

@@ -6,69 +6,63 @@
  */
 package io.sonata.lang.parser.ast.let;
 
-import io.sonata.lang.parser.ast.Scoped;
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
-import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-public class LetFunction implements Expression, Scoped {
-    public final String letId;
-    public final SourcePosition definition;
-    public final String letName;
-    public final List<Parameter> parameters;
-    public final ASTTypeRepresentation returnType;
-    public final Expression body;
-    public final boolean isAsync;
-    public final boolean isClassLevel;
-
-    public LetFunction(String letId, SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body, boolean isAsync, boolean isClassLevel) {
-        this.letId = letId;
-        this.definition = definition;
-        this.letName = letName;
-        this.parameters = parameters;
-        this.returnType = returnType;
-        this.body = body;
-        this.isAsync = isAsync;
-        this.isClassLevel = isClassLevel;
+public class PartialClassLetFunction implements Expression {
+    private enum State {
+        WAITING_LET, WAITING_NAME, WAITING_PARAMS
     }
 
-    public LetFunction(SourcePosition definition, String letName, List<Parameter> parameters, ASTTypeRepresentation returnType, Expression body, boolean isAsync, boolean isClassLevel) {
-        this(UUID.randomUUID().toString(), definition, letName, parameters, returnType, body, isAsync, isClassLevel);
+    public final SourcePosition definition;
+    public final String letName;
+    public final State state;
+
+    private PartialClassLetFunction(SourcePosition definition, String letName, State state) {
+        this.definition = definition;
+        this.letName = letName;
+        this.state = state;
+    }
+
+    public static PartialClassLetFunction initial(SourcePosition definition) {
+        return new PartialClassLetFunction(definition, null, State.WAITING_LET);
     }
 
     @Override
     public String representation() {
-        return "let " + letName + "(" + parameters.stream().map(Parameter::representation).collect(Collectors.joining(", ")) + "): " + returnType.representation() + " = " + body.representation();
+        return "class let " + (letName == null ? "?" : letName);
     }
 
     @Override
     public Expression consume(Token token) {
-        return null;
+        switch (state) {
+            case WAITING_LET:
+                if (!token.representation().equals("let")) {
+                    throw new ParserException(this, "Expecting let keyword, but " + token.representation() + " found.");
+                }
+                return new PartialClassLetFunction(definition, null, State.WAITING_NAME);
+            case WAITING_NAME:
+                return new PartialClassLetFunction(definition, token.representation(), State.WAITING_PARAMS);
+            case WAITING_PARAMS:
+                if (token.representation().equals("(")) {
+                    return PartialLetFunction.initialInClass(definition, letName);
+                }
+                throw new ParserException(this, "class lets can only be functions, not constants.");
+        }
+
+        throw new ParserException(this, "Unexpected token " + token.representation());
     }
 
     @Override
     public ASTTypeRepresentation type() {
-        if (returnType == EmptyASTTypeRepresentation.instance()) {
-            return body.type();
-        }
-
-        return returnType;
+        return null;
     }
 
     @Override
     public SourcePosition definition() {
         return definition;
-    }
-
-    @Override
-    public String scopeId() {
-        return "<" + letId + "> let " + letName;
     }
 }

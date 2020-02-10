@@ -20,4 +20,9 @@ public class ContractTest extends NodeDockerTest {
     public void anEntityClassShouldBeAbleToImplementAContract() throws Exception {
         assertResourceScriptOutputs("Morty: Rick", "contracts/contract-implementation");
     }
+
+    @Test
+    public void aContractShouldAllowFactoryMethods() throws Exception {
+        assertResourceScriptOutputs("Morty: Rick", "contracts/contract-factory");
+    }
 }

@@ -13,6 +13,7 @@ import io.sonata.lang.parser.ast.exp.Atom;
 import io.sonata.lang.parser.ast.exp.CommentNode;
 import io.sonata.lang.parser.ast.exp.EmptyExpression;
 import io.sonata.lang.parser.ast.exp.ifelse.PartialIf;
+import io.sonata.lang.parser.ast.let.PartialClassLetFunction;
 import io.sonata.lang.parser.ast.let.PartialLet;
 import io.sonata.lang.parser.ast.requires.PartialRequiresNode;
 import io.sonata.lang.source.SourcePosition;
@@ -49,6 +50,8 @@ public class RootNode implements Node {
                     return PartialIf.initial(token.sourcePosition());
                 case "contract":
                     return PartialContract.initial(token.sourcePosition());
+                case "class":
+                    return PartialClassLetFunction.initial(token.sourcePosition());
             }
 
             return new Atom(token.sourcePosition(), token.representation());

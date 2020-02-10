@@ -55,7 +55,7 @@ public final class FunctionCompositionProcessor implements Processor {
 
         if (node instanceof LetFunction) {
             LetFunction fn = (LetFunction) node;
-            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body), false);
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body), false, fn.isClassLevel);
         }
 
         if (node instanceof LetConstant) {

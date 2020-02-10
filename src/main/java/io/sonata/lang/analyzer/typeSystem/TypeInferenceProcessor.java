@@ -84,7 +84,7 @@ public final class TypeInferenceProcessor implements Processor {
 
             final List<Type> paramTypes = fn.parameters.stream().map(e -> Scope.TYPE_ANY).collect(toList());
             currentScope.enrichVariable(fn.letName, fn, new FunctionType(node.definition(), fn.letName, returnType, paramTypes));
-            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, typeRepresentation, (Expression) apply(currentScope, fn.body), false);
+            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, typeRepresentation, (Expression) apply(currentScope, fn.body), false, fn.isClassLevel);
         }
 
         if (node instanceof BlockExpression) {
