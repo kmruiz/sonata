@@ -76,12 +76,16 @@ public class CompilerLog {
     }
 
     private String clearRepresentationOf(Node node) {
-        final String representation = node.representation();
-        final int newLineIndex = representation.indexOf("\n");
-        if (newLineIndex == -1) {
-            return representation;
-        } else {
-            return representation.substring(0, newLineIndex) + "...";
+        try {
+            final String representation = node.representation();
+            final int newLineIndex = representation.indexOf("\n");
+            if (newLineIndex == -1) {
+                return representation;
+            } else {
+                return representation.substring(0, newLineIndex) + "...";
+            }
+        } catch (RuntimeException e) {
+            return "";
         }
     }
 

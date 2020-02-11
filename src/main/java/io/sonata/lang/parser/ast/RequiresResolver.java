@@ -6,13 +6,9 @@
  */
 package io.sonata.lang.parser.ast;
 
-import io.sonata.lang.source.Source;
-
 import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 
-public interface RequiresNodeNotifier {
-    void moduleRequired(Source parent,  String module) throws IOException;
-    void mainModules(List<String> modules);
-    void loadedModule(String module);
+public interface RequiresResolver {
+    Optional<ScriptNode> replaceModule(String module) throws IOException;
 }

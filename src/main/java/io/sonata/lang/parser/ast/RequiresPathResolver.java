@@ -6,8 +6,6 @@
  */
 package io.sonata.lang.parser.ast;
 
-import io.reactivex.rxjava3.subjects.Subject;
-import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.source.Source;
 
 import java.io.File;
@@ -16,52 +14,33 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
-public class RxRequiresNodeNotifier implements RequiresNodeNotifier {
-    private final CompilerLog log;
-    private final Subject<Source> sources;
-    private final Set<String> modulesRequested;
-    private final Set<String> modulesFound;
+public class RequiresPathResolver implements RequiresResolver {
+    private final Set<String> loadedModules;
     private final RequiresPaths requiresPaths;
+    private final Function<Source, ScriptNode> parser;
 
-    public RxRequiresNodeNotifier(CompilerLog log, Subject<Source> sources, RequiresPaths requiresPaths) {
-        this.log = log;
-        this.sources = sources;
+    public RequiresPathResolver(RequiresPaths requiresPaths, Function<Source, ScriptNode> parser) {
+        this.loadedModules = new HashSet<>();
         this.requiresPaths = requiresPaths;
-        this.modulesRequested = new HashSet<>();
-        this.modulesFound = new HashSet<>();
+        this.parser = parser;
     }
 
     @Override
-    public void moduleRequired(Source parent, String module) throws IOException {
+    public Optional<ScriptNode> replaceModule(String module) throws IOException {
+        if (loadedModules.contains(module)) {
+            return Optional.empty();
+        }
+
+        loadedModules.add(module);
         if (module.startsWith("std.")) {
-            log.requestedModule(module, true);
-            sources.onNext(resolveStandardModule(module));
-        } else {
-            log.requestedModule(module, false);
-            sources.onNext(resolveExternalModule(module));
+            return Optional.ofNullable(parser.apply(resolveStandardModule(module)));
         }
 
-        modulesRequested.add(module);
-    }
-
-    @Override
-    public void mainModules(List<String> modules) {
-        modulesRequested.addAll(modules);
-    }
-
-    @Override
-    public void loadedModule(String module) {
-        if (!modulesFound.contains(module)) {
-            modulesFound.add(module);
-            log.loadedModule(module);
-            if (modulesFound.size() == modulesRequested.size()) {
-                sources.onComplete();
-            }
-        }
+        return Optional.ofNullable(parser.apply(resolveExternalModule(module)));
     }
 
     private Source resolveStandardModule(String module) {

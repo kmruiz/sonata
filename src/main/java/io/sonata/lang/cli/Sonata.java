@@ -8,30 +8,25 @@ package io.sonata.lang.cli;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.subjects.ReplaySubject;
-import io.reactivex.rxjava3.subjects.Subject;
 import io.sonata.lang.analyzer.Analyzer;
 import io.sonata.lang.analyzer.continuations.AsyncFunctionProcessor;
 import io.sonata.lang.analyzer.continuations.ContinuationProcessor;
 import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.fops.FunctionCompositionProcessor;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
+import io.sonata.lang.analyzer.requires.InlineRequiredModuleProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.analyzer.typeSystem.*;
 import io.sonata.lang.backend.CompilerBackend;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.Parser;
-import io.sonata.lang.parser.ast.RequiresNodeNotifier;
+import io.sonata.lang.parser.ast.RequiresPathResolver;
 import io.sonata.lang.parser.ast.RequiresPaths;
-import io.sonata.lang.parser.ast.RxRequiresNodeNotifier;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.source.Source;
 import io.sonata.lang.tokenizer.Tokenizer;
-import io.sonata.lang.tokenizer.token.Token;
 
 import java.util.HashMap;
-
-import static io.reactivex.rxjava3.core.BackpressureStrategy.BUFFER;
 
 public class Sonata {
     public static Completable compile(CompilerLog log, Flowable<Source> sources, RequiresPaths requiresPaths, CompilerBackend backend) {
@@ -39,6 +34,7 @@ public class Sonata {
         Tokenizer tokenizer = new Tokenizer();
         Scope scope = Scope.root();
         Analyzer analyzer = new Analyzer(log,
+                new InlineRequiredModuleProcessor(log, new RequiresPathResolver(requiresPaths, source -> parseScript(log, source))),
                 symbolMap,
                 new QuestionMarkPartialFunctionProcessor(),
                 new ContractProcessor(log, scope),
@@ -56,16 +52,10 @@ public class Sonata {
                 new AsyncFunctionProcessor(log, scope)
         );
 
-        Subject<Source> requires = ReplaySubject.create();
-        RequiresNodeNotifier notifier = new RxRequiresNodeNotifier(log, requires, requiresPaths);
-
-        notifier.mainModules(sources.map(e -> e.name).toList().blockingGet());
-
         return sources
                 .flatMap(Source::read)
                 .flatMap(tokenizer::process)
-                .mergeWith(Sonata.withInlineRequirements(requires))
-                .reduce(Parser.initial(log, notifier), Parser::reduce)
+                .reduce(Parser.initial(log), Parser::reduce)
                 .toFlowable()
                 .flatMap(analyzer::apply)
                 .doOnError(log::compilerError)
@@ -77,12 +67,13 @@ public class Sonata {
                 .ignoreElement();
     }
 
-    private static Flowable<Token> withInlineRequirements(Subject<Source> requires) {
+    private static ScriptNode parseScript(CompilerLog log, Source source) {
         Tokenizer tokenizer = new Tokenizer();
 
-        return requires.distinct(s -> s.name)
-                .toFlowable(BUFFER)
-                .flatMap(Source::read)
-                .flatMap(tokenizer::process);
+        return source.read()
+                .flatMap(tokenizer::process)
+                .reduce(Parser.initial(log), Parser::reduce)
+                .cast(ScriptNode.class)
+                .blockingGet();
     }
 }

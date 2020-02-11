@@ -159,12 +159,12 @@ public class JavaScriptBackend implements CompilerBackend {
         String internalFunctionName = base.letName;
         List<String> parameterNames = base.parameters.stream().map(e -> (SimpleParameter) e).map(e -> e.name).collect(Collectors.toList());
 
-        if (context.isInEntityClass) {
+        if (context.isInEntityClass && !base.isClassLevel) {
             internalFunctionName += "$";
             emitEnqueueFunctionFor(base.letName, internalFunctionName);
         }
 
-        if (context.isInValueClass) {
+        if (context.isInValueClass || base.isClassLevel) {
             emit("self.");
             emit(base.letName);
             emit("=");
@@ -217,7 +217,7 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("(function(self){");
         node.body.stream()
                 .filter(e -> e instanceof LetFunction && ((LetFunction) e).isClassLevel)
-                .forEach(e -> this.emitNode(e, context.inValueClass()));
+                .forEach(e -> this.emitNode(e, context.inEntityClass()));
         emit("})(", node.name, ");");
     }
 

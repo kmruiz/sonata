@@ -8,11 +8,9 @@ package io.sonata.lang.parser.ast;
 
 import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.log.CompilerLog;
-import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,17 +21,15 @@ public class ScriptNode implements Node {
     public final CompilerLog log;
     public final List<Node> nodes;
     public final Node currentNode;
-    public final RequiresNodeNotifier requiresNotifier;
 
-    public ScriptNode(CompilerLog log, List<Node> nodes, Node currentNode, RequiresNodeNotifier requiresNotifier) {
+    public ScriptNode(CompilerLog log, List<Node> nodes, Node currentNode) {
         this.log = log;
         this.nodes = nodes;
         this.currentNode = currentNode;
-        this.requiresNotifier = requiresNotifier;
     }
 
-    public static ScriptNode initial(CompilerLog log, RequiresNodeNotifier notifier) {
-        return new ScriptNode(log, emptyList(), RootNode.instance(), notifier);
+    public static ScriptNode initial(CompilerLog log) {
+        return new ScriptNode(log, emptyList(), RootNode.instance());
     }
 
     @Override
@@ -43,11 +39,6 @@ public class ScriptNode implements Node {
 
     @Override
     public Node consume(Token token) {
-        if (token.representation().equals("\0")) {
-            requiresNotifier.loadedModule(token.sourcePosition().source.name);
-            return this;
-        }
-
         Node nextNode = null;
         try {
             if (currentNode == null) {
@@ -56,23 +47,14 @@ public class ScriptNode implements Node {
 
             nextNode = currentNode.consume(token);
             if (nextNode == null) {
-                return new ScriptNode(log, append(nodes, currentNode), RootNode.instance().consume(token), requiresNotifier);
+                return new ScriptNode(log, append(nodes, currentNode), RootNode.instance().consume(token));
             }
         } catch (ParserException e) {
             log.syntaxError(e.syntaxError());
             nextNode = new PanicNode(token.sourcePosition());
         }
 
-        if (nextNode instanceof RequiresNode) {
-            try {
-                requiresNotifier.moduleRequired(token.sourcePosition().source, ((RequiresNode) nextNode).module);
-                return new ScriptNode(log, nodes, RootNode.instance(), requiresNotifier);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
-        return new ScriptNode(log, nodes, nextNode, requiresNotifier);
+        return new ScriptNode(log, nodes, nextNode);
     }
 
     @Override

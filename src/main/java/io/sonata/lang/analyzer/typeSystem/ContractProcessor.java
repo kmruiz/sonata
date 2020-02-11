@@ -71,17 +71,15 @@ public final class ContractProcessor implements Processor {
 
     private boolean verify(Contract contract) {
         return contract.body.stream().allMatch(e -> {
-            LetFunction letFunction = (LetFunction) e;
-            if (e == null) {
-                if (!letFunction.isClassLevel) {
-                    log.syntaxError(new SonataSyntaxError(e, "Contracts only allow let function declarations."));
-                    return false;
-                }
-            } else {
-                if (letFunction.body != null && !letFunction.isClassLevel) {
+            if (e instanceof LetFunction) {
+                LetFunction letFunction = (LetFunction) e;
+                if (!letFunction.isClassLevel && letFunction.body != null) {
                     log.syntaxError(new SonataSyntaxError(e, "Contracts only allow let function declarations, meaning let functions without body."));
                     return false;
                 }
+            } else {
+                log.syntaxError(new SonataSyntaxError(e, "Contracts only allow let function declarations."));
+                return false;
             }
 
             return true;

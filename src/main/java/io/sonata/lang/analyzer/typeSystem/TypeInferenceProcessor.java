@@ -43,7 +43,7 @@ public final class TypeInferenceProcessor implements Processor {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
             List<Node> nodes = script.nodes.stream().map(e -> this.apply(currentScope, e)).collect(toList());
-            return new ScriptNode(script.log, nodes, script.currentNode, script.requiresNotifier);
+            return new ScriptNode(script.log, nodes, script.currentNode);
         }
 
         if (node instanceof EntityClass) {

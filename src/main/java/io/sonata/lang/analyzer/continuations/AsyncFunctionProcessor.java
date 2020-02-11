@@ -37,7 +37,7 @@ public final class AsyncFunctionProcessor implements Processor {
     public Node apply(Scope scope, Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.log, script.nodes.stream().map(n -> this.apply(scope, n)).collect(Collectors.toList()), script.currentNode, script.requiresNotifier);
+            return new ScriptNode(script.log, script.nodes.stream().map(n -> this.apply(scope, n)).collect(Collectors.toList()), script.currentNode);
         }
 
         if (node instanceof FunctionCall) {

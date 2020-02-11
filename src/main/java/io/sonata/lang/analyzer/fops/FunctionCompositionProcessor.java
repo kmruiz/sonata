@@ -40,7 +40,7 @@ public final class FunctionCompositionProcessor implements Processor {
     public Node apply(Node node) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(toList()), script.currentNode, script.requiresNotifier);
+            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(toList()), script.currentNode);
         }
 
         if (node instanceof EntityClass) {

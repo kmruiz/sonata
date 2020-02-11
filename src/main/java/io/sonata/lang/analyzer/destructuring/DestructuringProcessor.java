@@ -63,7 +63,7 @@ public final class DestructuringProcessor implements Processor {
             return e;
         }).collect(Collectors.toList());
 
-        return new ScriptNode(node.log, reduceFunctionsIfAny(nodes), node.currentNode, node.requiresNotifier);
+        return new ScriptNode(node.log, reduceFunctionsIfAny(nodes), node.currentNode);
     }
 
     private List<Node> reduceFunctionsIfAny(List<Node> nodes) {
