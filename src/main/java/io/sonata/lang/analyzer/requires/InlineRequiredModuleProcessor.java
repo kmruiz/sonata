@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class InlineRequiredModuleProcessor implements ProcessorIterator {
+public final class InlineRequiredModuleProcessor implements ProcessorIterator {
     private final CompilerLog log;
     private final RequiresResolver requiresResolver;
 
@@ -138,12 +138,12 @@ public class InlineRequiredModuleProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetConstant node) {
+    public Node apply(Processor parent, Scope scope, LetConstant node, Expression body) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetFunction node) {
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
         return node;
     }
 

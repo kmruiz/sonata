@@ -39,8 +39,8 @@ public interface ProcessorIterator {
     Node apply(Processor parent, Scope scope, RequiresNode node);
     Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver);
     Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body);
-    Node apply(Processor parent, Scope scope, LetConstant node);
-    Node apply(Processor parent, Scope scope, LetFunction node);
+    Node apply(Processor parent, Scope scope, LetConstant node, Expression body);
+    Node apply(Processor parent, Scope scope, LetFunction node, Expression body);
     Expression apply(Processor parent, Scope scope, Lambda node, Expression body);
     Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse);
     Expression apply(Processor parent, Scope scope, Continuation node, Expression body);

@@ -158,11 +158,17 @@ public class ProcessorWrapper implements Processor {
         }
 
         if (node instanceof LetConstant) {
-            return iterator.apply(this, scope.diveInIfNeeded(node), (LetConstant) node);
+            LetConstant letConstant = (LetConstant) node;
+            Expression body = (Expression) this.apply(scope.diveInIfNeeded(node), letConstant.body);
+
+            return iterator.apply(this, scope.diveInIfNeeded(node), letConstant, body);
         }
 
         if (node instanceof LetFunction) {
-            return iterator.apply(this, scope.diveInIfNeeded(node), (LetFunction) node);
+            LetFunction letFn = (LetFunction) node;
+            Expression body = (Expression) this.apply(scope.diveInIfNeeded(node), letFn.body);
+
+            return iterator.apply(this, scope.diveInIfNeeded(node), letFn, body);
         }
 
         if (node instanceof Lambda) {
@@ -186,7 +192,7 @@ public class ProcessorWrapper implements Processor {
             return iterator.apply(this, scope.diveInIfNeeded(node), continuation, body);
         }
 
-        if (node instanceof RootNode) {
+        if (node instanceof RootNode || node == null) {
             return node;
         }
 

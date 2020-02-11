@@ -49,7 +49,7 @@ public class Sonata {
                 new DestructuringProcessor(symbolMap, scope),
                 new FunctionCompositionProcessor(log, scope),
                 new ContinuationProcessor(log, scope),
-                new AsyncFunctionProcessor(log, scope)
+                AsyncFunctionProcessor.processorInstance(scope)
         );
 
         return sources
