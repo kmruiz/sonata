@@ -34,7 +34,7 @@ public class Sonata {
         Tokenizer tokenizer = new Tokenizer();
         Scope scope = Scope.root();
         Analyzer analyzer = new Analyzer(log,
-                new InlineRequiredModuleProcessor(log, new RequiresPathResolver(requiresPaths, source -> parseScript(log, source))),
+                InlineRequiredModuleProcessor.processorInstance(scope, log, new RequiresPathResolver(requiresPaths, source -> parseScript(log, source))),
                 symbolMap,
                 new QuestionMarkPartialFunctionProcessor(),
                 new ContractProcessor(log, scope),
