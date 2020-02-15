@@ -84,7 +84,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Expression apply(Processor processor, Scope scope, PriorityExpression node, Expression content, Node parent) {
-        return new PriorityExpression(content);
+        return buildLambdaIfNeeded(new PriorityExpression(content));
     }
 
     @Override
@@ -94,7 +94,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Expression apply(Processor processor, Scope scope, SimpleExpression node, Expression left, Expression right, Node parent) {
-        return new SimpleExpression(left, node.operator, right);
+        return buildLambdaIfNeeded(new SimpleExpression(left, node.operator, right));
     }
 
     @Override
