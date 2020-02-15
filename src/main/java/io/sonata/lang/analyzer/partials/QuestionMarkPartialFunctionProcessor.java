@@ -188,6 +188,9 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
             Expression rcv = parseExpressionForLambda(fc.receiver, paramNameSupplier);
             List<Expression> args = fc.arguments.stream().map(e -> parseExpressionForLambda(e, paramNameSupplier)).collect(Collectors.toList());
             return new FunctionCall(rcv, args);
+        } else if (expression instanceof PriorityExpression) {
+            PriorityExpression expr = (PriorityExpression) expression;
+            return new PriorityExpression(parseExpressionForLambda(expr.expression, paramNameSupplier));
         }
 
         return expression;
