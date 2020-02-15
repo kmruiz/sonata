@@ -7,115 +7,165 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
+import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public final class PropertyVisibilityProcessor implements Processor {
-    private final Scope scope;
+public final class PropertyVisibilityProcessor implements ProcessorIterator {
     private final CompilerLog log;
 
-    public PropertyVisibilityProcessor(CompilerLog log, Scope scope) {
-        this.scope = scope;
+    public static Processor processorInstance(Scope scope, CompilerLog log) {
+        return new ProcessorWrapper(scope, "PROPERTY VISIBILITY",
+                new PropertyVisibilityProcessor(log)
+        );
+    }
+
+    public PropertyVisibilityProcessor(CompilerLog log) {
         this.log = log;
     }
 
     @Override
-    public Node apply(Node node) {
-        apply(scope, node, false);
-        return node;
-    }
-
-    private void apply(Scope scope, Node node, boolean inFunctionCall) {
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            script.nodes.parallelStream().forEach(n -> this.apply(scope.diveInIfNeeded(n), n, false));
-        }
-
-        if (node instanceof EntityClass) {
-            EntityClass entityClass = (EntityClass) node;
-            entityClass.body.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b, false));
-        }
-
-        if (node instanceof ValueClass) {
-            ValueClass valueClass = (ValueClass) node;
-            valueClass.body.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b, false));
-        }
-
-        if (node instanceof LetFunction) {
-            LetFunction fn = (LetFunction) node;
-            fn.parameters.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b, false));
-            apply(scope.diveInIfNeeded(fn.body), fn.body, false);
-        }
-
-        if (node instanceof LetConstant) {
-            LetConstant constant = (LetConstant) node;
-            apply(scope.diveInIfNeeded(constant.body), constant.body, false);
-        }
-
-        if (node instanceof Lambda) {
-            Lambda lambda = (Lambda) node;
-            apply(scope.diveInIfNeeded(lambda.body), lambda.body, false);
-        }
-
-        if (node instanceof IfElse) {
-            IfElse ifElse = (IfElse) node;
-            apply(scope.diveInIfNeeded(ifElse.condition), ifElse.condition, false);
-            apply(scope.diveInIfNeeded(ifElse.whenTrue), ifElse.whenTrue, false);
-            apply(scope.diveInIfNeeded(ifElse.whenFalse), ifElse.whenFalse, false);
-        }
-
-        if (node instanceof BlockExpression) {
-            BlockExpression block = (BlockExpression) node;
-            block.expressions.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b, false));
-        }
-
-        if (node instanceof SimpleExpression) {
-            SimpleExpression expr = (SimpleExpression) node;
-            apply(scope.diveInIfNeeded(expr.leftSide), expr.leftSide, false);
-            apply(scope.diveInIfNeeded(expr.rightSide), expr.rightSide, false);
-        }
-
-        if (node instanceof FunctionCall) {
-            FunctionCall fc = (FunctionCall) node;
-            apply(scope.diveInIfNeeded(fc.receiver), fc.receiver, true);
-            fc.arguments.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b, false));
-        }
-
-        if (node instanceof MethodReference) {
-            MethodReference ref = (MethodReference) node;
-            validate(scope, ref, inFunctionCall);
-        }
-    }
-
-    private void validate(Scope scope, MethodReference ref, boolean inFunctionCall) {
-        if (ref.receiver instanceof Atom) {
-            Atom receiver = (Atom) ref.receiver;
-
-            if (receiver.value.equals("self")) {
-                return;
-            }
-
-            final Optional<Scope.Variable> variable = scope.resolveVariable(receiver.value);
-
-            if (variable.isPresent() && variable.get().type.isEntity() && !inFunctionCall) {
-                log.syntaxError(new SonataSyntaxError(ref, "It's forbidden to access properties of another entity instance."));
-            }
-        } else {
-            apply(scope,ref.receiver,false);
-        }
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
     }
 
     @Override
-    public String phase() {
-        return "PROPERTY VISIBILITY";
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return new FunctionCall(receiver, arguments, node.expressionType);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        validate(scope, node);
+        return new MethodReference(receiver, node.methodName);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
+    }
+
+    private void validate(Scope scope, MethodReference ref) {
+        Atom receiver = (Atom) ref.receiver;
+
+        if (receiver.value.equals("self")) {
+            return;
+        }
+
+        final Optional<Scope.Variable> variable = scope.resolveVariable(receiver.value);
+        if (variable.isPresent() && variable.get().type.isEntity()) {
+            log.syntaxError(new SonataSyntaxError(ref, "It's forbidden to access properties of another entity instance."));
+        }
     }
 }

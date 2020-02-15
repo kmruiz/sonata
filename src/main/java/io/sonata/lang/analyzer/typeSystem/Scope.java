@@ -100,7 +100,13 @@ public final class Scope {
         final String anchorRepresentation = anchor.scopeId();
         final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
 
-        return foundScope.orElse(this);
+        if (!foundScope.isPresent()) {
+            Scope scope = new Scope(anchorRepresentation, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
+            children.add(scope);
+            return scope;
+        }
+
+        return foundScope.get();
     }
 
     public boolean isClassLoaded(String className) {

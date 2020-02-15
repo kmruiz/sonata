@@ -7,178 +7,235 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.exp.BlockExpression;
-import io.sonata.lang.parser.ast.exp.FunctionCall;
-import io.sonata.lang.parser.ast.exp.IfElse;
-import io.sonata.lang.parser.ast.exp.Lambda;
+import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class LetVariableProcessor implements Processor {
+public final class LetVariableProcessor implements ProcessorIterator {
     private final CompilerLog log;
-    private final Scope scope;
 
-    public LetVariableProcessor(CompilerLog log, Scope scope) {
+    public static Processor processorInstance(Scope scope, CompilerLog log) {
+        return new ProcessorWrapper(scope, "LET PROCESSING",
+                new LetVariableProcessor(log)
+        );
+    }
+
+    public LetVariableProcessor(CompilerLog log) {
         this.log = log;
-        this.scope = scope;
     }
 
     @Override
-    public Node apply(Node node) {
-        apply(scope, node);
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
+    }
 
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return new FunctionCall(receiver, arguments, node.expressionType);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        Map<String, FunctionType> methods = new HashMap<>();
+        Map<String, Type> fields = new HashMap<>();
+
+        String className = entityClass.name;
+
+        entityClass.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
+                registerFields(classScope, entityClass, fields, field)
+        );
+
+        entityClass.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
+                registerMethods(classScope, methods, method)
+        );
+
+        final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(entityClass.definition, className));
+        if (!incompleteType.isPresent() || !(incompleteType.get() instanceof EntityClassType)) {
+            throw new ParserException(entityClass, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
+        }
+
+        EntityClassType preregisteredClassType = (EntityClassType) incompleteType.get();
+        final EntityClassType entityClassType = new EntityClassType(entityClass.definition(), className, fields, preregisteredClassType.contracts, methods);
+        List<Type> paramTypes = entityClass.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
+        preregisteredClassType.fields.putAll(fields);
+        preregisteredClassType.methods.putAll(methods);
+
+        try {
+            classScope.registerVariable(className, entityClass, new FunctionType(entityClass.definition, className, entityClassType, paramTypes));
+        } catch (TypeCanNotBeReassignedException e) {
+            log.syntaxError(new SonataSyntaxError(entityClass, "Redefined entity class " + className + ". It was initially defined in " + e.initialAssignment()));
+        }
+
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        Map<String, Type> fields = new HashMap<>();
+        Map<String, FunctionType> methods = new HashMap<>();
+
+        String className = valueClass.name;
+
+        valueClass.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
+                registerFields(classScope, valueClass, fields, field)
+        );
+
+        valueClass.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
+                registerMethods(classScope, methods, method)
+        );
+
+        final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(valueClass.definition, className));
+        if (!incompleteType.isPresent()) {
+            throw new ParserException(valueClass, "Somehow we didn't manage to pre-register this value class. Please fill a bug with a sample code.");
+        }
+
+        final ValueClassType vcType = new ValueClassType(valueClass.definition(), className, fields, methods);
+        vcType.fields.putAll(fields);
+        vcType.methods.putAll(methods);
+
+        List<Type> paramTypes = valueClass.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
+        try {
+            classScope.registerVariable(className, valueClass, new FunctionType(valueClass.definition, className, vcType, paramTypes));
+        } catch (TypeCanNotBeReassignedException e) {
+            log.syntaxError(new SonataSyntaxError(valueClass, "Redefined value class " + className + ". It was initially defined in " + e.initialAssignment()));
+        }
+
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
         return node;
     }
 
-    private void apply(Scope scope, Node node) {
-        if (node instanceof ScriptNode) {
-            ((ScriptNode) node).nodes.forEach(child -> apply(scope, child));
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        try {
+            scope.registerVariable(constant.letName, constant, scope.resolveType(constant.returnType).orElse(scope.resolveType(constant.body.type()).orElse(Scope.TYPE_ANY)));
+        } catch (TypeCanNotBeReassignedException e) {
+            log.syntaxError(new SonataSyntaxError(constant, "Variable '" + constant.letName + "' has been already defined. Found on " + e.initialAssignment()));
         }
 
-        if (node instanceof EntityClass) {
-            Map<String, FunctionType> methods = new HashMap<>();
-            Map<String, Type> fields = new HashMap<>();
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
 
-            Scope classScope = scope.diveIn((Scoped) node);
-            EntityClass entity = (EntityClass) node;
-            String className = entity.name;
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        try {
+            Type retType = scope.resolveType(node.returnType).orElse(Scope.TYPE_ANY);
+            List<Type> paramTypes = node.parameters.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
 
-            entity.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
-                    registerFields(classScope, entity, fields, field)
-            );
+            scope.registerVariable(node.letName, node, new FunctionType(node.definition, node.letName, retType, paramTypes));
+        } catch (TypeCanNotBeReassignedException e) {
+            // It's fine, let functions can be overloaded
+        }
 
-            entity.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
-                    registerMethods(classScope, methods, method)
-            );
-
-            final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(entity.definition, className));
-            if (!incompleteType.isPresent() || !(incompleteType.get() instanceof EntityClassType)) {
-                throw new ParserException(node, "Somehow we didn't manage to pre-register this entity class. Please fill a bug with a sample code.");
-            }
-
-            EntityClassType preregisteredClassType = (EntityClassType) incompleteType.get();
-            final EntityClassType entityClassType = new EntityClassType(node.definition(), className, fields, preregisteredClassType.contracts, methods);
-            List<Type> paramTypes = entity.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
-            preregisteredClassType.fields.putAll(fields);
-            preregisteredClassType.methods.putAll(methods);
-
+        Scope letScope = scope.diveIn(node);
+        node.parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
+            String paramName = ((SimpleParameter) parameter).name;
             try {
-                scope.registerVariable(className, node, new FunctionType(entity.definition, className, entityClassType, paramTypes));
+                letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astTypeRepresentation).orElse(Scope.TYPE_ANY));
             } catch (TypeCanNotBeReassignedException e) {
-                log.syntaxError(new SonataSyntaxError(node, "Redefined entity class " + className + ". It was initially defined in " + e.initialAssignment()));
+                log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
             }
+        });
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+    }
 
-            entity.body.forEach(b -> apply(classScope, b));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
 
-        if (node instanceof ValueClass) {
-            Map<String, Type> fields = new HashMap<>();
-            Map<String, FunctionType> methods = new HashMap<>();
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
 
-            Scope classScope = scope.diveIn((Scoped) node);
-            ValueClass vc = (ValueClass) node;
-            String className = vc.name;
-
-            vc.definedFields.stream().map(f -> (SimpleField) f).forEach(field ->
-                    registerFields(classScope, vc, fields, field)
-            );
-
-            vc.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
-                    registerMethods(classScope, methods, method)
-            );
-
-            final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(vc.definition, className));
-            if (!incompleteType.isPresent()) {
-                throw new ParserException(node, "Somehow we didn't manage to pre-register this value class. Please fill a bug with a sample code.");
-            }
-
-            final ValueClassType vcType = new ValueClassType(node.definition(), className, fields, methods);
-            vcType.fields.putAll(fields);
-            vcType.methods.putAll(methods);
-
-            List<Type> paramTypes = vc.definedFields.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
-            try {
-                scope.registerVariable(className, node, new FunctionType(vc.definition, className, vcType, paramTypes));
-            } catch (TypeCanNotBeReassignedException e) {
-                log.syntaxError(new SonataSyntaxError(node, "Redefined value class " + className + ". It was initially defined in " + e.initialAssignment()));
-            }
-
-            vc.body.forEach(b -> apply(classScope, b));
-        }
-
-        if (node instanceof BlockExpression) {
-            Scope blockScope = scope.diveIn((Scoped) node);
-            ((BlockExpression) node).expressions.forEach(expr -> apply(blockScope, expr));
-        }
-
-        if (node instanceof LetConstant) {
-            LetConstant constant = (LetConstant) node;
-            String letName = constant.letName;
-            try {
-                scope.registerVariable(letName, node, scope.resolveType(constant.returnType).orElse(scope.resolveType(constant.body.type()).orElse(Scope.TYPE_ANY)));
-                apply(scope, ((LetConstant) node).body);
-            } catch (TypeCanNotBeReassignedException e) {
-                log.syntaxError(new SonataSyntaxError(node, "Variable '" + letName + "' has been already defined. Found on " + e.initialAssignment()));
-            }
-        }
-
-        if (node instanceof LetFunction) {
-            LetFunction fn = (LetFunction) node;
-            try {
-                Type retType = scope.resolveType(fn.returnType).orElse(Scope.TYPE_ANY);
-                List<Type> paramTypes = fn.parameters.stream().map(e -> Scope.TYPE_ANY).collect(Collectors.toList());
-
-                scope.registerVariable(fn.letName, node, new FunctionType(fn.definition, fn.letName, retType, paramTypes));
-            } catch (TypeCanNotBeReassignedException e) {
-                // It's fine, let functions can be overloaded
-            }
-
-            Scope letScope = scope.diveIn((Scoped) node);
-            ((LetFunction) node).parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
-                String paramName = ((SimpleParameter) parameter).name;
-                try {
-                    letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astTypeRepresentation).orElse(Scope.TYPE_ANY));
-                } catch (TypeCanNotBeReassignedException e) {
-                    log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
-                }
-            });
-            apply(letScope, ((LetFunction) node).body);
-        }
-
-        if (node instanceof IfElse) {
-            IfElse ifElse = (IfElse) node;
-            apply(scope, ifElse.condition);
-            apply(scope, ifElse.whenTrue);
-            if (ifElse.whenFalse != null) {
-                apply(scope, ifElse.whenFalse);
-            }
-        }
-
-        if (node instanceof FunctionCall) {
-            FunctionCall fc = (FunctionCall) node;
-            apply(fc.receiver);
-            fc.arguments.forEach(arg -> apply(scope, arg));
-        }
-
-        if (node instanceof Lambda) {
-            Lambda lambda = (Lambda) node;
-            apply(scope.diveIn(lambda), lambda.body);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
     }
 
     private void registerFields(Scope scope, Node owner, Map<String, Type> fields, SimpleField field) {
@@ -203,10 +260,5 @@ public final class LetVariableProcessor implements Processor {
         }).collect(Collectors.toList());
         Type returnType = scope.resolveType(method.returnType).orElse(Scope.TYPE_ANY);
         methods.put(methodName, new FunctionType(method.definition(), methodName, returnType, parameters));
-    }
-
-    @Override
-    public String phase() {
-        return "LET PROCESSING";
     }
 }

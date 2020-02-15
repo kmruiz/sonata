@@ -208,7 +208,7 @@ public final class ContinuationProcessor implements ProcessorIterator {
             if (fc.receiver instanceof MethodReference) {
                 final MethodReference methodReference = ((MethodReference) fc.receiver);
                 if (methodReference.receiver instanceof Continuation) {
-                    return isInferredTypeEntityClass(scope, fc.receiver);
+                    return true;
                 }
 
                 Type type = inferTypeOf(scope, methodReference.receiver);
