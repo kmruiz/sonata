@@ -8,46 +8,154 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.contracts.Contract;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.classes.values.ValueClass;
+import io.sonata.lang.parser.ast.exp.*;
+import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public final class ContractProcessor implements Processor {
+public final class ContractProcessor implements ProcessorIterator {
     private final CompilerLog log;
-    private final Scope scope;
 
-    public ContractProcessor(CompilerLog log, Scope scope) {
+    public static Processor processorInstance(Scope scope, CompilerLog log) {
+        return new ProcessorWrapper(scope, "CONTRACTS",
+                new ContractProcessor(log)
+        );
+    }
+
+    public ContractProcessor(CompilerLog log) {
         this.log = log;
-        this.scope = scope;
     }
 
     @Override
-    public Node apply(Node node) {
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            script.nodes.forEach(this::apply);
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return new FunctionCall(receiver, arguments, node.expressionType);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        if (verify(node)) {
+            register(scope, node);
         }
 
-        if (node instanceof Contract) {
-            Contract contract = (Contract) node;
-            if (verify(contract)) {
-                register(contract);
-            }
-        }
+        return new Contract(node.definition, node.name, body);
+    }
 
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
         return node;
     }
 
-    private void register(Contract contract) {
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
+    }
+
+    private void register(Scope scope, Contract contract) {
         Map<String, FunctionType> methods = new HashMap<>();
         Map<String, FunctionType> classLevelMethods = new HashMap<>();
         ContractType contractType = new ContractType(contract.definition, contract.name, methods, classLevelMethods);
@@ -88,10 +196,5 @@ public final class ContractProcessor implements Processor {
 
             return true;
         });
-    }
-
-    @Override
-    public String phase() {
-        return "CONTRACTS";
     }
 }

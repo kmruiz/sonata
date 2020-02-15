@@ -7,92 +7,149 @@
 package io.sonata.lang.analyzer.partials;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
+import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public final class QuestionMarkPartialFunctionProcessor implements Processor {
+public final class QuestionMarkPartialFunctionProcessor implements ProcessorIterator {
+    public static Processor processorInstance(Scope scope) {
+        return new ProcessorWrapper(scope, "ANON. PARTIAL FUNCTIONS",
+                new QuestionMarkPartialFunctionProcessor()
+        );
+    }
+
     @Override
-    public Node apply(Node node) {
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(Collectors.toList()), script.currentNode);
-        }
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
+    }
 
-        if (node instanceof FunctionCall) {
-            return processAnonymousParametersOnFunctionCall((FunctionCall) node);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return processAnonymousParametersOnFunctionCall(node, receiver, arguments);
+    }
 
-        if (node instanceof LetConstant) {
-            LetConstant let = (LetConstant) node;
-            return new LetConstant(let.definition(), let.letName, let.returnType, (Expression) apply(let.body));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
 
-        if (node instanceof LetFunction) {
-            LetFunction let = (LetFunction) node;
-            return new LetFunction(let.letId, let.definition, let.letName, let.parameters, let.returnType, (Expression) apply(let.body), false, let.isClassLevel);
-        }
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
+    }
 
-        if (node instanceof MethodReference) {
-            MethodReference ref = (MethodReference) node;
-            return new MethodReference((Expression) apply(ref.receiver), ref.methodName);
-        }
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
+    }
 
-        if (node instanceof ValueClass) {
-            ValueClass vc = (ValueClass) node;
-            List<Node> body = vc.body.stream().map(this::apply).collect(Collectors.toList());
-            return new ValueClass(vc.definition, vc.name, vc.definedFields, body);
-        }
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
 
-        if (node instanceof EntityClass) {
-            EntityClass entity = (EntityClass) node;
-            List<Node> body = entity.body.stream().map(this::apply).collect(Collectors.toList());
-            return new EntityClass(entity.definition, entity.name, entity.definedFields, entity.implementingContracts, body);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
 
-        if (node instanceof BlockExpression) {
-            BlockExpression block = (BlockExpression) node;
-            List<Expression> body = block.expressions.stream().map(this::apply).map(e -> (Expression) e).collect(Collectors.toList());
-            return new BlockExpression(block.definition, body);
-        }
-
-        if (node instanceof IfElse) {
-            IfElse ifElse = (IfElse) node;
-            Expression condition = (Expression) apply(ifElse.condition);
-            Expression whenTrue = (Expression) apply(ifElse.whenTrue);
-            Expression whenFalse = ifElse.whenFalse == null ? null : (Expression) apply(ifElse.whenFalse);
-
-            return new IfElse(ifElse.ifElseId, ifElse.definition, condition, whenTrue, whenFalse);
-        }
-
-        if (node instanceof Lambda) {
-            Lambda lambda = (Lambda) node;
-            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body), lambda.isAsync);
-        }
-
-        if (node instanceof SimpleExpression) {
-            return buildLambdaIfNeeded((Expression) node);
-        }
-
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
         return node;
     }
 
-    private Node processAnonymousParametersOnFunctionCall(FunctionCall fc) {
-        List<Expression> args = fc.arguments.stream().map(this::apply).map(e -> (Expression) e).map(this::buildLambdaIfNeeded).collect(Collectors.toList());
-        return new FunctionCall((Expression) apply(fc.receiver), args);
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
+    }
+
+    private Expression processAnonymousParametersOnFunctionCall(FunctionCall fc, Expression receiver, List<Expression> arguments) {
+        List<Expression> args = arguments.stream().map(this::buildLambdaIfNeeded).collect(Collectors.toList());
+        return new FunctionCall(receiver, args);
     }
 
     private Expression buildLambdaIfNeeded(Expression expression) {
@@ -106,6 +163,7 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
 
         return Lambda.synthetic(expression.definition(), lambdaParams, newExpression);
     }
+    
     private Expression parseExpressionForLambda(Expression expression, Supplier<String> paramNameSupplier) {
         if (expression instanceof SimpleExpression) {
             SimpleExpression se = (SimpleExpression) expression;
@@ -145,10 +203,5 @@ public final class QuestionMarkPartialFunctionProcessor implements Processor {
 
             return name;
         };
-    }
-
-    @Override
-    public String phase() {
-        return "ANON. PARTIAL FUNCTIONS";
     }
 }
