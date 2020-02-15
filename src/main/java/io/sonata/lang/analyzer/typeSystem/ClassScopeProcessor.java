@@ -13,7 +13,6 @@ import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedExcept
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
@@ -40,22 +39,22 @@ public final class ClassScopeProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, ScriptNode node, List<Node> body) {
         return new ScriptNode(node.log, body, node.currentNode);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+    public Expression apply(Processor processor, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments, Node parent) {
         return new FunctionCall(receiver, arguments, node.expressionType);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, MethodReference node, Expression receiver, Node parent) {
         return new MethodReference(receiver, node.methodName);
     }
 
     @Override
-    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+    public Node apply(Processor processor, Scope classScope, EntityClass entityClass, List<Node> body, Node parent) {
         final String className = entityClass.name;
         try {
             List<ContractType> contracts = entityClass.implementingContracts.stream().map(ct -> {
@@ -70,7 +69,7 @@ public final class ClassScopeProcessor implements ProcessorIterator {
 
             final EntityClassType type = new EntityClassType(entityClass.definition(), className, new HashMap<>(), contracts, new HashMap<>());
             classScope.registerType(className, type);
-            classScope.registerVariable("self", entityClass, type);
+            classScope.diveInIfNeeded(entityClass).registerVariable("self", entityClass, type);
         } catch (TypeCanNotBeReassignedException e) {
             log.syntaxError(new SonataSyntaxError(entityClass, "Entity classes can not be redefined, but '" + className + "' is defined at least twice. Found on " + e.initialAssignment()));
         }
@@ -79,12 +78,12 @@ public final class ClassScopeProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+    public Node apply(Processor processor, Scope classScope, ValueClass valueClass, List<Node> body, Node parent) {
         final String className = valueClass.name;
         try {
             final ValueClassType type = new ValueClassType(valueClass.definition(), className, new HashMap<>(), new HashMap<>());
             classScope.registerType(className, type);
-            classScope.registerVariable("self", valueClass, type);
+            classScope.diveInIfNeeded(valueClass).registerVariable("self", valueClass, type);
         } catch (TypeCanNotBeReassignedException e) {
             log.syntaxError(new SonataSyntaxError(valueClass, "Value classes can not be redefined, but " + className + " is defined at least twice."));
         }
@@ -93,87 +92,87 @@ public final class ClassScopeProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, Contract node, List<Node> body, Node parent) {
         return new Contract(node.definition, node.name, body);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, ArrayAccess node, Expression receiver, Node parent) {
         return new ArrayAccess(receiver, node.index);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Atom node) {
+    public Expression apply(Processor processor, Scope scope, Atom node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+    public Expression apply(Processor processor, Scope scope, LiteralArray node, List<Expression> contents, Node parent) {
         return new LiteralArray(node.definition, contents);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+    public Expression apply(Processor processor, Scope scope, PriorityExpression node, Expression content, Node parent) {
         return new PriorityExpression(content);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+    public Expression apply(Processor processor, Scope scope, Record node, Map<Atom, Expression> values, Node parent) {
         return new Record(node.definition, values);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+    public Expression apply(Processor processor, Scope scope, SimpleExpression node, Expression left, Expression right, Node parent) {
         return new SimpleExpression(left, node.operator, right);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+    public Expression apply(Processor processor, Scope scope, TypeCheckExpression node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+    public Expression apply(Processor processor, Scope scope, ValueClassEquality node, Expression left, Expression right, Node parent) {
         return new ValueClassEquality(left, right, node.negate);
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+    public Node apply(Processor processor, Scope scope, RequiresNode node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, TailExtraction node, Expression receiver, Node parent) {
         return new TailExtraction(receiver, node.fromIndex);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+    public Expression apply(Processor processor, Scope scope, BlockExpression node, List<Expression> body, Node parent) {
         return new BlockExpression(node.blockId, node.definition, body);
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+    public Node apply(Processor processor, Scope scope, LetConstant constant, Expression body, Node parent) {
         return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+    public Node apply(Processor processor, Scope scope, LetFunction node, Expression body, Node parent) {
         return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+    public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
         return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+    public Expression apply(Processor processor, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse, Node parent) {
         return new IfElse(node.definition, condition, whenTrue, whenFalse);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+    public Expression apply(Processor processor, Scope scope, Continuation node, Expression body, Node parent) {
         return new Continuation(node.definition, body, node.fanOut);
     }
 }

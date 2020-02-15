@@ -35,93 +35,93 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, ScriptNode node, List<Node> body) {
         return new ScriptNode(node.log, body, node.currentNode);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+    public Expression apply(Processor processor, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments, Node parent) {
         Type inferredType = infer(scope, node);
         return new FunctionCall(receiver, arguments, new BasicASTTypeRepresentation(node.definition(), inferredType.name()));
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, MethodReference node, Expression receiver, Node parent) {
         return new MethodReference(receiver, node.methodName);
     }
 
     @Override
-    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+    public Node apply(Processor processor, Scope classScope, EntityClass entityClass, List<Node> body, Node parent) {
         return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
     }
 
     @Override
-    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+    public Node apply(Processor processor, Scope classScope, ValueClass valueClass, List<Node> body, Node parent) {
         return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, Contract node, List<Node> body, Node parent) {
         return new Contract(node.definition, node.name, body);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, ArrayAccess node, Expression receiver, Node parent) {
         return new ArrayAccess(receiver, node.index);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Atom node) {
+    public Expression apply(Processor processor, Scope scope, Atom node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+    public Expression apply(Processor processor, Scope scope, LiteralArray node, List<Expression> contents, Node parent) {
         return new LiteralArray(node.definition, contents);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+    public Expression apply(Processor processor, Scope scope, PriorityExpression node, Expression content, Node parent) {
         return new PriorityExpression(content);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+    public Expression apply(Processor processor, Scope scope, Record node, Map<Atom, Expression> values, Node parent) {
         return new Record(node.definition, values);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+    public Expression apply(Processor processor, Scope scope, SimpleExpression node, Expression left, Expression right, Node parent) {
         return new SimpleExpression(left, node.operator, right);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+    public Expression apply(Processor processor, Scope scope, TypeCheckExpression node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+    public Expression apply(Processor processor, Scope scope, ValueClassEquality node, Expression left, Expression right, Node parent) {
         return new ValueClassEquality(left, right, node.negate);
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+    public Node apply(Processor processor, Scope scope, RequiresNode node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, TailExtraction node, Expression receiver, Node parent) {
         return new TailExtraction(receiver, node.fromIndex);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+    public Expression apply(Processor processor, Scope scope, BlockExpression node, List<Expression> body, Node parent) {
         return new BlockExpression(node.blockId, node.definition, body);
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+    public Node apply(Processor processor, Scope scope, LetConstant constant, Expression body, Node parent) {
         ASTTypeRepresentation typeRepresentation = constant.returnType;
         Type constantType = null;
         if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
@@ -135,7 +135,7 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+    public Node apply(Processor processor, Scope scope, LetFunction node, Expression body, Node parent) {
         ASTTypeRepresentation typeRepresentation = node.returnType;
 
         Type returnType = null;
@@ -151,17 +151,17 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+    public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
         return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+    public Expression apply(Processor processor, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse, Node parent) {
         return new IfElse(node.definition, condition, whenTrue, whenFalse);
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+    public Expression apply(Processor processor, Scope scope, Continuation node, Expression body, Node parent) {
         return new Continuation(node.definition, body, node.fanOut);
     }
 

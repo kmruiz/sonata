@@ -42,62 +42,62 @@ public final class ImmutabilityCheckProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, ScriptNode node, List<Node> body) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+    public Expression apply(Processor processor, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, MethodReference node, Expression receiver, Node parent) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, EntityClass node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, EntityClass node, List<Node> body, Node parent) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, ValueClass node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, ValueClass node, List<Node> body, Node parent) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+    public Node apply(Processor processor, Scope scope, Contract node, List<Node> body, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, ArrayAccess node, Expression receiver, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Atom node) {
+    public Expression apply(Processor processor, Scope scope, Atom node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+    public Expression apply(Processor processor, Scope scope, LiteralArray node, List<Expression> contents, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+    public Expression apply(Processor processor, Scope scope, PriorityExpression node, Expression content, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+    public Expression apply(Processor processor, Scope scope, Record node, Map<Atom, Expression> values, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+    public Expression apply(Processor processor, Scope scope, SimpleExpression node, Expression left, Expression right, Node parent) {
         if (isAnAssignmentOperator(node.operator)) {
             validate(scope.diveInIfNeeded(node.leftSide), node.leftSide);
         }
@@ -106,52 +106,52 @@ public final class ImmutabilityCheckProcessor implements ProcessorIterator {
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+    public Expression apply(Processor processor, Scope scope, TypeCheckExpression node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+    public Expression apply(Processor processor, Scope scope, ValueClassEquality node, Expression left, Expression right, Node parent) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+    public Node apply(Processor processor, Scope scope, RequiresNode node, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+    public Expression apply(Processor processor, Scope scope, TailExtraction node, Expression receiver, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+    public Expression apply(Processor processor, Scope scope, BlockExpression node, List<Expression> body, Node parent) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetConstant node, Expression body) {
+    public Node apply(Processor processor, Scope scope, LetConstant node, Expression body, Node parent) {
         return node;
     }
 
     @Override
-    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+    public Node apply(Processor processor, Scope scope, LetFunction node, Expression body, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+    public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+    public Expression apply(Processor processor, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse, Node parent) {
         return node;
     }
 
     @Override
-    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+    public Expression apply(Processor processor, Scope scope, Continuation node, Expression body, Node parent) {
         return node;
     }
 

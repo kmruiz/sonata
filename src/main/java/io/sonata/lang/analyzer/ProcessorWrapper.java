@@ -38,15 +38,15 @@ public class ProcessorWrapper implements Processor {
 
     @Override
     public Node apply(Node node) {
-        return apply(root, node);
+        return apply(root, node, null);
     }
 
-    public Node apply(Scope scope, Node node) {
+    public Node apply(Scope scope, Node node, Node parent) {
         if (node instanceof ScriptNode) {
             ScriptNode script = (ScriptNode) node;
             Scope scriptScope = scope.diveInIfNeeded(script);
 
-            List<Node> body = script.nodes.stream().map(e -> this.apply(scriptScope, e)).collect(Collectors.toList());
+            List<Node> body = script.nodes.stream().map(e -> this.apply(scriptScope, e, node)).collect(Collectors.toList());
 
             return iterator.apply(this, scope, script, body);
         }
@@ -55,149 +55,149 @@ public class ProcessorWrapper implements Processor {
             FunctionCall fc = (FunctionCall) node;
             Scope fcScope = scope.diveInIfNeeded(fc);
 
-            List<Expression> args = fc.arguments.stream().map(e -> this.apply(fcScope, e)).map(e -> (Expression) e).collect(Collectors.toList());
-            Expression receiver = (Expression) this.apply(scope, fc.receiver);
+            List<Expression> args = fc.arguments.stream().map(e -> this.apply(fcScope, e, node)).map(e -> (Expression) e).collect(Collectors.toList());
+            Expression receiver = (Expression) this.apply(scope, fc.receiver, fc);
 
-            return iterator.apply(this, scope, fc, receiver, args);
+            return iterator.apply(this, scope, fc, receiver, args, parent);
         }
 
         if (node instanceof MethodReference) {
             MethodReference mr = (MethodReference) node;
-            Expression receiver = (Expression) this.apply(scope, mr.receiver);
-            return iterator.apply(this, scope, mr, receiver);
+            Expression receiver = (Expression) this.apply(scope, mr.receiver, parent);
+            return iterator.apply(this, scope, mr, receiver, parent);
         }
 
         if (node instanceof EntityClass) {
             EntityClass ec = (EntityClass) node;
             Scope ecScope = scope.diveInIfNeeded(ec);
 
-            List<Node> body = ec.body.stream().map(e -> this.apply(ecScope, e)).collect(Collectors.toList());
-            return iterator.apply(this, scope, ec, body);
+            List<Node> body = ec.body.stream().map(e -> this.apply(ecScope, e, node)).collect(Collectors.toList());
+            return iterator.apply(this, scope, ec, body, parent);
         }
 
         if (node instanceof ValueClass) {
             ValueClass vc = (ValueClass) node;
             Scope vcScope = scope.diveInIfNeeded(vc);
 
-            List<Node> body = vc.body.stream().map(e -> this.apply(vcScope, e)).collect(Collectors.toList());
-            return iterator.apply(this, scope, vc, body);
+            List<Node> body = vc.body.stream().map(e -> this.apply(vcScope, e, node)).collect(Collectors.toList());
+            return iterator.apply(this, scope, vc, body, parent);
         }
 
         if (node instanceof Contract) {
             Contract ct = (Contract) node;
             Scope ctScope = scope.diveInIfNeeded(ct);
 
-            List<Node> body = ct.body.stream().map(e -> this.apply(ctScope, e)).collect(Collectors.toList());
-            return iterator.apply(this, scope, ct, body);
+            List<Node> body = ct.body.stream().map(e -> this.apply(ctScope, e, node)).collect(Collectors.toList());
+            return iterator.apply(this, scope, ct, body, parent);
         }
 
         if (node instanceof ArrayAccess) {
             ArrayAccess arrayAccess = (ArrayAccess) node;
-            Expression receiver = (Expression) this.apply(scope, arrayAccess.receiver);
-            return iterator.apply(this, scope, arrayAccess, receiver);
+            Expression receiver = (Expression) this.apply(scope, arrayAccess.receiver, parent);
+            return iterator.apply(this, scope, arrayAccess, receiver, parent);
         }
 
         if (node instanceof Atom) {
             Atom atom = (Atom) node;
-            return iterator.apply(this, scope, atom);
+            return iterator.apply(this, scope, atom, parent);
         }
 
         if (node instanceof LiteralArray) {
             LiteralArray array = (LiteralArray) node;
-            List<Expression> expr = array.expressions.stream().map(e -> this.apply(scope, e)).map(e -> (Expression) e).collect(Collectors.toList());
+            List<Expression> expr = array.expressions.stream().map(e -> this.apply(scope, e, node)).map(e -> (Expression) e).collect(Collectors.toList());
 
-            return iterator.apply(this, scope, array, expr);
+            return iterator.apply(this, scope, array, expr, parent);
         }
 
         if (node instanceof PriorityExpression) {
             PriorityExpression prio = (PriorityExpression) node;
-            Expression expr = (Expression) this.apply(scope, prio.expression);
+            Expression expr = (Expression) this.apply(scope, prio.expression, prio);
 
-            return iterator.apply(this, scope, prio, expr);
+            return iterator.apply(this, scope, prio, expr, parent);
         }
 
         if (node instanceof Record) {
             Record record = (Record) node;
-            Map<Atom, Expression> recordData = record.values.entrySet().stream().map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), (Expression) apply(entry.getValue()))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            Map<Atom, Expression> recordData = record.values.entrySet().stream().map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), (Expression) apply(scope, entry.getValue(), node))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            return iterator.apply(this, scope, record, recordData);
+            return iterator.apply(this, scope, record, recordData, parent);
         }
 
         if (node instanceof SimpleExpression) {
             SimpleExpression expr = (SimpleExpression) node;
-            Expression left = (Expression) this.apply(scope, expr.leftSide);
-            Expression right = (Expression) this.apply(scope, expr.rightSide);
+            Expression left = (Expression) this.apply(scope, expr.leftSide, expr);
+            Expression right = (Expression) this.apply(scope, expr.rightSide, expr);
 
-            return iterator.apply(this, scope, expr, left, right);
+            return iterator.apply(this, scope, expr, left, right, parent);
         }
 
         if (node instanceof TypeCheckExpression) {
-            return iterator.apply(this, scope, (TypeCheckExpression) node);
+            return iterator.apply(this, scope, (TypeCheckExpression) node, parent);
         }
 
         if (node instanceof ValueClassEquality) {
             ValueClassEquality vce = (ValueClassEquality) node;
-            Expression left = (Expression) this.apply(scope, vce.left);
-            Expression right = (Expression) this.apply(scope, vce.right);
+            Expression left = (Expression) this.apply(scope, vce.left, vce);
+            Expression right = (Expression) this.apply(scope, vce.right, vce);
 
-            return iterator.apply(this, scope, vce, left, right);
+            return iterator.apply(this, scope, vce, left, right, parent);
         }
 
         if (node instanceof RequiresNode) {
-            return iterator.apply(this, scope, (RequiresNode) node);
+            return iterator.apply(this, scope, (RequiresNode) node, parent);
         }
 
         if (node instanceof TailExtraction) {
             TailExtraction extr = (TailExtraction) node;
-            Expression receiver = (Expression) this.apply(scope, extr.expression);
+            Expression receiver = (Expression) this.apply(scope, extr.expression, extr);
 
-            return iterator.apply(this, scope, extr, receiver);
+            return iterator.apply(this, scope, extr, receiver, parent);
         }
 
         if (node instanceof BlockExpression) {
             BlockExpression block = (BlockExpression) node;
             Scope blockScope = scope.diveInIfNeeded(block);
 
-            List<Expression> expr = block.expressions.stream().map(e -> this.apply(blockScope, e)).map(e -> (Expression) e).collect(Collectors.toList());
+            List<Expression> expr = block.expressions.stream().map(e -> this.apply(blockScope, e, block)).map(e -> (Expression) e).collect(Collectors.toList());
 
-            return iterator.apply(this, scope, block, expr);
+            return iterator.apply(this, scope, block, expr, parent);
         }
 
         if (node instanceof LetConstant) {
             LetConstant letConstant = (LetConstant) node;
             Scope letScope = scope.diveInIfNeeded(node);
 
-            Expression body = (Expression) this.apply(letScope, letConstant.body);
-            return iterator.apply(this, scope, letConstant, body);
+            Expression body = (Expression) this.apply(letScope, letConstant.body, letConstant);
+            return iterator.apply(this, scope, letConstant, body, parent);
         }
 
         if (node instanceof LetFunction) {
             LetFunction letFn = (LetFunction) node;
             Scope letScope = scope.diveInIfNeeded(node);
 
-            Expression body = (Expression) this.apply(letScope, letFn.body);
-            return iterator.apply(this, scope, letFn, body);
+            Expression body = (Expression) this.apply(letScope, letFn.body, letFn);
+            return iterator.apply(this, scope, letFn, body, parent);
         }
 
         if (node instanceof Lambda) {
             Lambda lambda = (Lambda) node;
-            Expression body = (Expression) this.apply(scope, lambda.body);
-            return iterator.apply(this, scope, lambda, body);
+            Expression body = (Expression) this.apply(scope, lambda.body, lambda);
+            return iterator.apply(this, scope, lambda, body, parent);
         }
 
         if (node instanceof IfElse) {
             IfElse ifElse = (IfElse) node;
-            Expression condition = (Expression) this.apply(scope, ifElse.condition);
-            Expression whenTrue = (Expression) this.apply(scope, ifElse.whenTrue);
-            Expression whenFalse = ifElse.whenFalse != null ? (Expression) this.apply(scope, ifElse.whenFalse) : null;
+            Expression condition = (Expression) this.apply(scope, ifElse.condition, ifElse);
+            Expression whenTrue = (Expression) this.apply(scope, ifElse.whenTrue, ifElse);
+            Expression whenFalse = ifElse.whenFalse != null ? (Expression) this.apply(scope, ifElse.whenFalse, ifElse) : null;
 
-            return iterator.apply(this, scope, ifElse, condition, whenTrue, whenFalse);
+            return iterator.apply(this, scope, ifElse, condition, whenTrue, whenFalse, parent);
         }
 
         if (node instanceof Continuation) {
             Continuation continuation = (Continuation) node;
-            Expression body = (Expression) this.apply(scope, continuation.body);
-            return iterator.apply(this, scope, continuation, body);
+            Expression body = (Expression) this.apply(scope, continuation.body, continuation);
+            return iterator.apply(this, scope, continuation, body, parent);
         }
 
         if (node instanceof CommentNode || node instanceof RootNode || node == null) {
