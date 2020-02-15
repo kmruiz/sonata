@@ -72,7 +72,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
         );
 
         entityClass.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
-                registerMethods(classScope, methods, method)
+                registerMethod(classScope, methods, method)
         );
 
         final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(entityClass.definition, className));
@@ -107,7 +107,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
         );
 
         valueClass.body.stream().filter(e -> e instanceof LetFunction).map(e -> (LetFunction) e ).forEach(method ->
-                registerMethods(classScope, methods, method)
+                registerMethod(classScope, methods, method)
         );
 
         final Optional<Type> incompleteType = classScope.resolveType(new BasicASTTypeRepresentation(valueClass.definition, className));
@@ -248,16 +248,25 @@ public final class LetVariableProcessor implements ProcessorIterator {
         }
     }
 
-    private void registerMethods(Scope scope, Map<String, FunctionType> methods, LetFunction method) {
+    private void registerMethod(Scope scope, Map<String, FunctionType> methods, LetFunction method) {
         String methodName = method.letName;
         if (method.parameters.stream().anyMatch(p -> !(p instanceof SimpleParameter))) {
             return;
         }
 
+        Scope methodScope = scope.diveInIfNeeded(method);
         List<Type> parameters = method.parameters.stream().map(p -> (SimpleParameter) p).map(param -> {
             Optional<Type> paramType = scope.resolveType(param.astTypeRepresentation);
-            return paramType.orElse(Scope.TYPE_ANY);
+            Type paramDefinedType = paramType.orElse(Scope.TYPE_ANY);
+            try {
+                methodScope.registerVariable(param.name, param, paramDefinedType);
+            } catch (TypeCanNotBeReassignedException e) {
+                log.compilerError(e);
+            }
+            
+            return paramDefinedType;
         }).collect(Collectors.toList());
+
         Type returnType = scope.resolveType(method.returnType).orElse(Scope.TYPE_ANY);
         methods.put(methodName, new FunctionType(method.definition(), methodName, returnType, parameters));
     }

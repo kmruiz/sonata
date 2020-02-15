@@ -9,28 +9,21 @@ package io.sonata.lang.analyzer.typeSystem;
 import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.analyzer.ProcessorIterator;
 import io.sonata.lang.analyzer.ProcessorWrapper;
-import io.sonata.lang.analyzer.typeSystem.exception.TypeCanNotBeReassignedException;
-import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
-import io.sonata.lang.parser.ast.classes.fields.SimpleField;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
-import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.requires.RequiresNode;
-import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public final class PropertyVisibilityProcessor implements ProcessorIterator {
     private final CompilerLog log;
@@ -157,6 +150,10 @@ public final class PropertyVisibilityProcessor implements ProcessorIterator {
     }
 
     private void validate(Scope scope, MethodReference ref) {
+        if (!(ref.receiver instanceof Atom)) {
+            return;
+        }
+
         Atom receiver = (Atom) ref.receiver;
 
         if (receiver.value.equals("self")) {
