@@ -192,7 +192,7 @@ public class ProcessorWrapper implements Processor {
             return iterator.apply(this, scope.diveInIfNeeded(node), continuation, body);
         }
 
-        if (node instanceof RootNode || node == null) {
+        if (node instanceof CommentNode || node instanceof RootNode || node == null) {
             return node;
         }
 

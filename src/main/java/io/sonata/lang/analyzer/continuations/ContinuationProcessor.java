@@ -51,7 +51,7 @@ public final class ContinuationProcessor implements ProcessorIterator {
             return new Continuation(newFn.definition(), newFn, false);
         }
 
-        if (scope.inEntityClass() && !receiver.representation().contains("some")) {
+        if (scope.inEntityClass() && !receiver.representation().contains("some") && !receiver.representation().contains("stop")) {
             return new Continuation(newFn.definition(), newFn, false);
         }
 
@@ -163,7 +163,7 @@ public final class ContinuationProcessor implements ProcessorIterator {
     }
 
     private boolean shouldWaitForAllContinuations(Scope scope, FunctionCall fc) {
-        return fc.receiver instanceof LiteralArray && fc.receiver.representation().endsWith("map");
+        return fc.receiver.representation().endsWith("map");
     }
 
     private boolean isInferredTypeEntityClass(Scope scope, Expression expression) {
