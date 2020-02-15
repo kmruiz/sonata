@@ -211,16 +211,16 @@ public final class LetVariableProcessor implements ProcessorIterator {
             // It's fine, let functions can be overloaded
         }
 
-        Scope letScope = scope.diveInIfNeeded(node);
+        Scope fnScope = scope.diveInIfNeeded(node);
         node.parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
             String paramName = ((SimpleParameter) parameter).name;
             try {
-                letScope.registerVariable(paramName, parameter, scope.resolveType(((SimpleParameter) parameter).astTypeRepresentation).orElse(Scope.TYPE_ANY));
+                fnScope.registerVariable(paramName, parameter, fnScope.resolveType(((SimpleParameter) parameter).astTypeRepresentation).orElse(Scope.TYPE_ANY));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
             }
         });
-        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node, node.isAsync, node.isClassLevel);
     }
 
     @Override

@@ -134,7 +134,7 @@ public final class PropertyVisibilityProcessor implements ProcessorIterator {
 
     @Override
     public Node apply(Processor processor, Scope scope, LetFunction node, Expression body, Node parent) {
-        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
     }
 
     @Override

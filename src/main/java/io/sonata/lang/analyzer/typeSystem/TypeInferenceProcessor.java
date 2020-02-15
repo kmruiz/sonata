@@ -130,7 +130,7 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
             constantType = scope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
         }
 
-        scope.enrichVariable(constant.letName,constant, constantType);
+        scope.enrichVariable(constant.letName, constant, constantType);
         return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
     }
 

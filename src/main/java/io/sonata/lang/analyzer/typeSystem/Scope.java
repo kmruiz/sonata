@@ -82,7 +82,12 @@ public final class Scope {
             return this;
         }
 
-        Scoped anchor = (Scoped) node;
+        final Scoped anchor = (Scoped) node;
+
+        if (anchor.scopeId().equals(this.anchor)) {
+            return this;
+        }
+
         final String anchorRepresentation = anchor.scopeId();
         final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
 

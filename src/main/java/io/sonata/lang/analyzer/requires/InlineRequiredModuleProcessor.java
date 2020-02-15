@@ -163,10 +163,9 @@ public final class InlineRequiredModuleProcessor implements ProcessorIterator {
     }
 
     private Stream<Node> recursivelyLoadIfNeeded(RequiresNode requires) {
-        final String module = requires.module;
         try {
             return requiresResolver
-                    .replaceModule(module)
+                    .replaceModule(requires.module)
                     .map(Stream::of)
                     .orElse(Stream.empty())
                     .flatMap(e -> e.nodes.stream())

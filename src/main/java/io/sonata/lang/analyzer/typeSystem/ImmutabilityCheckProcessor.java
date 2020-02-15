@@ -99,7 +99,7 @@ public final class ImmutabilityCheckProcessor implements ProcessorIterator {
     @Override
     public Expression apply(Processor processor, Scope scope, SimpleExpression node, Expression left, Expression right, Node parent) {
         if (isAnAssignmentOperator(node.operator)) {
-            validate(scope.diveInIfNeeded(node.leftSide), node.leftSide);
+            validate(scope.diveInIfNeeded(left), left);
         }
 
         return node;
