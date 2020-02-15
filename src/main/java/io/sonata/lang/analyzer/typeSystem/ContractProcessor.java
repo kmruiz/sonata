@@ -16,6 +16,7 @@ import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.let.LetFunction;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,26 +48,29 @@ public final class ContractProcessor implements Processor {
     }
 
     private void register(Contract contract) {
-        Map<String, FunctionType> methods = contract.body.stream().map(a -> (LetFunction) a).filter(e -> !e.isClassLevel).map(let -> {
-            Type returnType = scope.resolveType(let.returnType).orElse(Scope.TYPE_ANY);
-            List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
-
-            return new FunctionType(let.definition, let.letName, returnType, parameters);
-        }).collect(Collectors.toMap(k -> k.name, v -> v));
-
-        Map<String, FunctionType> classLevelMethods = contract.body.stream().map(a -> (LetFunction) a).filter(e -> e.isClassLevel).map(let -> {
-            Type returnType = scope.resolveType(let.returnType).orElse(Scope.TYPE_ANY);
-            List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
-
-            return new FunctionType(let.definition, let.letName, returnType, parameters);
-        }).collect(Collectors.toMap(k -> k.name, v -> v));
-
+        Map<String, FunctionType> methods = new HashMap<>();
+        Map<String, FunctionType> classLevelMethods = new HashMap<>();
         ContractType contractType = new ContractType(contract.definition, contract.name, methods, classLevelMethods);
+
         try {
             scope.registerType(contract.name, contractType);
         } catch (TypeCanNotBeReassignedException e) {
             log.syntaxError(new SonataSyntaxError(contract, "Can not redefine a contract, however, contract '" + contract.name + "' has been already defined in: " + e.initialAssignment()));
         }
+
+        contract.body.stream().map(a -> (LetFunction) a).filter(e -> !e.isClassLevel).forEach(let -> {
+            Type returnType = scope.resolveType(let.returnType).orElse(Scope.TYPE_ANY);
+            List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
+
+            methods.put(let.letName, new FunctionType(let.definition, let.letName, returnType, parameters));
+        });
+
+        contract.body.stream().map(a -> (LetFunction) a).filter(e -> e.isClassLevel).forEach(let -> {
+            Type returnType = scope.resolveType(let.returnType).orElse(Scope.TYPE_ANY);
+            List<Type> parameters = let.parameters.stream().map(a -> Scope.TYPE_ANY).collect(Collectors.toList());
+
+            classLevelMethods.put(let.letName, new FunctionType(let.definition, let.letName, returnType, parameters));
+        });
     }
 
     private boolean verify(Contract contract) {

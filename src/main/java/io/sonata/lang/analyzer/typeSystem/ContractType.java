@@ -8,6 +8,7 @@ package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.source.SourcePosition;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public final class ContractType implements Type {
@@ -50,6 +51,9 @@ public final class ContractType implements Type {
 
     @Override
     public Map<String, FunctionType> methods() {
-        return methods;
+        Map<String, FunctionType> all = new HashMap<>(methods.size() + classLevelMethods.size());
+        all.putAll(methods);
+        all.putAll(classLevelMethods);
+        return all;
     }
 }

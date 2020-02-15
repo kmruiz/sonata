@@ -28,6 +28,10 @@ contract Stream {
     let zipLast(other: Stream, defaultLeft: any, defaultRight: any): Stream
     let zipWithIndex(): Stream
     let filter(predicate: (any) -> boolean): Stream
+
+    class let fromArray(array: any[]): Stream = _PollBasedStream([_ProvideFromArray(array, 0)])
+    class let fromSupplier(firstValue: any, fn: (any) -> any): Stream = _PollBasedStream([_ProvideFromFunction(firstValue, fn)])
+    class let fromRange(from: number, to: number): Stream = Stream.fromArray(Range(from, to))
 }
 
 entity class _PollBasedStream(chain: _Provider[]) implements _Provider, Stream {
@@ -72,7 +76,7 @@ entity class _PollBasedStream(chain: _Provider[]) implements _Provider, Stream {
     }
 
     let flatMap(fn: (any) -> Stream) = {
-        self.chain.push(_FlatMap(self.last(), StreamFromArray([]), true, fn))
+        self.chain.push(_FlatMap(self.last(), Stream.fromArray([]), true, fn))
         self
     }
 
@@ -104,7 +108,3 @@ entity class _PollBasedStream(chain: _Provider[]) implements _Provider, Stream {
 
     let last() = self.chain[self.chain.length - 1]
 }
-
-let StreamFromArray(array: any[]) = _PollBasedStream([_ProvideFromArray(array, 0)])
-let StreamFromSupplier(firstValue: any, fn: (any) -> any) = _PollBasedStream([_ProvideFromFunction(firstValue, fn)])
-let StreamFromRange(from: number, to: number) = StreamFromArray(Range(from, to))

@@ -48,7 +48,7 @@ public class Sonata {
                 new EqualitySpecializationProcessor(log, scope),
                 new DestructuringProcessor(symbolMap, scope),
                 new FunctionCompositionProcessor(log, scope),
-                new ContinuationProcessor(log, scope),
+                ContinuationProcessor.processorInstance(scope),
                 AsyncFunctionProcessor.processorInstance(scope)
         );
 

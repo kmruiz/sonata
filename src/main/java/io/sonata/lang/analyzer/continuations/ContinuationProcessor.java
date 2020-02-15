@@ -7,148 +7,163 @@
 package io.sonata.lang.analyzer.continuations;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.analyzer.typeSystem.FunctionType;
 import io.sonata.lang.analyzer.typeSystem.Scope;
-import io.sonata.lang.log.CompilerLog;
+import io.sonata.lang.analyzer.typeSystem.Type;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
+import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-
-public final class ContinuationProcessor implements Processor {
-    private final CompilerLog log;
-    private final Scope rootScope;
-
-    public ContinuationProcessor(CompilerLog log, Scope rootScope) {
-        this.log = log;
-        this.rootScope = rootScope;
+public final class ContinuationProcessor implements ProcessorIterator {
+    public static Processor processorInstance(Scope scope) {
+        return new ProcessorWrapper(scope, "CONTINUATIONS",
+                new ContinuationProcessor()
+        );
     }
 
     @Override
-    public Node apply(Node node) {
-        return apply(rootScope, node);
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
     }
 
-    public Node apply(Scope scope, Node node) {
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.log, script.nodes.stream().map(n -> this.apply(scope, n)).collect(toList()), script.currentNode);
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        FunctionCall newFn = new FunctionCall(receiver, arguments, node.expressionType);
+
+        if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, newFn)) {
+            return new Continuation(newFn.definition(), newFn, true);
         }
 
-        if (node instanceof FunctionCall) {
-            FunctionCall fc = (FunctionCall) node;
-            if (!(fc.receiver instanceof Atom)) {
-                Expression receiver = (Expression) apply(scope, fc.receiver);
-                fc = new FunctionCall(receiver, fc.arguments);
-            }
-
-            fc = new FunctionCall(fc.receiver, fc.arguments.stream().map(arg -> (Expression) apply(scope, arg)).collect(toList()));
-
-            if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, fc)) {
-                return new Continuation(fc.definition(), fc, true);
-            }
-
-            if (isInferredTypeEntityClass(scope, fc)) {
-                return new Continuation(fc.definition(), fc, false);
-            }
-
-            if (scope.inEntityClass() && !fc.receiver.representation().contains("some")) {
-                return new Continuation(fc.definition(), fc, false);
-            }
-
-            if (fc.receiver instanceof Continuation) {
-                return new Continuation(fc.definition(), fc, false);
-            }
-
-            return fc;
+        if (isInferredTypeEntityClass(scope, newFn)) {
+            return new Continuation(newFn.definition(), newFn, false);
         }
 
-        if (node instanceof MethodReference) {
-            MethodReference ref = (MethodReference) node;
-            return new MethodReference((Expression) apply(scope, ref.receiver), ref.methodName);
+        if (scope.inEntityClass() && !receiver.representation().contains("some")) {
+            return new Continuation(newFn.definition(), newFn, false);
         }
 
-        if (node instanceof EntityClass) {
-            EntityClass ec = (EntityClass) node;
-            List<Node> body = ec.body.stream().map(b -> apply(scope.diveInIfNeeded(ec), b)).collect(toList());
-            return new EntityClass(ec.definition, ec.name, ec.definedFields, ec.implementingContracts, body);
+        if (receiver instanceof Continuation) {
+            return new Continuation(newFn.definition(), newFn, false);
         }
 
-        if (node instanceof ValueClass) {
-            ValueClass vc = (ValueClass) node;
-            List<Node> body = vc.body.stream().map(b -> apply(scope.diveInIfNeeded(vc), b)).collect(toList());
-            return new ValueClass(vc.definition, vc.name, vc.definedFields, body);
-        }
+        return newFn;
+    }
 
-        if (node instanceof BlockExpression) {
-            BlockExpression bc = (BlockExpression) node;
-            List<Expression> body = bc.expressions.stream().map(b -> apply(scope.diveInIfNeeded(bc), b)).map(b -> (Expression) b).collect(toList());
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
 
-            return new BlockExpression(bc.definition, body);
-        }
+    @Override
+    public Node apply(Processor parent, Scope scope, EntityClass node, List<Node> body) {
+        return new EntityClass(node.definition, node.name, node.definedFields, node.implementingContracts, body);
+    }
 
-        if (node instanceof LetConstant) {
-            LetConstant lc = (LetConstant) node;
-            return new LetConstant(lc.definition, lc.letName, lc.returnType, (Expression) apply(scope, lc.body));
-        }
+    @Override
+    public Node apply(Processor parent, Scope scope, ValueClass node, List<Node> body) {
+        return new ValueClass(node.definition, node.name, node.definedFields, body);
+    }
 
-        if (node instanceof LetFunction) {
-            LetFunction lf = (LetFunction) node;
-            Scope lfScope = scope.diveInIfNeeded(lf);
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
 
-            return new LetFunction(lf.letId, lf.definition, lf.letName, lf.parameters, lf.returnType, (Expression) apply(lfScope, lf.body), false, lf.isClassLevel);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
 
-        if (node instanceof Lambda) {
-            Lambda ld = (Lambda) node;
-            return new Lambda(ld.lambdaId, ld.definition, ld.parameters, (Expression) apply(scope.diveInIfNeeded(ld), ld.body), false);
-        }
-
-        if (node instanceof IfElse) {
-            IfElse ie = (IfElse) node;
-            Expression condition = (Expression) apply(scope, ie.condition);
-            Expression whenTrue = (Expression) apply(scope, ie.whenTrue);
-
-            if (ie.whenFalse == null) {
-                return new IfElse(ie.ifElseId, ie.definition, condition, whenTrue, null);
-            }
-
-            Expression whenFalse = (Expression) apply(scope, ie.whenFalse);
-            return new IfElse(ie.ifElseId, ie.definition, condition, whenTrue, whenFalse);
-        }
-
-        if (node instanceof SimpleExpression) {
-            SimpleExpression expr = (SimpleExpression) node;
-            return new SimpleExpression((Expression) apply(scope, expr.leftSide), expr.operator, (Expression) apply(scope, expr.rightSide));
-        }
-
-        if (node instanceof Record) {
-            Record record = (Record) node;
-            Map<Atom, Expression> recordData = record.values.entrySet().stream().map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), (Expression) apply(scope, entry.getValue()))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            return new Record(record.definition, recordData);
-        }
-
-        if (node instanceof LiteralArray) {
-            LiteralArray array = (LiteralArray) node;
-            return new LiteralArray(array.definition, array.expressions.stream().map(expr -> (Expression) apply(scope, expr)).collect(toList()));
-        }
-
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
         return node;
     }
 
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant node, Expression body) {
+        return new LetConstant(node.definition, node.letName, node.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
+    }
+
     private boolean shouldWaitForAllContinuations(Scope scope, FunctionCall fc) {
-        return fc.receiver.representation().endsWith("map");
+        return fc.receiver instanceof LiteralArray && fc.receiver.representation().endsWith("map");
     }
 
     private boolean isInferredTypeEntityClass(Scope scope, Expression expression) {
@@ -190,6 +205,18 @@ public final class ContinuationProcessor implements Processor {
                         .orElse(false);
             }
 
+            if (fc.receiver instanceof MethodReference) {
+                final MethodReference methodReference = ((MethodReference) fc.receiver);
+                if (methodReference.receiver instanceof Continuation) {
+                    return isInferredTypeEntityClass(scope, fc.receiver);
+                }
+
+                Type type = inferTypeOf(scope, methodReference.receiver);
+                return Optional.ofNullable(type.methods().get(methodReference.methodName))
+                        .filter(e -> e.returnType.isEntity())
+                        .isPresent();
+            }
+
             return isInferredTypeEntityClass(scope, fc.receiver);
         }
 
@@ -200,8 +227,18 @@ public final class ContinuationProcessor implements Processor {
         return false;
     }
 
-    @Override
-    public String phase() {
-        return "CONTINUATIONS";
+    private Type inferTypeOf(Scope scope, Expression receiver) {
+        if (receiver instanceof Atom) {
+            Atom name = (Atom) receiver;
+            Optional<Scope.Variable> maybeVariable = scope.resolveVariable(name.value);
+            if (maybeVariable.isPresent()) {
+                return maybeVariable.map(e -> e.type).orElse(Scope.TYPE_ANY);
+            }
+
+            return scope.resolveType(new BasicASTTypeRepresentation(null, name.value))
+                    .orElse(Scope.TYPE_ANY);
+        }
+
+        return Scope.TYPE_ANY;
     }
 }
