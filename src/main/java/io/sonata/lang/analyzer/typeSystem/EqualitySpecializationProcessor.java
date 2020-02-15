@@ -8,107 +8,165 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
-
-public final class EqualitySpecializationProcessor implements Processor {
+public final class EqualitySpecializationProcessor implements ProcessorIterator {
     private final CompilerLog log;
-    private final Scope scope;
 
-    public EqualitySpecializationProcessor(CompilerLog log, Scope scope) {
+    public static Processor processorInstance(Scope scope, CompilerLog log) {
+        return new ProcessorWrapper(scope, "EQUALITY SPECIALIZATION",
+                new EqualitySpecializationProcessor(log)
+        );
+    }
+
+    private EqualitySpecializationProcessor(CompilerLog log) {
         this.log = log;
-        this.scope = scope;
     }
 
     @Override
-    public Node apply(Node node) {
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            return new ScriptNode(script.log, script.nodes.stream().map(this::apply).collect(toList()), script.currentNode);
-        }
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
+    }
 
-        if (node instanceof EntityClass) {
-            EntityClass entityClass = (EntityClass) node;
-            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, entityClass.body.stream().map(this::apply).collect(toList()));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return new FunctionCall(receiver, arguments, node.expressionType);
+    }
 
-        if (node instanceof ValueClass) {
-            ValueClass valueClass = (ValueClass) node;
-            return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, valueClass.body.stream().map(this::apply).collect(toList()));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
 
-        if (node instanceof LetFunction) {
-            LetFunction fn = (LetFunction) node;
-            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, fn.returnType, (Expression) apply(fn.body), false, fn.isClassLevel);
-        }
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
+    }
 
-        if (node instanceof LetConstant) {
-            LetConstant constant = (LetConstant) node;
-            return new LetConstant(constant.definition, constant.letName, constant.returnType, (Expression) apply(constant.body));
-        }
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
+    }
 
-        if (node instanceof Lambda) {
-            Lambda lambda = (Lambda) node;
-            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(lambda.body), false);
-        }
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
 
-        if (node instanceof IfElse) {
-            IfElse ifElse = (IfElse) node;
-            return new IfElse(ifElse.definition, (Expression) apply(ifElse.condition), (Expression) apply(ifElse.whenTrue), (Expression) apply(ifElse.whenFalse));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
 
-        if (node instanceof BlockExpression) {
-            BlockExpression block = (BlockExpression) node;
-            return new BlockExpression(block.blockId, block.definition, block.expressions.stream().map(this::apply).map(e -> (Expression) e).collect(toList()));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
+        return node;
+    }
 
-        if (node instanceof SimpleExpression) {
-            SimpleExpression expr = (SimpleExpression) node;
-            if (expr.operator.equals("==") || expr.operator.equals("!=")) {
-                if (!isValidEquality(expr.leftSide, expr.rightSide)) {
-                    log.syntaxError(new SonataSyntaxError(expr, "Comparing unrelated types: " + expr.leftSide.type().representation() + " " + expr.operator + " " + expr.rightSide.type().representation()));
-                    return node;
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        if (node.operator.equals("==") || node.operator.equals("!=")) {
+            if (!isValidEquality(left, right)) {
+                log.syntaxError(new SonataSyntaxError(node, "Comparing unrelated types: " + node.leftSide.type().representation() + " " + node.operator + " " + node.rightSide.type().representation()));
+                return new SimpleExpression(left, node.operator, right);
+            }
+
+            final ASTTypeRepresentation typeOfComparison = left.type();
+            final Optional<Type> maybeType = scope.resolveType(typeOfComparison);
+            if (maybeType.isPresent()) {
+                final Type type = maybeType.get();
+                if (type.isValue()) {
+                    return new ValueClassEquality(left, right, node.operator.equals("!="));
                 }
-
-                final ASTTypeRepresentation typeOfComparison = expr.leftSide.type();
-                final Optional<Type> maybeType = scope.resolveType(typeOfComparison);
-                if (maybeType.isPresent()) {
-                    final Type type = maybeType.get();
-                    if (type.isValue()) {
-                        return new ValueClassEquality(expr.leftSide, expr.rightSide, expr.operator.equals("!="));
-                    }
-                }
-
-                return node;
             }
         }
 
-        if (node instanceof FunctionCall) {
-            FunctionCall fc = (FunctionCall) node;
-            return new FunctionCall(fc.receiver, fc.arguments.stream().map(this::apply).map(e -> (Expression) e).collect(toList()), fc.expressionType);
-        }
+        return new SimpleExpression(left, node.operator, right);
+    }
 
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
         return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
     }
 
     private boolean isValidEquality(Expression a, Expression b) {
         return a.type().representation().equals(b.type().representation()) || a.type().representation().equals("any") || b.type().representation().equals("any");
-    }
-
-    @Override
-    public String phase() {
-        return "EQUALITY SPECIALIZATION";
     }
 }

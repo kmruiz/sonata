@@ -41,7 +41,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
         );
     }
 
-    public LetVariableProcessor(CompilerLog log) {
+    private LetVariableProcessor(CompilerLog log) {
         this.log = log;
     }
 

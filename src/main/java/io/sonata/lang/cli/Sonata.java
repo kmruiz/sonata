@@ -44,8 +44,8 @@ public class Sonata {
                 new ContractFulfillmentProcessor(log, scope),
                 PropertyVisibilityProcessor.processorInstance(scope, log),
                 ImmutabilityCheckProcessor.processorInstance(scope, log),
-                new EqualitySpecializationProcessor(log, scope),
-                new DestructuringProcessor(symbolMap, scope),
+                EqualitySpecializationProcessor.processorInstance(scope, log),
+                DestructuringProcessor.processorInstance(scope, symbolMap),
                 new FunctionCompositionProcessor(log, scope),
                 ContinuationProcessor.processorInstance(scope),
                 AsyncFunctionProcessor.processorInstance(scope)

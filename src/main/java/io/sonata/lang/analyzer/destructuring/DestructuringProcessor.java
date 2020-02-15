@@ -7,19 +7,21 @@
 package io.sonata.lang.analyzer.destructuring;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.analyzer.symbols.SymbolResolver;
 import io.sonata.lang.analyzer.typeSystem.Scope;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
-import io.sonata.lang.parser.ast.exp.BlockExpression;
-import io.sonata.lang.parser.ast.exp.Expression;
-import io.sonata.lang.parser.ast.exp.IfElse;
-import io.sonata.lang.parser.ast.exp.SimpleExpression;
+import io.sonata.lang.parser.ast.exp.*;
+import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.Parameter;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,10 +30,16 @@ import java.util.stream.Stream;
 
 import static io.sonata.lang.javaext.Lists.append;
 
-public final class DestructuringProcessor implements Processor {
+public final class DestructuringProcessor implements ProcessorIterator {
     private final DestructuringExpressionParser expressionParsers;
 
-    public DestructuringProcessor(SymbolResolver resolver, Scope scope) {
+    public static Processor processorInstance(Scope scope, SymbolResolver resolver) {
+        return new ProcessorWrapper(scope, "DESTRUCTURING",
+                new DestructuringProcessor(resolver, scope)
+        );
+    }
+
+    private DestructuringProcessor(SymbolResolver resolver, Scope scope) {
         this.expressionParsers = new ComposedDestructuringExpressionParser(
                 new ValueClassDestructuringExpressionParser(resolver),
                 new ArrayDestructuringExpressionParser(),
@@ -40,30 +48,113 @@ public final class DestructuringProcessor implements Processor {
     }
 
     @Override
-    public Node apply(Node node) {
-        if (node instanceof ScriptNode) {
-            return parse((ScriptNode) node);
-        }
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, reduceFunctionsIfAny(body), node.currentNode);
+    }
 
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return new FunctionCall(receiver, arguments, node.expressionType);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        return new ValueClass(entityClass.definition, entityClass.name, entityClass.definedFields, reduceFunctionsIfAny(body));
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, reduceFunctionsIfAny(body));
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
         return node;
     }
 
-    private Node parse(ScriptNode node) {
-        List<Node> nodes = node.nodes.stream().map(e -> {
-            if (e instanceof ValueClass) {
-                ValueClass vc = (ValueClass) e;
-                return new ValueClass(vc.definition, vc.name, vc.definedFields, reduceFunctionsIfAny(vc.body));
-            }
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
 
-            if (e instanceof EntityClass) {
-                EntityClass entity = (EntityClass) e;
-                return new EntityClass(entity.definition, entity.name, entity.definedFields, entity.implementingContracts, reduceFunctionsIfAny(entity.body));
-            }
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
 
-            return e;
-        }).collect(Collectors.toList());
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
 
-        return new ScriptNode(node.log, reduceFunctionsIfAny(nodes), node.currentNode);
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
     }
 
     private List<Node> reduceFunctionsIfAny(List<Node> nodes) {
@@ -158,10 +249,6 @@ public final class DestructuringProcessor implements Processor {
                 }).collect(Collectors.toList());
 
         return new BlockExpression(block.definition, expressions);
-    }
-    @Override
-    public String phase() {
-        return "DESTRUCTURING";
     }
 }
 
