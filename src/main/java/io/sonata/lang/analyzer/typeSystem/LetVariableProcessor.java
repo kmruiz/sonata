@@ -220,7 +220,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
                 log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
             }
         });
-        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node, node.isAsync, node.isClassLevel);
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
     }
 
     @Override

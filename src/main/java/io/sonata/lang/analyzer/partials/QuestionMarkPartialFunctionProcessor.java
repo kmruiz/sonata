@@ -44,7 +44,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Expression apply(Processor processor, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments, Node parent) {
-        return processAnonymousParametersOnFunctionCall(node, receiver, arguments);
+        return processAnonymousParametersOnFunctionCall(receiver, arguments);
     }
 
     @Override
@@ -129,7 +129,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Node apply(Processor processor, Scope scope, LetFunction node, Expression body, Node parent) {
-        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, node.body, node.isAsync, node.isClassLevel);
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
     }
 
     @Override
@@ -147,7 +147,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
         return new Continuation(node.definition, body, node.fanOut);
     }
 
-    private Expression processAnonymousParametersOnFunctionCall(FunctionCall fc, Expression receiver, List<Expression> arguments) {
+    private Expression processAnonymousParametersOnFunctionCall(Expression receiver, List<Expression> arguments) {
         List<Expression> args = arguments.stream().map(this::buildLambdaIfNeeded).collect(Collectors.toList());
         return new FunctionCall(receiver, args);
     }

@@ -64,7 +64,7 @@ public final class DestructuringProcessor implements ProcessorIterator {
 
     @Override
     public Node apply(Processor processor, Scope classScope, EntityClass entityClass, List<Node> body, Node parent) {
-        return new ValueClass(entityClass.definition, entityClass.name, entityClass.definedFields, reduceFunctionsIfAny(body));
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, reduceFunctionsIfAny(body));
     }
 
     @Override
