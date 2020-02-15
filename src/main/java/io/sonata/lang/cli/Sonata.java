@@ -46,7 +46,7 @@ public class Sonata {
                 ImmutabilityCheckProcessor.processorInstance(scope, log),
                 EqualitySpecializationProcessor.processorInstance(scope, log),
                 DestructuringProcessor.processorInstance(scope, symbolMap),
-                new FunctionCompositionProcessor(log, scope),
+                FunctionCompositionProcessor.processorInstance(scope, log),
                 ContinuationProcessor.processorInstance(scope),
                 AsyncFunctionProcessor.processorInstance(scope)
         );
