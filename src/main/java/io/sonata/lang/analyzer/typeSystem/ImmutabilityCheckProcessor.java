@@ -8,103 +8,151 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-public final class ImmutabilityCheckProcessor implements Processor {
+public final class ImmutabilityCheckProcessor implements ProcessorIterator {
     private static final Set<String> ASSIGNMENT_OPERATORS = new HashSet<>(Arrays.asList(
-        "=", "+=", "-=", "*=", "/="
+            "=", "+=", "-=", "*=", "/="
     ));
 
-    private final CompilerLog log;
-    private final Scope scope;
+    public static Processor processorInstance(Scope scope, CompilerLog log) {
+        return new ProcessorWrapper(scope, "IMMUTABILITY CHECKER",
+                new ImmutabilityCheckProcessor(log)
+        );
+    }
 
-    public ImmutabilityCheckProcessor(CompilerLog log, Scope scope) {
+    private final CompilerLog log;
+
+    private ImmutabilityCheckProcessor(CompilerLog log) {
         this.log = log;
-        this.scope = scope;
     }
 
     @Override
-    public Node apply(Node node) {
-        apply(scope, node);
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
         return node;
     }
 
-    private void apply(Scope scope, Node node) {
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            script.nodes.parallelStream().forEach(n -> this.apply(scope.diveInIfNeeded(n), n));
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return node;
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, EntityClass node, List<Node> body) {
+        return node;
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, ValueClass node, List<Node> body) {
+        return node;
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        if (isAnAssignmentOperator(node.operator)) {
+            validate(scope.diveInIfNeeded(node.leftSide), node.leftSide);
         }
 
-        if (node instanceof EntityClass) {
-            EntityClass entityClass = (EntityClass) node;
-            entityClass.body.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
-        }
+        return node;
+    }
 
-        if (node instanceof ValueClass) {
-            ValueClass valueClass = (ValueClass) node;
-            valueClass.body.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
 
-        if (node instanceof LetFunction) {
-            LetFunction fn = (LetFunction) node;
-            fn.parameters.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
-            apply(scope.diveInIfNeeded(fn.body), fn.body);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return node;
+    }
 
-        if (node instanceof LetConstant) {
-            LetConstant constant = (LetConstant) node;
-            apply(scope.diveInIfNeeded(constant.body), constant.body);
-        }
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
 
-        if (node instanceof Lambda) {
-            Lambda lambda = (Lambda) node;
-            apply(scope.diveInIfNeeded(lambda.body), lambda.body);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return node;
+    }
 
-        if (node instanceof IfElse) {
-            IfElse ifElse = (IfElse) node;
-            apply(scope.diveInIfNeeded(ifElse.condition), ifElse.condition);
-            apply(scope.diveInIfNeeded(ifElse.whenTrue), ifElse.whenTrue);
-            apply(scope.diveInIfNeeded(ifElse.whenFalse), ifElse.whenFalse);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return node;
+    }
 
-        if (node instanceof BlockExpression) {
-            BlockExpression block = (BlockExpression) node;
-            block.expressions.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
-        }
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant node, Expression body) {
+        return node;
+    }
 
-        if (node instanceof SimpleExpression) {
-            SimpleExpression expr = (SimpleExpression) node;
-            if (isAnAssignmentOperator(expr.operator)) {
-                validate(scope.diveInIfNeeded(expr.leftSide), expr.leftSide);
-            }
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        return node;
+    }
 
-            apply(scope.diveInIfNeeded(expr.leftSide), expr.leftSide);
-            apply(scope.diveInIfNeeded(expr.rightSide), expr.rightSide);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return node;
+    }
 
-        if (node instanceof FunctionCall) {
-            FunctionCall fc = (FunctionCall) node;
-            apply(scope.diveInIfNeeded(fc.receiver), fc.receiver);
-            fc.arguments.parallelStream().forEach(b -> this.apply(scope.diveInIfNeeded(b), b));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return node;
+    }
 
-        if (node instanceof MethodReference) {
-            MethodReference ref = (MethodReference) node;
-            apply(scope.diveInIfNeeded(ref.receiver), ref.receiver);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return node;
     }
 
     private void validate(Scope scope, Expression expr) {
@@ -133,10 +181,5 @@ public final class ImmutabilityCheckProcessor implements Processor {
 
     private boolean isAnAssignmentOperator(String operator) {
         return ASSIGNMENT_OPERATORS.contains(operator);
-    }
-
-    @Override
-    public String phase() {
-        return "IMMUTABILITY CHECKER";
     }
 }

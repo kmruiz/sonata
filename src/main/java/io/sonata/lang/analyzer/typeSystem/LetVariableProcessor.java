@@ -211,7 +211,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
             // It's fine, let functions can be overloaded
         }
 
-        Scope letScope = scope.diveIn(node);
+        Scope letScope = scope.diveInIfNeeded(node);
         node.parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
             String paramName = ((SimpleParameter) parameter).name;
             try {

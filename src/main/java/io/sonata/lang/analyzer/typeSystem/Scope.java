@@ -77,7 +77,12 @@ public final class Scope {
         return root;
     }
 
-    public Scope diveIn(Scoped anchor) {
+    public Scope diveInIfNeeded(Node node) {
+        if (!(node instanceof Scoped)) {
+            return this;
+        }
+
+        Scoped anchor = (Scoped) node;
         final String anchorRepresentation = anchor.scopeId();
         final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
 
@@ -88,25 +93,6 @@ public final class Scope {
         Scope scope = new Scope(anchorRepresentation, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
         children.add(scope);
         return scope;
-    }
-
-    public Scope diveInIfNeeded(Node node) {
-        if (!(node instanceof Scoped)) {
-            return this;
-        }
-
-        Scoped anchor = (Scoped) node;
-
-        final String anchorRepresentation = anchor.scopeId();
-        final Optional<Scope> foundScope = children.stream().filter(e -> e.anchor.equals(anchorRepresentation)).findFirst();
-
-        if (!foundScope.isPresent()) {
-            Scope scope = new Scope(anchorRepresentation, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
-            children.add(scope);
-            return scope;
-        }
-
-        return foundScope.get();
     }
 
     public boolean isClassLoaded(String className) {

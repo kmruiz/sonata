@@ -7,122 +7,162 @@
 package io.sonata.lang.analyzer.typeSystem;
 
 import io.sonata.lang.analyzer.Processor;
-import io.sonata.lang.log.CompilerLog;
+import io.sonata.lang.analyzer.ProcessorIterator;
+import io.sonata.lang.analyzer.ProcessorWrapper;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.ScriptNode;
+import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
 import io.sonata.lang.parser.ast.classes.values.ValueClass;
 import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
+import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
-public final class TypeInferenceProcessor implements Processor {
-    private final CompilerLog log;
-    private final Scope rootScope;
-
-    public TypeInferenceProcessor(CompilerLog log, Scope rootScope) {
-        this.log = log;
-        this.rootScope = rootScope;
+public final class TypeInferenceProcessor implements ProcessorIterator {
+    public static Processor processorInstance(Scope scope) {
+        return new ProcessorWrapper(scope, "CLASS PROCESSING",
+                new TypeInferenceProcessor()
+        );
     }
 
     @Override
-    public Node apply(Node node) {
-        return apply(rootScope, node);
+    public Node apply(Processor parent, Scope scope, ScriptNode node, List<Node> body) {
+        return new ScriptNode(node.log, body, node.currentNode);
     }
 
-    private Node apply(Scope scope, Node node) {
-        final Scope currentScope = scope.diveInIfNeeded(node);
+    @Override
+    public Expression apply(Processor parent, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments) {
+        Type inferredType = infer(scope, node);
+        return new FunctionCall(receiver, arguments, new BasicASTTypeRepresentation(node.definition(), inferredType.name()));
+    }
 
-        if (node instanceof ScriptNode) {
-            ScriptNode script = (ScriptNode) node;
-            List<Node> nodes = script.nodes.stream().map(e -> this.apply(currentScope, e)).collect(toList());
-            return new ScriptNode(script.log, nodes, script.currentNode);
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, MethodReference node, Expression receiver) {
+        return new MethodReference(receiver, node.methodName);
+    }
 
-        if (node instanceof EntityClass) {
-            EntityClass entityClass = (EntityClass) node;
-            List<Node> body = entityClass.body.stream().map(e -> this.apply(currentScope, e)).collect(toList());
-            return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
-        }
+    @Override
+    public Node apply(Processor parent, Scope classScope, EntityClass entityClass, List<Node> body) {
+        return new EntityClass(entityClass.definition, entityClass.name, entityClass.definedFields, entityClass.implementingContracts, body);
+    }
 
-        if (node instanceof ValueClass) {
-            ValueClass valueClass  = (ValueClass) node;
-            List<Node> body = valueClass.body.stream().map(e -> this.apply(currentScope, e)).collect(toList());
-            return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
-        }
+    @Override
+    public Node apply(Processor parent, Scope classScope, ValueClass valueClass, List<Node> body) {
+        return new ValueClass(valueClass.definition, valueClass.name, valueClass.definedFields, body);
+    }
 
-        if (node instanceof LetConstant) {
-            LetConstant constant = (LetConstant) node;
-            ASTTypeRepresentation typeRepresentation = constant.returnType;
-            Type constantType = null;
-            if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
-                constantType = infer(scope, constant.body);
-            } else {
-                constantType = currentScope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
-            }
+    @Override
+    public Node apply(Processor parent, Scope scope, Contract node, List<Node> body) {
+        return new Contract(node.definition, node.name, body);
+    }
 
-            currentScope.enrichVariable(constant.letName,constant, constantType);
-            return new LetConstant(constant.definition, constant.letName, typeRepresentation, (Expression) apply(currentScope, constant.body));
-        }
+    @Override
+    public Expression apply(Processor parent, Scope scope, ArrayAccess node, Expression receiver) {
+        return new ArrayAccess(receiver, node.index);
+    }
 
-        if (node instanceof LetFunction) {
-            LetFunction fn = (LetFunction) node;
-            ASTTypeRepresentation typeRepresentation = fn.returnType;
-            Type returnType = null;
-            if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
-                returnType = infer(scope, fn.body);
-            } else {
-                returnType = currentScope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
-            }
-
-            final List<Type> paramTypes = fn.parameters.stream().map(e -> Scope.TYPE_ANY).collect(toList());
-            currentScope.enrichVariable(fn.letName, fn, new FunctionType(node.definition(), fn.letName, returnType, paramTypes));
-            return new LetFunction(fn.letId, fn.definition, fn.letName, fn.parameters, typeRepresentation, (Expression) apply(currentScope, fn.body), false, fn.isClassLevel);
-        }
-
-        if (node instanceof BlockExpression) {
-            BlockExpression blockExpression = (BlockExpression) node;
-            List<Expression> expressions = blockExpression.expressions.stream().map(e -> this.apply(currentScope, e)).map(t -> (Expression) t).collect(toList());
-            return new BlockExpression(blockExpression.blockId, blockExpression.definition, expressions);
-        }
-
-        if (node instanceof FunctionCall) {
-            FunctionCall fc = (FunctionCall) node;
-            List<Expression> parameters = fc.arguments.stream().map(e -> this.apply(currentScope, e)).map(e -> (Expression) e).collect(toList());
-
-            Type inferredType = infer(scope, fc);
-            return new FunctionCall(fc.receiver, parameters, new BasicASTTypeRepresentation(fc.definition(), inferredType.name()));
-        }
-
-        if (node instanceof IfElse) {
-            IfElse ifElse = (IfElse) node;
-
-            return new IfElse(
-                    ifElse.definition,
-                    (Expression) apply(currentScope, ifElse.condition),
-                    (Expression) apply(currentScope, ifElse.whenTrue),
-                    ifElse.whenFalse != null ? (Expression) apply(currentScope, ifElse.whenFalse) : null
-            );
-        }
-
-        if (node instanceof SimpleExpression) {
-            SimpleExpression expr = (SimpleExpression) node;
-            return new SimpleExpression((Expression) apply(currentScope, expr.leftSide), expr.operator, (Expression) apply(currentScope, expr.rightSide));
-        }
-
-        if (node instanceof Lambda) {
-            Lambda lambda = (Lambda) node;
-            return new Lambda(lambda.lambdaId, lambda.definition, lambda.parameters, (Expression) apply(scope.diveInIfNeeded(lambda), lambda.body), lambda.isAsync);
-        }
-
+    @Override
+    public Expression apply(Processor parent, Scope scope, Atom node) {
         return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, LiteralArray node, List<Expression> contents) {
+        return new LiteralArray(node.definition, contents);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, PriorityExpression node, Expression content) {
+        return new PriorityExpression(content);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Record node, Map<Atom, Expression> values) {
+        return new Record(node.definition, values);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, SimpleExpression node, Expression left, Expression right) {
+        return new SimpleExpression(left, node.operator, right);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TypeCheckExpression node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, ValueClassEquality node, Expression left, Expression right) {
+        return new ValueClassEquality(left, right, node.negate);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, RequiresNode node) {
+        return node;
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, TailExtraction node, Expression receiver) {
+        return new TailExtraction(receiver, node.fromIndex);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, BlockExpression node, List<Expression> body) {
+        return new BlockExpression(node.blockId, node.definition, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetConstant constant, Expression body) {
+        ASTTypeRepresentation typeRepresentation = constant.returnType;
+        Type constantType = null;
+        if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
+            constantType = infer(scope, constant.body);
+        } else {
+            constantType = scope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
+        }
+
+        scope.enrichVariable(constant.letName,constant, constantType);
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+    }
+
+    @Override
+    public Node apply(Processor parent, Scope scope, LetFunction node, Expression body) {
+        ASTTypeRepresentation typeRepresentation = node.returnType;
+
+        Type returnType = null;
+        if (typeRepresentation == null || typeRepresentation instanceof EmptyASTTypeRepresentation) {
+            returnType = infer(scope, body);
+        } else {
+            returnType = scope.resolveType(typeRepresentation).orElse(Scope.TYPE_ANY);
+        }
+
+        final List<Type> paramTypes = node.parameters.stream().map(e -> Scope.TYPE_ANY).collect(toList());
+        scope.enrichVariable(node.letName, node, new FunctionType(node.definition(), node.letName, returnType, paramTypes));
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, typeRepresentation, body, node.isAsync, node.isClassLevel);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Lambda node, Expression body) {
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, IfElse node, Expression condition, Expression whenTrue, Expression whenFalse) {
+        return new IfElse(node.definition, condition, whenTrue, whenFalse);
+    }
+
+    @Override
+    public Expression apply(Processor parent, Scope scope, Continuation node, Expression body) {
+        return new Continuation(node.definition, body, node.fanOut);
     }
 
     public Type infer(Scope scope, Expression expression) {
@@ -198,10 +238,5 @@ public final class TypeInferenceProcessor implements Processor {
         }
 
         return Scope.TYPE_ANY;
-    }
-
-    @Override
-    public String phase() {
-        return "TYPE INFERENCE";
     }
 }
