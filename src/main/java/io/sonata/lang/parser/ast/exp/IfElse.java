@@ -37,6 +37,10 @@ public class IfElse extends ComposedExpression implements Scoped {
     }
 
     private int weightOf(Expression expr) {
+        if (expr instanceof TypeCheckExpression) {
+            return -1;
+        }
+
         if (expr instanceof SimpleExpression) {
             return weightOf(((SimpleExpression) expr).leftSide) + weightOf(((SimpleExpression) expr).rightSide);
         }
