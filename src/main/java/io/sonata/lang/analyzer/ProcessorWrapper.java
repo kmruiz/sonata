@@ -200,7 +200,7 @@ public class ProcessorWrapper implements Processor {
             return iterator.apply(this, scope, continuation, body, parent);
         }
 
-        if (node instanceof CommentNode || node instanceof RootNode || node == null) {
+        if (node instanceof CommentNode || node instanceof RootNode || node instanceof EmptyExpression || node == null) {
             return node;
         }
 

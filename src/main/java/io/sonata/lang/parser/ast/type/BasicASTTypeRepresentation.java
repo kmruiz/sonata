@@ -27,6 +27,11 @@ public class BasicASTTypeRepresentation extends ComposedASTTypeRepresentation im
     }
 
     @Override
+    public String toString() {
+        return representation();
+    }
+
+    @Override
     public SourcePosition definition() {
         return definition;
     }

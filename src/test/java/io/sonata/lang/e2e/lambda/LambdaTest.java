@@ -22,6 +22,11 @@ public class LambdaTest extends E2ETest {
     }
 
     @Test
+    public void basicUsageOfLambdaWithParamsIsPair() throws Exception {
+        assertResourceScriptOutputs("true\nfalse", "lambda/lambda-is-pair");
+    }
+
+    @Test
     public void lambdaWithQuestionMark() throws Exception {
         assertResourceScriptOutputs("10,20,30,40,50", "lambda/implicit-lambda-with-question-mark");
     }

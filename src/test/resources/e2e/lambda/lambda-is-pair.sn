@@ -1,0 +1,6 @@
+requires std.io
+
+let isPair = ? % 2 == 0
+
+println(isPair(2))
+println(isPair(3))

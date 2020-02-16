@@ -18,7 +18,7 @@ public abstract class ComposedExpression implements Expression {
                 return new TailExtraction(this, 0);
             }
 
-            return SimpleExpression.initial(this, token.representation());
+            return PartialSimpleExpression.initial(this, token.representation());
         }
 
         if (token instanceof SeparatorToken) {

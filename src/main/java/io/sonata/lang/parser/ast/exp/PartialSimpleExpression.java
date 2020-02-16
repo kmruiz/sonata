@@ -4,34 +4,44 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package io.sonata.lang.parser.ast.exp;
 
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.Token;
 
-public class SimpleExpression extends ComposedExpression implements Expression {
-    public final Expression leftSide;
-    public final String operator;
-    public final Expression rightSide;
+public class PartialSimpleExpression implements Expression {
+    private final Expression left;
+    private final String operator;
 
-    public SimpleExpression(Expression leftSide, String operator, Expression rightSide) {
-        this.leftSide = leftSide;
+    public PartialSimpleExpression(Expression left, String operator) {
+        this.left = left;
         this.operator = operator;
-        this.rightSide = rightSide;
     }
+
+    public static Expression initial(Expression leftSide, String operator) {
+        return new PartialSimpleExpression(leftSide, operator);
+    }
+
     @Override
-    public String representation() {
-        return leftSide.representation() + " " + operator + " " + rightSide.representation();
+    public Expression consume(Token token) {
+        return new SimpleExpression(left, operator, EmptyExpression.instance().consume(token));
     }
 
     @Override
     public ASTTypeRepresentation type() {
-        return new BasicASTTypeRepresentation(leftSide.definition(), "any");
+        return new BasicASTTypeRepresentation(left.definition(), "any");
     }
 
     @Override
     public SourcePosition definition() {
-        return leftSide.definition();
+        return left.definition();
+    }
+
+    @Override
+    public String representation() {
+        return left.representation() + " " + operator;
     }
 }

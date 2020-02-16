@@ -94,7 +94,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Expression apply(Processor processor, Scope scope, SimpleExpression node, Expression left, Expression right, Node parent) {
-        return buildLambdaIfNeeded(new SimpleExpression(left, node.operator, right));
+        return new SimpleExpression(left, node.operator, right);
     }
 
     @Override
@@ -124,17 +124,17 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Node apply(Processor processor, Scope scope, LetConstant constant, Expression body, Node parent) {
-        return new LetConstant(constant.definition, constant.letName, constant.returnType, body);
+        return new LetConstant(constant.definition, constant.letName, constant.returnType, buildLambdaIfNeeded(body));
     }
 
     @Override
     public Node apply(Processor processor, Scope scope, LetFunction node, Expression body, Node parent) {
-        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, body, node.isAsync, node.isClassLevel);
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, node.returnType, buildLambdaIfNeeded(body), node.isAsync, node.isClassLevel);
     }
 
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
-        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, buildLambdaIfNeeded(body), node.isAsync);
     }
 
     @Override
@@ -153,7 +153,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
     }
 
     private Expression buildLambdaIfNeeded(Expression expression) {
-        ArrayList<SimpleParameter> lambdaParams = new ArrayList<SimpleParameter>(4);
+        ArrayList<SimpleParameter> lambdaParams = new ArrayList<>(4);
         Supplier<String> paramNameSupplier = scopedLambdaParameterNameSupplier(expression.definition(), lambdaParams);
         Expression newExpression = parseExpressionForLambda(expression, paramNameSupplier);
 
