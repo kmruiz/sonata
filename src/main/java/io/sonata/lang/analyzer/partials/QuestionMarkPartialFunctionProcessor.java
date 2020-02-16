@@ -84,7 +84,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Expression apply(Processor processor, Scope scope, PriorityExpression node, Expression content, Node parent) {
-        return buildLambdaIfNeeded(new PriorityExpression(content));
+        return new PriorityExpression(content);
     }
 
     @Override
@@ -134,7 +134,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
 
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
-        return new Lambda(node.lambdaId, node.definition, node.parameters, buildLambdaIfNeeded(body), node.isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
     }
 
     @Override
@@ -153,6 +153,10 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
     }
 
     private Expression buildLambdaIfNeeded(Expression expression) {
+        if (expression == null) {
+            return null;
+        }
+
         ArrayList<SimpleParameter> lambdaParams = new ArrayList<>(4);
         Supplier<String> paramNameSupplier = scopedLambdaParameterNameSupplier(expression.definition(), lambdaParams);
         Expression newExpression = parseExpressionForLambda(expression, paramNameSupplier);

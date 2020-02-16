@@ -107,7 +107,7 @@ public final class EqualitySpecializationProcessor implements ProcessorIterator 
             final Optional<Type> maybeType = scope.resolveType(typeOfComparison);
             if (maybeType.isPresent()) {
                 final Type type = maybeType.get();
-                if (type.isValue()) {
+                if (isNotPrimitiveValue(type)) {
                     return new ValueClassEquality(left, right, node.operator.equals("!="));
                 }
             }
@@ -164,6 +164,10 @@ public final class EqualitySpecializationProcessor implements ProcessorIterator 
     @Override
     public Expression apply(Processor processor, Scope scope, Continuation node, Expression body, Node parent) {
         return new Continuation(node.definition, body, node.fanOut);
+    }
+
+    private boolean isNotPrimitiveValue(Type type) {
+        return type.isValue() && type != Scope.TYPE_NUMBER;
     }
 
     private boolean isValidEquality(Expression a, Expression b) {

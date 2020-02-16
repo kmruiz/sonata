@@ -9,6 +9,9 @@ package io.sonata.lang.parser.ast.exp;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.Token;
+
+import static io.sonata.lang.parser.ast.exp.EmptyExpression.instance;
 
 public class SimpleExpression extends ComposedExpression implements Expression {
     public final Expression leftSide;
@@ -20,6 +23,21 @@ public class SimpleExpression extends ComposedExpression implements Expression {
         this.operator = operator;
         this.rightSide = rightSide;
     }
+
+    public static Expression initial(Expression leftSide, String operator) {
+        return new SimpleExpression(leftSide, operator, instance());
+    }
+
+    @Override
+    public Expression consume(Token token) {
+        Expression newRightSide = rightSide.consume(token);
+        if (newRightSide == null) {
+            return null;
+        }
+
+        return new SimpleExpression(leftSide, operator, newRightSide);
+    }
+
     @Override
     public String representation() {
         return leftSide.representation() + " " + operator + " " + rightSide.representation();
