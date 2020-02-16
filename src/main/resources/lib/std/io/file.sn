@@ -42,7 +42,7 @@ entity class IOChannel(descriptor: FileDescriptor, buffer: any, position: number
 
     let stream(strategy: ReadOnlyIOChannelStreamingStrategy): Stream = {
         self.streamingStrategy = strategy
-        Stream([self])
+        _PollBasedStream([self])
     }
 
     let poll(): _StreamToken = {

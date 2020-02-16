@@ -212,9 +212,7 @@ public final class ContinuationProcessor implements ProcessorIterator {
                 }
 
                 Type type = inferTypeOf(scope, methodReference.receiver);
-                return Optional.ofNullable(type.methods().get(methodReference.methodName))
-                        .filter(e -> e.returnType.isEntity())
-                        .isPresent();
+                return type.isEntity();
             }
 
             return isInferredTypeEntityClass(scope, fc.receiver);

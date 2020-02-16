@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import io.sonata.lang.e2e.NodeDockerTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
 
@@ -20,11 +21,13 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
     private static final Gson GSON = new Gson();
 
     @Test
+    @Timeout(10)
     public void std_lib_stream() throws Exception {
         assertTestsRunSuccessfully("stream");
     }
 
     @Test
+    @Timeout(10)
     public void std_lib_io_file() throws Exception {
         assertTestsRunSuccessfully("io/file");
     }

@@ -15,6 +15,7 @@ import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -36,6 +37,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Timeout(1)
 public abstract class NodeDockerTest {
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
         assertScriptOutputs(expectedOutput, getLiteralResource(resource));
