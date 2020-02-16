@@ -37,7 +37,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Timeout(1)
+@Timeout(10)
 public abstract class NodeDockerTest {
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
         assertScriptOutputs(expectedOutput, getLiteralResource(resource));

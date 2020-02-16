@@ -21,13 +21,11 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
     private static final Gson GSON = new Gson();
 
     @Test
-    @Timeout(10)
     public void std_lib_stream() throws Exception {
         assertTestsRunSuccessfully("stream");
     }
 
     @Test
-    @Timeout(10)
     public void std_lib_io_file() throws Exception {
         assertTestsRunSuccessfully("io/file");
     }
