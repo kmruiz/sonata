@@ -168,6 +168,7 @@ public final class InlineRequiredModuleProcessor implements ProcessorIterator {
                     .replaceModule(requires.module)
                     .map(Stream::of)
                     .orElse(Stream.empty())
+                    .parallel()
                     .flatMap(e -> e.nodes.stream())
                     .flatMap(body -> {
                         if (body instanceof RequiresNode) {
