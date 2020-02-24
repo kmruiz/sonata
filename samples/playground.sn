@@ -1,19 +1,5 @@
-requires std.testing
 requires std.stream
-requires std.range
 requires std.io
 
-let json(a: any) = JSON.stringify(a)
-
-let _ = Testing(TestRunner([], json -> println))
-
-_.describe('stream', let (it) = {
-    it('should filter out using a predicate stream contents', let (assert) = {
-        let left = Stream.fromRange(1, 100).filter(? % 2 == 0).take(5).array()
-        let right = [2, 4, 6, 8, 10]
-
-        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
-    })
-})
-
-_.run()
+let sum = Stream.fromSupplier(0, ? + 1).take(100).fold(0, ? + ?)
+println('Sum is ' + sum)
