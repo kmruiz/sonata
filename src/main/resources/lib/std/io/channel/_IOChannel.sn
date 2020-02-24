@@ -9,18 +9,12 @@ contract ReadIOChannel {
     let seek(position: number)
 }
 
-contract TwoWayIOChannel {
-    let write(data: any)
-    let readAll()
-    let seek(position: number)
-}
+contract TwoWayIOChannel extends WriteIOChannel, ReadIOChannel {}
 
 contract ReadOnlyIOChannelStreamingStrategy {
     let splitBuffer(buffer: string, eof: boolean): string[]
 }
 
-contract ReadOnlyIOChannel {
-    let readAll()
-    let seek(position: number)
+contract ReadOnlyIOChannel extends ReadIOChannel {
     let stream(strategy: ReadOnlyIOChannelStreamingStrategy): Stream
 }
