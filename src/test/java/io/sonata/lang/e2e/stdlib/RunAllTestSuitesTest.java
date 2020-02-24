@@ -11,13 +11,16 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import io.sonata.lang.e2e.NodeDockerTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class RunAllTestSuitesTest extends NodeDockerTest {
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_GREEN = "\u001B[32m";
+
     private static final Gson GSON = new Gson();
 
     @Test
@@ -53,16 +56,16 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
         System.out.println("================================================================================");
         result.tests.forEach(test -> {
             if (test.failed) {
-                System.err.println("✘ " + test.test);
+                System.out.println(ANSI_RED + "✘ " + test.test + ANSI_RESET);
                 test.assertions.forEach(assertion -> {
                     if (!assertion.success) {
-                        System.err.println("\t ✘ " + assertion.message);
+                        System.out.println(ANSI_RED + "\t ✘ " + assertion.message + ANSI_RESET);
                     } else {
-                        System.out.println("\t ✔ " + assertion.message);
+                        System.out.println(ANSI_GREEN + "\t ✔ " + assertion.message + ANSI_RESET);
                     }
                 });
             } else {
-                System.out.println("✔ " + test.test);
+                System.out.println(ANSI_GREEN + "✔ " + test.test + ANSI_RESET);
             }
         });
     }
