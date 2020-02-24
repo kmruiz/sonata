@@ -366,6 +366,10 @@ public class JavaScriptBackend implements CompilerBackend {
         emitEnqueueFunctionFor("stop", "$stop$");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
         node.body.forEach(e -> emitNode(e, context.inEntityClass()));
+        emit("let $evict$ = EVT(self);");
+        emitEnqueueFunctionFor("evict", "$evict$");
+        emit("let $recover$ = REC(self);");
+        emitEnqueueFunctionFor("recover", "$recover$");
         emit("return self;}");
     }
 
@@ -449,6 +453,8 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("return p}}");
         emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
         emit("function VCE(a,b){return JSON.stringify(a)==JSON.stringify(b)}");
+        emit("function EVT(s){const x=s.evict||function(){}; const F=function(){x();}; F.messageName='evict'; return F;}");
+        emit("function REC(s){const x=s.recover||function(){}; const F=function(){x();}; F.messageName='recover'; return F;}");
     }
 
     private void emitEnqueueFunctionFor(String baseName, String internalFunctionName) {
