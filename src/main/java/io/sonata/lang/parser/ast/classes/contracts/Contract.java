@@ -19,21 +19,27 @@ public class Contract implements Node, Scoped {
     public final SourcePosition definition;
     public final String name;
     public final List<Node> body;
+    public final List<String> extensions;
 
     public Contract(SourcePosition definition, String name) {
-        this(definition, name, Collections.emptyList());
+        this(definition, name, Collections.emptyList(), Collections.emptyList());
     }
 
-    public Contract(SourcePosition definition, String name, List<Node> body) {
+    public Contract(SourcePosition definition, String name, List<Node> body, List<String> extensions) {
         this.definition = definition;
         this.name = name;
         this.body = body;
+        this.extensions = extensions;
     }
 
     @Override
     public Node consume(Token token) {
         if (token.representation().equals("{")) {
-            return PartialContractWithBody.initial(definition, name);
+            return PartialContractWithBody.initial(definition, name, extensions);
+        }
+
+        if (token.representation().equals("extends")) {
+            return PartialContractWithExtensions.initial(definition, name);
         }
 
         return null;

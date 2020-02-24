@@ -12,6 +12,8 @@ public final class ParserException extends RuntimeException {
     private final SonataSyntaxError syntaxError;
 
     public ParserException(SonataSyntaxError syntaxError) {
+        super(syntaxError.message);
+
         this.syntaxError = syntaxError;
     }
 

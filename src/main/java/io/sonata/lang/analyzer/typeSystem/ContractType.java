@@ -9,17 +9,20 @@ package io.sonata.lang.analyzer.typeSystem;
 import io.sonata.lang.source.SourcePosition;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class ContractType implements Type {
     public final SourcePosition definition;
     public final String name;
+    public final List<String> extensions;
     public final Map<String, FunctionType> methods;
     public final Map<String, FunctionType> classLevelMethods;
 
-    public ContractType(SourcePosition definition, String name, Map<String, FunctionType> methods, Map<String, FunctionType> classLevelMethods) {
+    public ContractType(SourcePosition definition, String name, List<String> extensions, Map<String, FunctionType> methods, Map<String, FunctionType> classLevelMethods) {
         this.definition = definition;
         this.name = name;
+        this.extensions = extensions;
         this.methods = methods;
         this.classLevelMethods = classLevelMethods;
     }

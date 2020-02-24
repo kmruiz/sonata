@@ -22,16 +22,18 @@ public class PartialContractWithBody implements Node {
     private final String name;
     private final List<Node> declarations;
     private final Node current;
+    private final List<String> extensions;
 
-    private PartialContractWithBody(SourcePosition definition, String name, List<Node> declarations, Node current) {
+    private PartialContractWithBody(SourcePosition definition, String name, List<Node> declarations, Node current, List<String> extensions) {
         this.definition = definition;
         this.name = name;
         this.declarations = declarations;
         this.current = current;
+        this.extensions = extensions;
     }
 
-    public static PartialContractWithBody initial(SourcePosition definition, String name) {
-        return new PartialContractWithBody(definition, name, Collections.emptyList(), RootNode.instance());
+    public static PartialContractWithBody initial(SourcePosition definition, String name, List<String> extensions) {
+        return new PartialContractWithBody(definition, name, Collections.emptyList(), RootNode.instance(), extensions);
     }
 
     @Override
@@ -48,20 +50,20 @@ public class PartialContractWithBody implements Node {
         if (nextExpr == null) {
             if (token.representation().equals("}")) {
                 if (current instanceof RootNode) {
-                    return new Contract(definition, name, declarations);
+                    return new Contract(definition, name, declarations, extensions);
                 }
 
-                return new Contract(definition, name, append(declarations, current));
+                return new Contract(definition, name, append(declarations, current), extensions);
             }
 
             if (current instanceof RootNode) {
                 return this;
             }
 
-            return new PartialContractWithBody(definition, name, append(declarations, current), RootNode.instance().consume(token));
+            return new PartialContractWithBody(definition, name, append(declarations, current), RootNode.instance().consume(token), extensions);
         }
 
-        return new PartialContractWithBody(definition, name, declarations, nextExpr);
+        return new PartialContractWithBody(definition, name, declarations, nextExpr, extensions);
     }
 
     @Override

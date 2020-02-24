@@ -1,0 +1,15 @@
+contract Pinger {
+    let ping()
+}
+
+contract Ponger {
+    let pong()
+}
+
+contract Game extends Pinger, Ponger {
+
+}
+
+entity class Doer implements Game {
+    let pong() = {}
+}

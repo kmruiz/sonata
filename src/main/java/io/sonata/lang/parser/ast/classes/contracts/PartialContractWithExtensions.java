@@ -6,26 +6,56 @@
  */
 package io.sonata.lang.parser.ast.classes.contracts;
 
+import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.source.SourcePosition;
 import io.sonata.lang.tokenizer.token.Token;
 
-public class PartialContract implements Node {
-    private final SourcePosition definition;
-    private final String name;
+import java.util.Collections;
+import java.util.List;
 
-    private PartialContract(SourcePosition definition, String name) {
-        this.definition = definition;
-        this.name = name;
+import static io.sonata.lang.javaext.Lists.append;
+
+public class PartialContractWithExtensions implements Node {
+    enum State {
+        ON_CONTRACT,
+        ON_SEPARATOR
     }
 
-    public static PartialContract initial(SourcePosition definition) {
-        return new PartialContract(definition, null);
+    private final SourcePosition definition;
+    private final String name;
+    private final State state;
+    private final List<String> extensions;
+
+    public PartialContractWithExtensions(SourcePosition definition, String name, State state, List<String> extensions) {
+        this.definition = definition;
+        this.name = name;
+        this.state = state;
+        this.extensions = extensions;
+    }
+
+    public static PartialContractWithExtensions initial(SourcePosition definition, String name) {
+        return new PartialContractWithExtensions(definition, name, State.ON_CONTRACT, Collections.emptyList());
     }
 
     @Override
     public Node consume(Token token) {
-        return new Contract(definition, token.representation());
+        switch (state) {
+            case ON_CONTRACT:
+                return new PartialContractWithExtensions(definition, name,State.ON_SEPARATOR, append(extensions, token.representation()));
+            case ON_SEPARATOR:
+                if (token.representation().equals("{")) {
+                    return PartialContractWithBody.initial(definition, name, extensions);
+                }
+
+                if (token.representation().equals("\n")) {
+                    return new Contract(definition, token.representation(), Collections.emptyList(), extensions);
+                }
+
+                return new PartialContractWithExtensions(definition, name, State.ON_CONTRACT, extensions);
+        }
+
+        throw new ParserException(this, "Unexpected token " + token.representation());
     }
 
     @Override

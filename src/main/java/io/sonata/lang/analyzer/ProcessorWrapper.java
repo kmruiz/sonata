@@ -204,7 +204,7 @@ public class ProcessorWrapper implements Processor {
             return node;
         }
 
-        throw new ParserException(node, "Unknown node");
+        throw new ParserException(node, node.definition() + " Unknown node " + node.getClass().getSimpleName() + ": " + node.representation());
     }
 
     @Override

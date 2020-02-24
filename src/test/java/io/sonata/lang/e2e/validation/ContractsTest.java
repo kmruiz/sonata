@@ -30,4 +30,9 @@ public class ContractsTest extends E2ETest {
     public void canNotImplementAContractWithoutImplementingMethods() {
         assertSyntaxError("To implement a contract, you must implement all methods defined. Missing method 'ping' definition in contract 'Pinger'", "validation/contracts/must-implement-all-contract-methods");
     }
+
+    @Test
+    public void canNotImplementAContractWithoutImplementingMethodsFromParentContracts() {
+        assertSyntaxError("To implement a contract, you must implement all methods defined. Missing method 'ping' definition in contract 'Game'", "validation/contracts/must-implement-all-multiple-contracts");
+    }
 }

@@ -55,7 +55,7 @@ public final class AsyncFunctionProcessor implements ProcessorIterator {
 
     @Override
     public Node apply(Processor processor, Scope scope, Contract node, List<Node> body, Node parent) {
-        return new Contract(node.definition, node.name, body);
+        return new Contract(node.definition, node.name, body, node.extensions);
     }
 
     @Override
