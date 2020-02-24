@@ -2,7 +2,7 @@ entity class _ChannelStreamByLine(buffer: string) implements ReadOnlyIOChannelSt
     let splitBuffer(buffer: string, eof: boolean): string[] = {
         self.buffer += buffer
         let result = self.buffer.split('\n')
-        let amountSplit = Stream.fromArray(result).fold(0, let (a, b) = a + b.length) + result.length
+        let amountSplit = Stream.fromArray(result).fold(0, ? + ?.length) + result.length
         self.buffer = self.buffer.substring(amountSplit) || ''
         if (eof) {
             if (self.buffer == '') {
