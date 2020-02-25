@@ -13,12 +13,12 @@ import org.junit.jupiter.api.Test;
 public class ConcurrencyTest extends NodeDockerTest {
     @Test
     public void shouldRunBothEntitiesInParallel() throws Exception {
-        assertResourceScriptOutputs("0> ping\n0> pong\n1> ping\n1> pong\nping end\npong end\ndoing things asynchronously", "concurrency/ping-pong");
+        assertResourceScriptOutputs("doing things asynchronously\n0> ping\n0> pong\n1> ping\n1> pong\nping end\npong end", "concurrency/ping-pong");
     }
 
     @Test
     public void shouldRunBothEntitiesInParallelWithState() throws Exception {
-        assertResourceScriptOutputs("1> ping\n1> pong\n2> ping\n2> pong\ndoing things asynchronously", "concurrency/ping-pong-stateful");
+        assertResourceScriptOutputs("doing things asynchronously\n1> ping\n1> pong\n2> ping\n2> pong", "concurrency/ping-pong-stateful");
     }
 
     @Test

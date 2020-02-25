@@ -60,4 +60,8 @@ public class BlockExpression implements Expression, Scoped {
     public String scopeId() {
         return blockId;
     }
+
+    public boolean isLastExpression(Expression expr) {
+        return expressions.get(expressions.size() - 1) == expr;
+    }
 }

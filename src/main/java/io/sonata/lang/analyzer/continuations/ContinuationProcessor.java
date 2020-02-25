@@ -43,6 +43,17 @@ public final class ContinuationProcessor implements ProcessorIterator {
     public Expression apply(Processor processor, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments, Node parent) {
         FunctionCall newFn = new FunctionCall(receiver, arguments, node.expressionType);
 
+        if (parent instanceof BlockExpression) {
+            BlockExpression parentBlock = (BlockExpression) parent;
+            if (!parentBlock.isLastExpression(node)) {
+                return newFn;
+            }
+        }
+
+        if (parent instanceof ScriptNode) {
+            return newFn;
+        }
+
         if (scope.inEntityClass() && shouldWaitForAllContinuations(scope, newFn)) {
             return new Continuation(newFn.definition(), newFn, true);
         }
