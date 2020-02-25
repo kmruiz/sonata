@@ -14,17 +14,16 @@ import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.WaitingConsumer;
-import org.testcontainers.utility.MountableFile;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -37,8 +36,28 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Timeout(10)
+@Timeout(5)
+@Testcontainers(disabledWithoutDocker = true)
 public abstract class NodeDockerTest {
+    private static File TARGET_DIRECTORY;
+
+    static {
+        try {
+            TARGET_DIRECTORY = Files.createTempDirectory("sonata.e2e").toFile();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }
+    }
+
+    @Container
+    private GenericContainer nodeContainer = new GenericContainer("node:12-alpine")
+            .withFileSystemBind(TARGET_DIRECTORY.getAbsolutePath(), "/code", BindMode.READ_WRITE)
+            .withCommand("node", "-e", "require('fs').watch('.',(e,f)=>{ require('./'+f); setTimeout(() => process.exit(), 500)});")
+            .withWorkingDirectory("/code")
+            .withStartupAttempts(2)
+            .withStartupTimeout(Duration.ofSeconds(10));
+
     protected final void assertResourceScriptOutputs(String expectedOutput, String resource) throws Exception {
         assertScriptOutputs(expectedOutput, getLiteralResource(resource));
     }
@@ -62,8 +81,7 @@ public abstract class NodeDockerTest {
             return null;
         }).when(mockLog).syntaxError(Mockito.any());
 
-        String output = compileToString(mockLog, getLiteralResource(resource));
-        System.out.println(">> JavaScript:\n" + output);
+        compileToTemporalPath(mockLog, getLiteralResource(resource));
         boolean found = syntaxErrors.stream().anyMatch(p -> p.message.contains(errorMessage));
         assertTrue(found, "Could not find a syntax error containing the following error message: " + errorMessage + "\n Found errors: " + syntaxErrors.stream().map(e -> e.message).collect(joining("\n")));
     }
@@ -76,57 +94,33 @@ public abstract class NodeDockerTest {
             return null;
         }).when(mockLog).syntaxError(Mockito.any());
 
-        String output = compileToString(mockLog, getLiteralResource(resource));
-        System.out.println(">> JavaScript:\n" + output);
+        compileToTemporalPath(mockLog, getLiteralResource(resource));
         boolean empty = syntaxErrors.isEmpty();
         assertTrue(empty, "Could not compile script.\n Found errors: " + syntaxErrors.stream().map(e -> e.message).collect(joining("\n")));
     }
 
-    private GenericContainer executeScript(String literalScript) throws Exception {
-        String compiledVersion = compileToTemporalPath(CompilerLog.console(), literalScript);
-        System.out.println(">> Source Code:\n" + literalScript);
-        System.out.println(">> JavaScript:\n" + readString(Paths.get(compiledVersion)));
-
-        GenericContainer container = new GenericContainer("node:12-alpine")
-                .withCopyFileToContainer(MountableFile.forHostPath(compiledVersion), "./script.js")
-                .withCommand("node script.js")
-                .withStartupAttempts(2)
-                .withStartupTimeout(Duration.ofSeconds(5));
-
-        container.start();
-        return container;
-    }
-
-    private String compileToString(CompilerLog log, String literalScript) throws Exception {
-        Path path = Paths.get(compileToTemporalPath(log, literalScript));
-        return readString(path);
-    }
-
-    private String compileToTemporalPath(CompilerLog log, String literalScript) throws Exception {
+    private void compileToTemporalPath(CompilerLog log, String literalScript) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(baos));
 
         Source literalSource = Source.fromLiteral(literalScript);
         Sonata.compile(log, Flowable.just(literalSource), RequiresPaths.are(), new JavaScriptBackend(writer)).blockingAwait();
-        String output = File.createTempFile("io.sonata.lang.e2e", ".output.js").getAbsolutePath();
+        final File tempFile = File.createTempFile("io.sonata.lang.e2e", ".output.js", TARGET_DIRECTORY);
+        String output = tempFile.getAbsolutePath();
 
         Files.write(Paths.get(output), baos.toByteArray(), CREATE, TRUNCATE_EXISTING);
-        return output;
+
+        System.out.println(">> Source Code:\n" + literalScript);
+        System.out.println(">> JavaScript:\n" + new String(baos.toByteArray()));
     }
 
-    private String readString(Path path) throws IOException {
-        return new String(Files.readAllBytes(path));
-    }
-
-    @NotNull
     private String runAndGetOutput(String script) throws Exception {
         WaitingConsumer waitingConsumer = new WaitingConsumer();
-        GenericContainer container = executeScript(script);
-
-        container.followOutput(waitingConsumer, OutputFrame.OutputType.STDOUT);
+        nodeContainer.followOutput(waitingConsumer);
+        compileToTemporalPath(CompilerLog.console(), script);
         waitingConsumer.waitUntilEnd();
 
-        return container.getLogs().trim().replaceAll("\\n{2,}", "\n");
+        return nodeContainer.getLogs().trim().replaceAll("\\n{2,}", "\n");
     }
 
     private String getLiteralResource(String resource) {
