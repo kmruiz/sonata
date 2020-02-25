@@ -1,0 +1,28 @@
+requires std.pubsub._PubSub
+
+entity class InMemoryBroker(subscriptions: Subscription[], idGenerator: number) implements Broker {
+    let publisherFor(topic: string): Publisher = InMemoryPublisher(self, topic)
+    let topicAsStream(topic: string): Stream = _PollBasedStream([_BrokerTopicAsProvider(self, topic, 0, [])])
+
+    let propagateMessage(topic: string, message: Message) = {
+        self.subscriptions[topic].forEach(?.handler(message))
+    }
+
+    let subscribeTo(topic: string, handler: (Message) -> any): Subscription = {
+        let subscription = Subscription(topic + '_' + self.idGenerator, topic, handler)
+
+        self.subscriptions[topic] = self.subscriptions[topic] || []
+        self.subscriptions[topic].push(subscription)
+        self.idGenerator += 1
+
+        subscription
+    }
+
+    let unsubscribe(subscription: Subscription) = {
+        self.subscriptions[subscription.topic] = self.subscriptions[subscription.topic].filter(?.id != subscription.id)
+    }
+}
+
+entity class InMemoryPublisher(broker: InMemoryBroker, topic: string) implements Publisher {
+    let publish(message: Message) = broker.propagateMessage(topic, message)
+}

@@ -1,5 +1,15 @@
 requires std.stream
 requires std.io
+requires std.pubsub.inmemory
 
-let sum = Stream.fromSupplier(0, ? + 1).take(100).fold(0, ? + ?)
-println('Sum is ' + sum)
+let broker: Broker = Broker.memory()
+let myTopic: Stream = broker.topicAsStream('my-topic')
+myTopic.forEach(println)
+
+let publisher: Publisher = broker.publisherFor('my-topic')
+publisher.publish(Message('hey 1', { cool: true }))
+publisher.publish(Message('hey 2', { cool: false }))
+
+publisher.stop()
+myTopic.close()
+broker.stop()
