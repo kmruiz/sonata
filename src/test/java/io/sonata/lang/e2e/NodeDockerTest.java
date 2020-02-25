@@ -36,7 +36,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Timeout(5)
+@Timeout(30)
 @Testcontainers(disabledWithoutDocker = true)
 public abstract class NodeDockerTest {
     private static File TARGET_DIRECTORY;
