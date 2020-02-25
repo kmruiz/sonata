@@ -24,5 +24,5 @@ entity class InMemoryBroker(subscriptions: Subscription[], idGenerator: number) 
 }
 
 entity class InMemoryPublisher(broker: InMemoryBroker, topic: string) implements Publisher {
-    let publish(message: Message) = broker.propagateMessage(topic, message)
+    let publish(message: Message) = self.broker.propagateMessage(topic, message)
 }

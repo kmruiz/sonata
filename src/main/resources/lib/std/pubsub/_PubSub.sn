@@ -24,6 +24,7 @@ entity class _BrokerTopicAsProvider(broker: Broker, topic: string, subscription:
             _StreamValue(message)
         } else {
             if (self.complete) {
+                self.stop()
                 _StreamComplete()
             } else {
                 self.poll()
@@ -38,12 +39,6 @@ entity class _BrokerTopicAsProvider(broker: Broker, topic: string, subscription:
     let close() = {
         self.broker.unsubscribe(self.subscription)
         self.complete = true
-
-        if (self.queue.length == 0) {
-            self.stop()
-        } else {
-            self.close()
-        }
     }
 
     self.subscription = self.broker.subscribeTo(topic, self.subscriptionHandler)

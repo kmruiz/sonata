@@ -359,7 +359,7 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitEntityClass(EntityClass node, Context context) {
         final List<String> fields = node.definedFields.stream().map(e -> (SimpleField) e).map(e -> e.name).collect(Collectors.toList());
-        emit("function ", node.name, "(");
+        emit("async function ", node.name, "(");
         emit(String.join(",", fields));
         emit("){let self=ECP('", node.name, "',[",node.implementingContracts.stream().map(Node::representation).map(e -> "'" + e + "'").collect(Collectors.joining(",")),"]);");
         emit("let $stop$ = ST(self);");
