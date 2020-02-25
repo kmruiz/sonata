@@ -1,7 +1,10 @@
 requires std.stream.providers._Provider
 
 entity class _Map(previous: _Provider, fn: (any) -> any) implements _Provider {
-    let poll(): _StreamToken = self.process(self.previous.poll())
+    let poll(): _StreamToken = {
+        let prev = self.previous.poll()
+        self.process(prev)
+    }
 
     let process(token: _StreamToken) = _StreamValue(self.fn(token.value))
     let process(_StreamToken(value, true)) = _StreamComplete()

@@ -2,10 +2,12 @@ requires std.stream.providers._Provider
 
 entity class _ForEach(previous: _Provider, apply: (any) -> any) implements _Provider {
     let poll(): _StreamToken = {
-        let token: _StreamToken = previous.poll()
+        let token: _StreamToken = self.previous.poll()
         if (token.complete == false) {
-            apply(token.value)
+            self.apply(token.value)
             self.poll()
+        } else {
+            _StreamComplete()
         }
     }
 

@@ -51,7 +51,7 @@ entity class _PollBasedStream(chain: _Provider[]) implements _Provider, Stream {
 
     let forEach(apply: (any) -> any) = {
         self.chain.push(_ForEach(self.last(), apply))
-        self.last().poll()
+        let _ = self.last().poll()
         self.close()
     }
 

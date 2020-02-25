@@ -32,9 +32,7 @@ entity class _BrokerTopicAsProvider(broker: Broker, topic: string, subscription:
         }
     }
 
-    let subscriptionHandler(message: Message) = {
-        self.queue.push(message)
-    }
+    let subscriptionHandler(message: Message) = self.queue.push(message)
 
     let close() = {
         self.broker.unsubscribe(self.subscription)
