@@ -363,6 +363,7 @@ public class JavaScriptBackend implements CompilerBackend {
         emit(String.join(",", fields));
         emit("){let self=ECP('", node.name, "',[",node.implementingContracts.stream().map(Node::representation).map(e -> "'" + e + "'").collect(Collectors.joining(",")),"]);");
         emit("let $stop$ = ST(self);");
+        emit("self.$stop$=$stop$;");
         emitEnqueueFunctionFor("stop", "$stop$");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
         node.body.forEach(e -> emitNode(e, context.inEntityClass()));
@@ -439,22 +440,24 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitPreface(Scope scope) {
         emit("\"use strict\";");
+        emit("const _snall=[];");
         if (scope.isClassLoaded("IOChannel")) {
             emit("const fsPromises=require('fs').promises;");
         }
-        emit("function ECP(c,C){let o={};o._p$=false;o._s$=0;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
+        emit("function ECP(c,C){let o={};_snall.push(o);o._p$=false;o._s$=0;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
         emit("function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
         emit("function _$(p){return Array.prototype.slice.call(p)}");
         emit("function SI(a,b){return setInterval(a,b)}");
         emit("function CI(a){clearInterval(a)}");
         emit("function ST(s){const F=function(){s._s$=1;if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}");
-        emit("function PS(s,f){return function(){const a=_$(arguments);const v=_P();const p=v[0];const r=v[1];");
-        emit("if(s._s$==0)s._m$.push(function(){r(f.apply(null,a))});else r(undefined);");
+        emit("function PS(s,f,n){return function(){const a=_$(arguments);const v=_P();const p=v[0];const r=v[1];");
+        emit("if(s._s$==0){const F=function(){r(f.apply(null,a))};F.messageName=n;s._m$.push(F)}else{r(undefined);}");
         emit("return p}}");
         emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
         emit("function VCE(a,b){return JSON.stringify(a)==JSON.stringify(b)}");
         emit("function EVT(s){const x=s.evict||function(){}; const F=function(){x();}; F.messageName='evict'; return F;}");
         emit("function REC(s){const x=s.recover||function(){}; const F=function(){x();}; F.messageName='recover'; return F;}");
+        emit("function exit(){setTimeout(function(){_snall.forEach(function(s){CI(s._i$)})},100)}");
     }
 
     private void emitEnqueueFunctionFor(String baseName, String internalFunctionName) {

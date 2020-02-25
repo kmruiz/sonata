@@ -14,7 +14,7 @@ contract Broker {
     let subscribeTo(topic: string, handler: (Message) -> any): Subscription
     let unsubscribe(subscription: Subscription)
 
-    class let memory() = InMemoryBroker([], 1)
+    class let inMemory() = InMemoryBroker([], 1)
 }
 
 entity class _BrokerTopicAsProvider(broker: Broker, topic: string, subscription: Subscription, queue: Message[], complete: boolean) implements _Provider {

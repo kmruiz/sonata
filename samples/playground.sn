@@ -2,7 +2,7 @@ requires std.stream
 requires std.io
 requires std.pubsub.inmemory
 
-let broker: Broker = Broker.memory()
+let broker: Broker = Broker.inMemory()
 let myTopic: Stream = broker.topicAsStream('my-topic')
 myTopic.forEach(println)
 
@@ -10,6 +10,4 @@ let publisher: Publisher = broker.publisherFor('my-topic')
 publisher.publish(Message('hey 1', { cool: true }))
 publisher.publish(Message('hey 2', { cool: false }))
 
-publisher.stop()
-myTopic.close()
-broker.stop()
+exit()
