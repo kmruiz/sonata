@@ -4,7 +4,9 @@ requires std.pubsub.inmemory
 
 let broker: Broker = Broker.inMemory()
 let myTopic: Stream = broker.topicAsStream('my-topic')
-myTopic.map(?.content).forEach(println)
+myTopic.filter(?.headers.cool).map(?.content.toUpperCase()).map('>> ' + ?).forEach(println)
+
+let subscription = broker.subscribeTo('my-topic', println)
 
 let publisher: Publisher = broker.publisherFor('my-topic')
 publisher.publish(Message('hey 1', { cool: true }))
