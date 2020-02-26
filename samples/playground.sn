@@ -2,14 +2,20 @@ requires std.stream
 requires std.io
 requires std.pubsub.inmemory
 
+let TOPIC = 'my-topic'
+
 let broker: Broker = Broker.inMemory()
-let myTopic: Stream = broker.topicAsStream('my-topic')
+
+; We are going to treat a topic as a stream of messages
+let myTopic: Stream = broker.topicAsStream(TOPIC)
 myTopic.filter(?.headers.cool).map(?.content.toUpperCase()).map('>> ' + ?).forEach(println)
 
-let subscription = broker.subscribeTo('my-topic', println)
+; We are going to read from a topic using a handler function
+let subscription = broker.subscribeTo(TOPIC, println)
 
-let publisher: Publisher = broker.publisherFor('my-topic')
-publisher.publish(Message('hey 1', { cool: true }))
-publisher.publish(Message('hey 2', { cool: false }))
+; Publish messages
+let publisher: Publisher = broker.publisherFor(TOPIC)
+publisher.publish(Message('this is a cool message', { cool: true }))
+publisher.publish(Message('this is a not so cool message', { cool: false }))
 
 exit()
