@@ -14,11 +14,9 @@ entity class Account(id: string, transactions: Transaction[]) {
     let transfer(amount: number, beneficiary: Account) = {
         if (self.balance() < amount) {
             println('Account balance is not enough')
-            self.balance()
         } else {
             self.withdraw(amount)
             beneficiary.deposit(amount)
-            self.balance()
         }
     }
 
@@ -34,6 +32,7 @@ myAccount.deposit(150)
 let otherAccount = Account('2', [])
 myAccount.transfer(75, otherAccount)
 
+; https://github.com/kmruiz/sonata/issues/21 (sometimes myAccount.balance is 150, it must be 75)
 println('Balances :: myAccount: ' + myAccount.balance() + ' / otherAccount: ' + otherAccount.balance())
 exit()
 
