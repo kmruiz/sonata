@@ -1,4 +1,3 @@
-requires std.pubsub
 requires std.stream
 requires std.io
 
@@ -34,5 +33,6 @@ myAccount.transfer(75, otherAccount)
 
 ; https://github.com/kmruiz/sonata/issues/21 (sometimes myAccount.balance is 150, it must be 75)
 println('Balances :: myAccount: ' + myAccount.balance() + ' / otherAccount: ' + otherAccount.balance())
+
 exit()
 
