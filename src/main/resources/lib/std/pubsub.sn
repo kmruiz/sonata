@@ -1,0 +1,2 @@
+requires std.pubsub._PubSub
+requires std.pubsub.inmemory

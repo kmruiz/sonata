@@ -1,0 +1,39 @@
+requires std.pubsub
+requires std.stream
+requires std.io
+
+let WithdrawalTransaction = 'Withdrawal'
+let DepositTransaction = 'Deposit'
+
+value class Transaction(amount: number, type: string)
+
+entity class Account(id: string, transactions: Transaction[]) {
+    let deposit(amount: number) = self.transactions.push(Transaction(amount, DepositTransaction))
+    let withdraw(amount: number) = self.transactions.push(Transaction(amount, WithdrawalTransaction))
+
+    let transfer(amount: number, beneficiary: Account) = {
+        if (self.balance() < amount) {
+            println('Account balance is not enough')
+            self.balance()
+        } else {
+            self.withdraw(amount)
+            beneficiary.deposit(amount)
+            self.balance()
+        }
+    }
+
+    let balance() = Stream.fromArray(self.transactions).fold(0, self._apply)
+
+    let _apply(amount: number, transaction: Transaction) = amount + transaction.amount
+    let _apply(amount: number, transaction.type === WithdrawalTransaction) = amount - transaction.amount
+}
+
+let myAccount = Account('1', [])
+myAccount.deposit(150)
+
+let otherAccount = Account('2', [])
+myAccount.transfer(75, otherAccount)
+
+println('Balances :: myAccount: ' + myAccount.balance() + ' / otherAccount: ' + otherAccount.balance())
+exit()
+
