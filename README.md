@@ -1,3 +1,5 @@
+### Early stage project, still in the design phase and still implementing some features. The compiler is still unstable and breaks under lots of circumstances. Please, do not use yet in production.
+
 sonata
 ======
 
