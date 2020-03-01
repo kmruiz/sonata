@@ -1,0 +1,24 @@
+requires std.stream.providers._Provider
+
+entity class _DropWhile(previous: _Provider, condition: any, complete: boolean) implements _Provider {
+    let poll(): _StreamToken = {
+        if (self.complete) {
+            self.previous.poll()
+        } else {
+            let token = self.previous.poll()
+            if (token.complete == true) {
+                self.complete = true
+                _StreamComplete()
+            } else {
+                if (self.condition(token.value)) {
+                    self.complete = true
+                    token
+                } else {
+                    self.poll()
+                }
+            }
+        }
+    }
+
+    let close() = self.stop()
+}

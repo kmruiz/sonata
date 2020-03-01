@@ -105,6 +105,13 @@ _.describe('stream', let (it) = {
 
         assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
     })
+
+    it('should drop messages until the condition is false', let (assert) = {
+        let left = Stream.fromSupplier(0, ? + 1).dropWhile(? < 10).take(5).array()
+        let right = [10, 11, 12, 13, 14]
+
+        assert('Streams are not equal: ' + left + ' :: ' + right, left == right)
+    })
 })
 
 _.run()

@@ -3,6 +3,7 @@ requires std.stream.providers._ProvideFromArray
 requires std.stream.providers._ProvideFromFunction
 requires std.stream._Concat
 requires std.stream._Drop
+requires std.stream._DropWhile
 requires std.stream._Filter
 requires std.stream._FlatMap
 requires std.stream._Fold
@@ -20,8 +21,10 @@ contract Stream {
     let array(): any[]
     let fold(initial: any, apply: (any, any) -> any): any
     let forEach(apply: (any) -> any): any
+    let drop(num: number): Stream
     let take(num: number): Stream
     let takeWhile(condition: (any) -> boolean): Stream
+    let dropWhile(condition: (any) -> boolean): Stream
     let concat(stream: Stream): Stream
     let map(fn: (any) -> any): Stream
     let flatMap(fn: (any) -> Stream): Stream
@@ -63,6 +66,11 @@ entity class _PollBasedStream(chain: _Provider[]) implements _Provider, Stream {
 
     let take(num: number) = {
         self.chain.push(_Take(self.last(), num, 0))
+        self
+    }
+
+    let dropWhile(condition: (any) -> boolean) = {
+        self.chain.push(_DropWhile(self.last(), condition, false))
         self
     }
 
