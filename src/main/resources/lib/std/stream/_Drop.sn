@@ -1,0 +1,14 @@
+requires std.stream.providers._Provider
+
+entity class _Drop(previous: _Provider, number: number, processed: number) implements _Provider {
+    let poll(): _StreamToken = if (self.processed <= self.number) {
+            self.previous.poll()
+            self.processed += 1
+            self.poll()
+        } else {
+            self.previous.poll()
+        }
+    }
+
+    let close() = self.stop()
+}

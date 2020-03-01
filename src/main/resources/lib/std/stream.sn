@@ -2,6 +2,7 @@ requires std.stream.providers._Provider
 requires std.stream.providers._ProvideFromArray
 requires std.stream.providers._ProvideFromFunction
 requires std.stream._Concat
+requires std.stream._Drop
 requires std.stream._Filter
 requires std.stream._FlatMap
 requires std.stream._Fold
@@ -53,6 +54,11 @@ entity class _PollBasedStream(chain: _Provider[]) implements _Provider, Stream {
         self.chain.push(_ForEach(self.last(), apply))
         let _ = self.last().poll()
         self.close()
+    }
+
+    let drop(num: number) = {
+        self.chain.push(_Drop(self.last(), num, 0))
+        self
     }
 
     let take(num: number) = {
