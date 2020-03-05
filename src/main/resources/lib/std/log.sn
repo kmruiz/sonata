@@ -1,0 +1,5 @@
+requires std.log._appender
+requires std.log._format
+requires std.log._logger
+
+let defaultLogger(name: string, appender: LogAppender) = Logger(name, appender, DefaultLogFormat)

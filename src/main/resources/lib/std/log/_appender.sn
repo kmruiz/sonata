@@ -1,0 +1,9 @@
+requires std.io
+
+contract LogAppender {
+    let append(message: string)
+}
+
+entity class ConsoleLogAppender {
+    let append(message: string) = println(message)
+}

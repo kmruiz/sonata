@@ -1,0 +1,7 @@
+value class LogItem(name: string, level: string, where: string, when: number, entityClass: string, message: string) {
+    let format(givenFormat: string) = {
+        givenFormat.replaceAll('$w', where).replaceAll('$W', when).replaceAll('$e', entityClass).replaceAll('$m', message).replaceAll('$L', level).replaceAll('$n', name)
+    }
+}
+
+let DefaultLogFormat = ' [$L] $W $n $e/$w: $m'
