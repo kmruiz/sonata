@@ -8,9 +8,7 @@
 package io.sonata.lang.analyzer;
 
 import io.sonata.lang.analyzer.typeSystem.Scope;
-import io.sonata.lang.exception.ParserException;
 import io.sonata.lang.parser.ast.Node;
-import io.sonata.lang.parser.ast.RootNode;
 import io.sonata.lang.parser.ast.ScriptNode;
 import io.sonata.lang.parser.ast.classes.contracts.Contract;
 import io.sonata.lang.parser.ast.classes.entities.EntityClass;
@@ -200,11 +198,7 @@ public class ProcessorWrapper implements Processor {
             return iterator.apply(this, scope, continuation, body, parent);
         }
 
-        if (node instanceof CommentNode || node instanceof RootNode || node instanceof EmptyExpression || node == null) {
-            return node;
-        }
-
-        throw new ParserException(node, node.definition() + " Unknown node " + node.getClass().getSimpleName() + ": " + node.representation());
+        return node;
     }
 
     @Override

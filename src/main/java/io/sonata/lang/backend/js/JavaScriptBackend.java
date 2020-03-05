@@ -6,6 +6,8 @@
  */
 package io.sonata.lang.backend.js;
 
+import io.sonata.lang.analyzer.stacktrace.PopStackTraceFrame;
+import io.sonata.lang.analyzer.stacktrace.PushStackTraceFrame;
 import io.sonata.lang.analyzer.typeSystem.ArrayType;
 import io.sonata.lang.analyzer.typeSystem.FunctionType;
 import io.sonata.lang.analyzer.typeSystem.Scope;
@@ -152,6 +154,14 @@ public class JavaScriptBackend implements CompilerBackend {
 
         if (node instanceof ValueClassEquality) {
             emitValueClassEquality((ValueClassEquality) node, context);
+        }
+
+        if (node instanceof PushStackTraceFrame) {
+            emitPushStackTraceFrame((PushStackTraceFrame) node, context);
+        }
+
+        if (node instanceof PopStackTraceFrame) {
+            emitPopStackTraceFrame((PopStackTraceFrame) node, context);
         }
     }
 
@@ -438,9 +448,25 @@ public class JavaScriptBackend implements CompilerBackend {
         }
     }
 
+    private void emitPushStackTraceFrame(PushStackTraceFrame node, Context context) {
+        emit("_snst.push({");
+        emit("where:'", node.where.toString(), "',");
+        emit("when:(+new Date()),");
+        emit("entityClass:'", node.entityClass, "',");
+        emit("functionName:'", node.functionName, "'});");
+    }
+
+    private void emitPopStackTraceFrame(PopStackTraceFrame node, Context context) {
+        emit("_snst.pop();");
+    }
+
     private void emitPreface(Scope scope) {
         emit("\"use strict\";");
         emit("const _snall=[];");
+        emit("const _snst=[];");
+        emit("function _snstString(){return _snst.slice().reverse().reduce(function (a, b) { return a + '\\n\\t' + b.entityClass + '#' + b.functionName + ' at ' + b.where }, '')};");
+        emit("function __SNST(n) {if(_snst.length >= n)return _snst[_snst.length-n]; else return ({})}");
+        emit("function __SNSTF(n) {return __SNST(n) || {where:0,entity:0,method:0}}");
         if (scope.isClassLoaded("IOChannel")) {
             emit("const fsPromises=require('fs').promises;");
         }

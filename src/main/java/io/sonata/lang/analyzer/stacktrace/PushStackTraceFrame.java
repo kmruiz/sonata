@@ -4,32 +4,42 @@
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.sonata.lang.source;
 
-public final class SourcePosition {
-    public final Source source;
-    public final int line;
-    public final int column;
+package io.sonata.lang.analyzer.stacktrace;
 
-    public SourcePosition(Source source, int line, int column) {
-        this.source = source;
-        this.line = line;
-        this.column = column;
-    }
+import io.sonata.lang.parser.ast.exp.Expression;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.source.SourcePosition;
+import io.sonata.lang.tokenizer.token.Token;
 
-    public static SourcePosition initial(Source source) {
-        return new SourcePosition(source, 1, 0);
-    }
+public final class PushStackTraceFrame implements Expression {
+    public final SourcePosition where;
+    public final String entityClass;
+    public final String functionName;
 
-    public final SourcePosition next(char byChar) {
-        if (byChar == '\n') {
-            return new SourcePosition(source, line + 1, 0);
-        }
-        return new SourcePosition(source, line, column + 1);
+    public PushStackTraceFrame(SourcePosition where, String entityClass, String functionName) {
+        this.where = where;
+        this.entityClass = entityClass;
+        this.functionName = functionName;
     }
 
     @Override
-    public String toString() {
-        return String.format("[%s:%d:%d]", source.name.replaceAll("\\\\", "/"), line, column);
+    public SourcePosition definition() {
+        return where;
+    }
+
+    @Override
+    public String representation() {
+        return String.format("+ <stack frame> %s %s %s", where, entityClass, functionName);
+    }
+
+    @Override
+    public ASTTypeRepresentation type() {
+        return null;
+    }
+
+    @Override
+    public Expression consume(Token token) {
+        throw new IllegalStateException(token.toString());
     }
 }

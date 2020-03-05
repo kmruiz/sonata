@@ -1,7 +1,7 @@
-value class LogItem(name: string, level: string, where: string, when: number, entityClass: string, message: string) {
+value class LogItem(name: string, level: string, where: string, when: number, entityClass: string, functionName: string, message: string) {
     let format(givenFormat: string) = {
-        givenFormat.replaceAll('$w', where).replaceAll('$W', when).replaceAll('$e', entityClass).replaceAll('$m', message).replaceAll('$L', level).replaceAll('$n', name)
+        givenFormat.replace('$w', where).replace('$W', when).replace('$e', entityClass).replace('$m', message).replace('$L', level).replace('$n', name).replace('$F', functionName)
     }
 }
 
-let DefaultLogFormat = ' [$L] $W $n $e/$w: $m'
+let DefaultLogFormat = '[$L] $W $n $w $e#$F: $m'

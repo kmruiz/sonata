@@ -1,21 +1,23 @@
-requires std.stream
-requires std.io
-requires std.pubsub.inmemory
+requires std.log
 
-let TOPIC = 'my-topic'
+entity class Ping() {
+    let ping(ponger: Pong) = {
+        ponger.pong()
+    }
+}
 
-let broker: Broker = Broker.inMemory()
+entity class Pong() {
+    let logger = defaultLogger('Pong', ConsoleLogAppender())
 
-; We are going to treat a topic as a stream of messages
-let myTopic: Stream = broker.topicAsStream(TOPIC)
-myTopic.filter(?.headers.cool).map(?.content.toUpperCase()).map('>> ' + ?).forEach(println)
+    let pong() = {
+        logger.error('Pong!', true)
+    }
+}
 
-; We are going to read from a topic using a handler function
-let subscription = broker.subscribeTo(TOPIC, println)
+let pinger = Ping()
+let ponger = Pong()
 
-; Publish messages
-let publisher: Publisher = broker.publisherFor(TOPIC)
-publisher.publish(Message('this is a cool message', { cool: true }))
-publisher.publish(Message('this is a not so cool message', { cool: false }))
+pinger.ping(ponger)
 
 exit()
+

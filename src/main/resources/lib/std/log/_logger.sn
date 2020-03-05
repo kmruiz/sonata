@@ -2,13 +2,19 @@ requires std.log._appender
 requires std.log._format
 
 entity class Logger(name: string, appender: LogAppender, format: string) {
-    let debug(message: string) = self._item('DEBUG', message)
-    let info(message: string) = self._item(' INFO', message)
-    let warn(message: string) = self._item(' WARN', message)
-    let error(message: string) = self._item('ERROR', message)
+    let debug(message: string) = self._append('DEBUG', message)
+    let info(message: string) = self._append(' INFO', message)
+    let warn(message: string) = self._append(' WARN', message)
+    let error(message: string, printTrace: boolean) = self._append('ERROR', self._withTrace(message, printTrace))
 
     let _append(level: string, message: string) = self.appender.append(self._item(level, message).format(self.format))
-    let _item(level: string, message: string) = LogItem(self.name, level, __SN_LOG_WHERE, __SN_LOG_WHEN, __SN_LOG_CALLER_ENTITY, message)
+    let _item(level: string, message: string) = {
+        let frame = __SNSTF(5)
+        LogItem(self.name, level, frame.where, frame.when, frame.entityClass, frame.functionName, message)
+    }
+
+    let _withTrace(message: string, printTrace: boolean) = message + _snstString()
+    let _withTrace(message: string, false) = message
 
     let close() = {
         self.appender.close()

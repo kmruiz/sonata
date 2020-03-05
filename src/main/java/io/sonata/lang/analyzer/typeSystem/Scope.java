@@ -11,6 +11,8 @@ import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
+import io.sonata.lang.parser.ast.classes.entities.EntityClass;
+import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.ArrayASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
@@ -49,13 +51,15 @@ public final class Scope {
     }
 
     private final String anchor;
+    private final Scoped anchorNode;
     private final Scope parent;
     private final List<Scope> children;
     private final Map<String, Type> typeContext;
     private final Map<String, Variable> variableContext;
 
-    public Scope(String anchor, Scope parent, List<Scope> children, Map<String, Type> typeContext, Map<String, Variable> variableContext) {
+    public Scope(String anchor, Scoped anchorNode, Scope parent, List<Scope> children, Map<String, Type> typeContext, Map<String, Variable> variableContext) {
         this.anchor = anchor;
+        this.anchorNode = anchorNode;
         this.parent = parent;
         this.children = children;
         this.typeContext = typeContext;
@@ -63,7 +67,7 @@ public final class Scope {
     }
 
     public static Scope root() {
-        Scope root = new Scope(null, null, new ArrayList<>(), new HashMap<>(), new HashMap<>());
+        Scope root = new Scope(null, null, null, new ArrayList<>(), new HashMap<>(), new HashMap<>());
         try {
             root.registerType("string", TYPE_STRING);
             root.registerType("number", TYPE_NUMBER);
@@ -95,7 +99,7 @@ public final class Scope {
             return foundScope.get();
         }
 
-        Scope scope = new Scope(anchorRepresentation, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
+        Scope scope = new Scope(anchorRepresentation, anchor, this, new ArrayList<>(), new HashMap<>(), new HashMap<>());
         children.add(scope);
         return scope;
     }
@@ -186,12 +190,32 @@ public final class Scope {
         variableContext.put(name, new Scope.Variable(definition, type));
     }
 
-    public boolean inEntityClass() {
+    public EntityClass currentEntityClass() {
         if (this.anchor == null) {
-            return false;
+            return null;
         }
 
-        return this.anchor.startsWith("entity class") || parent.inEntityClass();
+        if (this.anchorNode instanceof EntityClass) {
+            return (EntityClass) this.anchorNode;
+        }
+
+        return parent.currentEntityClass();
+    }
+
+    public LetFunction currentMethod() {
+        if (this.anchor == null) {
+            return null;
+        }
+
+        if (this.anchorNode instanceof LetFunction) {
+            return (LetFunction) this.anchorNode;
+        }
+
+        return parent.currentMethod();
+    }
+
+    public boolean inEntityClass() {
+        return this.currentEntityClass() != null;
     }
 
     public void validateContractFulfillment(CompilerLog log) {
@@ -204,15 +228,5 @@ public final class Scope {
               });
            });
         });
-    }
-
-    @Override
-    public String toString() {
-        return "Scope{" +
-                "anchor='" + anchor + '\'' +
-                ", children=" + children +
-                ", typeContext=" + typeContext +
-                ", variableContext=" + variableContext +
-                '}';
     }
 }

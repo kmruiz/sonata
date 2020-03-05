@@ -3,3 +3,4 @@ requires std.log._format
 requires std.log._logger
 
 let defaultLogger(name: string, appender: LogAppender) = Logger(name, appender, DefaultLogFormat)
+let basicLogger(name: string, appender: LogAppender) = Logger(name, appender, DefaultLogFormat)
