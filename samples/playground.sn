@@ -1,23 +1,26 @@
 requires std.log
 
-entity class Ping() {
-    let ping(ponger: Pong) = {
-        ponger.pong()
+entity class Controller(partition: Partition) {
+    let write(message: string) = self.partition.write(message)
+}
+
+entity class Partition(key: string, shard: Shard) {
+    let write(message: string) = self.shard.write(self.key, message)
+}
+
+entity class Shard {
+    let logger = defaultLogger('Shard', ConsoleLogAppender())
+
+    let write(key: string, message: string) = {
+        logger.error('for key ' + key + ': ' + message, true)
     }
 }
 
-entity class Pong() {
-    let logger = defaultLogger('Pong', ConsoleLogAppender())
+let shard = Shard()
+let partition = Partition('123', shard)
+let controller = Controller(partition)
 
-    let pong() = {
-        logger.error('Pong!', true)
-    }
-}
-
-let pinger = Ping()
-let ponger = Pong()
-
-pinger.ping(ponger)
+controller.write('Hello World')
 
 exit()
 
