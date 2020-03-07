@@ -7,22 +7,22 @@
 
 package io.sonata.lang.e2e.concurrency;
 
-import io.sonata.lang.e2e.NodeDockerTest;
+import io.sonata.lang.e2e.NodeTest;
 import org.junit.jupiter.api.Test;
 
-public class ConcurrencyTest extends NodeDockerTest {
+public class ConcurrencyTest extends NodeTest {
     @Test
     public void shouldRunBothEntitiesInParallel() throws Exception {
-        assertResourceScriptOutputs("doing things asynchronously\n0> ping\n0> pong\n1> ping\n1> pong\nping end\npong end", "concurrency/ping-pong");
+        assertResourceScriptOutputs("doing things asynchronously\n0> ping\n0> pong\n1> ping\n1> pong\nping end\npong end", "/e2e/concurrency/ping-pong.sn");
     }
 
     @Test
     public void shouldRunBothEntitiesInParallelWithState() throws Exception {
-        assertResourceScriptOutputs("doing things asynchronously\n1> ping\n1> pong\n2> ping\n2> pong", "concurrency/ping-pong-stateful");
+        assertResourceScriptOutputs("doing things asynchronously\n1> ping\n1> pong\n2> ping\n2> pong", "/e2e/concurrency/ping-pong-stateful.sn");
     }
 
     @Test
     public void shouldDoContinuationsItselfUsingPromises() throws Exception {
-        assertResourceScriptOutputs("asking for value\nHello World!\nvalue asked", "concurrency/async-ask");
+        assertResourceScriptOutputs("asking for value\nHello World!\nvalue asked", "/e2e/concurrency/async-ask.sn");
     }
 }

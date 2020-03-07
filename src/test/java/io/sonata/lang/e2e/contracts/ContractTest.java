@@ -7,22 +7,22 @@
 
 package io.sonata.lang.e2e.contracts;
 
-import io.sonata.lang.e2e.NodeDockerTest;
+import io.sonata.lang.e2e.NodeTest;
 import org.junit.jupiter.api.Test;
 
-public class ContractTest extends NodeDockerTest {
+public class ContractTest extends NodeTest {
     @Test
     public void shouldBeAbleToParseAContract() throws Exception {
-        assertCompiles("contracts/contract");
+        assertResourceScriptOutputs("", "/e2e/contracts/contract.sn");
     }
 
     @Test
     public void anEntityClassShouldBeAbleToImplementAContract() throws Exception {
-        assertResourceScriptOutputs("Morty: Rick", "contracts/contract-implementation");
+        assertResourceScriptOutputs("Morty: Rick", "/e2e/contracts/contract-implementation.sn");
     }
 
     @Test
     public void aContractShouldAllowFactoryMethods() throws Exception {
-        assertResourceScriptOutputs("Morty: Rick", "contracts/contract-factory");
+        assertResourceScriptOutputs("Morty: Rick", "/e2e/contracts/contract-factory.sn");
     }
 }

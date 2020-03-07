@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.classes.values;
 
-import io.sonata.lang.e2e.E2ETest;
+import io.sonata.lang.e2e.GraalvmTest;
 import org.junit.jupiter.api.Test;
 
-public class ValueClassDefinitionTest extends E2ETest {
+public class ValueClassDefinitionTest extends GraalvmTest {
     @Test
     public void definitionOfBasicValueClass() throws Exception {
         assertResourceScriptOutputs("{\"class\":\"price\",\"amount\":42,\"currency\":\"EUR\"}", "classes/values/value-class-price");

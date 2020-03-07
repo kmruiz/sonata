@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.validation;
 
-import io.sonata.lang.e2e.E2ETest;
+import io.sonata.lang.e2e.GraalvmTest;
 import org.junit.jupiter.api.Test;
 
-public class ImmutabilityTest extends E2ETest {
+public class ImmutabilityTest extends GraalvmTest {
     @Test
     public void aLetConstantCanNotChangeItsContents() {
         assertSyntaxError("Let constants can not be changed.", "validation/immutability/let-constant");

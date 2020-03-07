@@ -9,7 +9,7 @@ package io.sonata.lang.e2e;
 
 import org.junit.jupiter.api.Test;
 
-public class BasicStructTest extends E2ETest {
+public class BasicStructTest extends GraalvmTest {
     @Test
     public void commentInScriptRoot() throws Exception {
         assertResourceScriptOutputs("Hello World!", "basic/comments");

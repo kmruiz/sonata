@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.validation;
 
-import io.sonata.lang.e2e.E2ETest;
+import io.sonata.lang.e2e.GraalvmTest;
 import org.junit.jupiter.api.Test;
 
-public class PropertyVisibilityTest extends E2ETest {
+public class PropertyVisibilityTest extends GraalvmTest {
     @Test
     public void canAccessSelfProperties() {
         assertCompiles("validation/properties/self");

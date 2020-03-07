@@ -15,7 +15,6 @@ import io.sonata.lang.analyzer.destructuring.DestructuringProcessor;
 import io.sonata.lang.analyzer.fops.FunctionCompositionProcessor;
 import io.sonata.lang.analyzer.partials.QuestionMarkPartialFunctionProcessor;
 import io.sonata.lang.analyzer.requires.InlineRequiredModuleProcessor;
-import io.sonata.lang.analyzer.stacktrace.StackTraceProcessor;
 import io.sonata.lang.analyzer.symbols.SymbolMap;
 import io.sonata.lang.analyzer.typeSystem.*;
 import io.sonata.lang.backend.CompilerBackend;
@@ -49,8 +48,8 @@ public class Sonata {
                 DestructuringProcessor.processorInstance(scope, symbolMap),
                 FunctionCompositionProcessor.processorInstance(scope, log),
                 ContinuationProcessor.processorInstance(scope),
-                AsyncFunctionProcessor.processorInstance(scope),
-                StackTraceProcessor.processorInstance(scope)
+                AsyncFunctionProcessor.processorInstance(scope)
+//                StackTraceProcessor.processorInstance(scope)
         );
 
         return sources

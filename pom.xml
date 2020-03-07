@@ -64,19 +64,19 @@
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
-            <version>19.3.0.2</version>
+            <version>20.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.graalvm.truffle</groupId>
             <artifactId>truffle-api</artifactId>
-            <version>19.3.0.2</version>
+            <version>20.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
-            <version>19.3.0.2</version>
+            <version>20.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -9,14 +9,15 @@ package io.sonata.lang.e2e.stdlib;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import io.sonata.lang.e2e.NodeDockerTest;
+import io.sonata.lang.e2e.NodeTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class RunAllTestSuitesTest extends NodeDockerTest {
+public class RunAllTestSuitesTest extends NodeTest {
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_GREEN = "\u001B[32m";
@@ -24,6 +25,7 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
     private static final Gson GSON = new Gson();
 
     @Test
+    @Disabled
     public void std_lib_stream() throws Exception {
         assertTestsRunSuccessfully("stream");
     }
@@ -34,7 +36,7 @@ public class RunAllTestSuitesTest extends NodeDockerTest {
     }
 
     private void assertTestsRunSuccessfully(String module) throws Exception {
-        String output = runScriptAndGetOutput("/lib/std/" + module + "_test");
+        String output = runScriptAndGetOutput("/lib/std/" + module + "_test.sn");
         TestSuiteResult result = null;
         try {
             result = GSON.fromJson(output, TestSuiteResult.class);
