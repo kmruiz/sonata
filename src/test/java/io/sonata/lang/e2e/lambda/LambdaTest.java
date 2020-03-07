@@ -7,43 +7,43 @@
 
 package io.sonata.lang.e2e.lambda;
 
-import io.sonata.lang.e2e.GraalvmTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Test;
 
-public class LambdaTest extends GraalvmTest {
+public class LambdaTest extends EndToEndTest {
     @Test
     public void basicUsageOfLambda() throws Exception {
-        assertResourceScriptOutputs("Hello", "lambda/no-param");
+        assertResourceScriptOutputs("Hello", "/e2e/lambda/no-param.sn");
     }
 
     @Test
     public void basicUsageOfLambdaWithParams() throws Exception {
-        assertResourceScriptOutputs("15", "lambda/with-params");
+        assertResourceScriptOutputs("15", "/e2e/lambda/with-params.sn");
     }
 
     @Test
     public void basicUsageOfLambdaWithParamsIsPair() throws Exception {
-        assertResourceScriptOutputs("true\nfalse", "lambda/lambda-is-pair");
+        assertResourceScriptOutputs("true\nfalse", "/e2e/lambda/lambda-is-pair.sn");
     }
 
     @Test
     public void lambdaWithQuestionMark() throws Exception {
-        assertResourceScriptOutputs("10,20,30,40,50", "lambda/implicit-lambda-with-question-mark");
+        assertResourceScriptOutputs("[ 10, 20, 30, 40, 50 ]", "/e2e/lambda/implicit-lambda-with-question-mark.sn");
     }
 
     @Test
     public void lambdaWithMultipleQuestionMarks() throws Exception {
-        assertResourceScriptOutputs("15", "lambda/implicit-lambda-with-multiple-question-marks");
+        assertResourceScriptOutputs("15", "/e2e/lambda/implicit-lambda-with-multiple-question-marks.sn");
     }
 
     @Test
     public void lambdaWithMultipleQuestionMarksAndReference() throws Exception {
-        assertResourceScriptOutputs("15", "lambda/implicit-lambda-as-reference");
+        assertResourceScriptOutputs("15", "/e2e/lambda/implicit-lambda-as-reference.sn");
     }
 
 
     @Test
     public void lambdaWithSimpleInferredArguments() throws Exception {
-        assertResourceScriptOutputs("HELLO WORLD", "lambda/lambda-with-simple-arguments");
+        assertResourceScriptOutputs("HELLO WORLD", "/e2e/lambda/lambda-with-simple-arguments.sn");
     }
 }

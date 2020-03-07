@@ -7,37 +7,37 @@
 
 package io.sonata.lang.e2e.classes.values;
 
-import io.sonata.lang.e2e.GraalvmTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Test;
 
-public class ValueClassDefinitionTest extends GraalvmTest {
+public class ValueClassDefinitionTest extends EndToEndTest {
     @Test
     public void definitionOfBasicValueClass() throws Exception {
-        assertResourceScriptOutputs("{\"class\":\"price\",\"amount\":42,\"currency\":\"EUR\"}", "classes/values/value-class-price");
+        assertResourceScriptOutputs("{\"class\":\"price\",\"amount\":42,\"currency\":\"EUR\"}", "/e2e/classes/values/value-class-price.sn");
     }
 
     @Test
     public void definitionOfBasicValueClassWithAMethod() throws Exception {
-        assertResourceScriptOutputs("42 EUR", "classes/values/value-class-price-with-method");
+        assertResourceScriptOutputs("42 EUR", "/e2e/classes/values/value-class-price-with-method.sn");
     }
 
     @Test
     public void definitionOfBasicValueClassWithAnOverloadedMethod() throws Exception {
-        assertResourceScriptOutputs("Try again\nFound it!", "classes/values/value-class-price-with-overloaded-method");
+        assertResourceScriptOutputs("Try again\nFound it!", "/e2e/classes/values/value-class-price-with-overloaded-method.sn");
     }
 
     @Test
     public void definitionOfBasicValueClassWithAMethodWithParameters() throws Exception {
-        assertResourceScriptOutputs("John: Hello Bob", "classes/values/value-class-method-with-parameters");
+        assertResourceScriptOutputs("John: Hello Bob", "/e2e/classes/values/value-class-method-with-parameters.sn");
     }
 
     @Test
     public void destructuringValueClassInLetFunction() throws Exception {
-        assertResourceScriptOutputs("42E\n$42", "classes/values/value-class-destructuring");
+        assertResourceScriptOutputs("42E\n$42", "/e2e/classes/values/value-class-destructuring.sn");
     }
 
     @Test
     public void valueClassesShouldCompareTheirFields() throws Exception {
-        assertResourceScriptOutputs("true\nfalse\nfalse\ntrue", "classes/values/value-class-equality");
+        assertResourceScriptOutputs("true\nfalse\nfalse\ntrue", "/e2e/classes/values/value-class-equality.sn");
     }
 }

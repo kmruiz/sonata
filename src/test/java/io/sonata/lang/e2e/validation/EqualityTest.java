@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.validation;
 
-import io.sonata.lang.e2e.GraalvmTest;
+import io.sonata.lang.e2e.CompilerTest;
 import org.junit.jupiter.api.Test;
 
-public class EqualityTest extends GraalvmTest {
+public class EqualityTest extends CompilerTest {
     @Test
     public void canNotCompareUnrelatedTypes() {
         assertSyntaxError("Comparing unrelated types: number == record", "validation/equality/compare-unrelated-objects");

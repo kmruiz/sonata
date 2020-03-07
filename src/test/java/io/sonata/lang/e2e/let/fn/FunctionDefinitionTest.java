@@ -7,37 +7,37 @@
 
 package io.sonata.lang.e2e.let.fn;
 
-import io.sonata.lang.e2e.GraalvmTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Test;
 
-public class FunctionDefinitionTest extends GraalvmTest {
+public class FunctionDefinitionTest extends EndToEndTest {
     @Test
     public void functionDefinitionWithoutParameters() throws Exception {
-        assertResourceScriptOutputs("Hello World!", "let/fn/function-definition-without-parameters");
+        assertResourceScriptOutputs("Hello World!", "/e2e/let/fn/function-definition-without-parameters.sn");
     }
 
     @Test
     public void functionDefinitionWithSingleParameter() throws Exception {
-        assertResourceScriptOutputs("Bye World!", "let/fn/function-definition-with-bye-world-parameter");
+        assertResourceScriptOutputs("Bye World!", "/e2e/let/fn/function-definition-with-bye-world-parameter.sn");
     }
 
     @Test
     public void functionDefinitionWithSingleParameterAndConstantOverload() throws Exception {
-        assertResourceScriptOutputs("Hey!\nNope!", "let/fn/function-definition-with-single-overloaded-parameter");
+        assertResourceScriptOutputs("Hey!\nNope!", "/e2e/let/fn/function-definition-with-single-overloaded-parameter.sn");
     }
 
     @Test
     public void recursiveFunctionDefinitionWithArrays() throws Exception {
-        assertResourceScriptOutputs("55", "let/fn/recursive-function-definition-with-arrays");
+        assertResourceScriptOutputs("55", "/e2e/let/fn/recursive-function-definition-with-arrays.sn");
     }
 
     @Test
     public void functionWithBlockBody() throws Exception {
-        assertResourceScriptOutputs("a\nb", "let/fn/function-with-block");
+        assertResourceScriptOutputs("a\nb", "/e2e/let/fn/function-with-block.sn");
     }
 
     @Test
     public void functionDefinitionRuntimeDispatchDifferentTypes() throws Exception {
-        assertResourceScriptOutputs("Number\nPrice\nString", "let/fn/function-overload-multiple-types");
+        assertResourceScriptOutputs("Number\nPrice\nString", "/e2e/let/fn/function-overload-multiple-types.sn");
     }
 }

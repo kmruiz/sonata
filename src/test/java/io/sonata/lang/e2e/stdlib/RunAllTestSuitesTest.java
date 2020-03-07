@@ -9,7 +9,7 @@ package io.sonata.lang.e2e.stdlib;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import io.sonata.lang.e2e.NodeTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class RunAllTestSuitesTest extends NodeTest {
+public class RunAllTestSuitesTest extends EndToEndTest {
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_GREEN = "\u001B[32m";

@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.concurrency;
 
-import io.sonata.lang.e2e.NodeTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Test;
 
-public class ConcurrencyTest extends NodeTest {
+public class ConcurrencyTest extends EndToEndTest {
     @Test
     public void shouldRunBothEntitiesInParallel() throws Exception {
         assertResourceScriptOutputs("doing things asynchronously\n0> ping\n0> pong\n1> ping\n1> pong\nping end\npong end", "/e2e/concurrency/ping-pong.sn");

@@ -14,7 +14,6 @@ import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.RequiresPaths;
 import io.sonata.lang.source.Source;
-import org.graalvm.polyglot.Context;
 import org.mockito.Mockito;
 
 import java.io.*;
@@ -22,21 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public abstract class GraalvmTest {
-    private final ByteArrayOutputStream proxyOutput = new ByteArrayOutputStream();
-    private final Context jsContext = Context.newBuilder("js")
-            .allowAllAccess(true)
-            .out(proxyOutput)
-            .build();
-
-    protected final void assertResourceScriptOutputs(String expectedOutput, String resource) {
-        String script = getLiteralResource(resource);
-        assertScriptOutputs(expectedOutput, script);
-    }
-
+public abstract class CompilerTest {
     protected final void assertSyntaxError(String errorMessage, String resource) {
         List<SonataSyntaxError> syntaxErrors = new ArrayList<>();
         CompilerLog mockLog = Mockito.mock(CompilerLog.class);
@@ -63,21 +50,6 @@ public abstract class GraalvmTest {
         System.out.println(">> JavaScript:\n" + output);
         boolean empty = syntaxErrors.isEmpty();
         assertTrue(empty, "Could not compile script.\n Found errors: " + syntaxErrors.stream().map(e -> e.message).collect(joining("\n")));
-    }
-
-    private void assertScriptOutputs(String expectedOutput, String literalScript) {
-        String output = executeScript(literalScript);
-        assertEquals(expectedOutput.trim(), output.trim().replaceAll("\\n{2,}", "\n"));
-    }
-
-    private String executeScript(String literalScript) {
-        String compiledVersion = compileToString(CompilerLog.console(), literalScript);
-        System.out.println(">> Source Code:\n" + literalScript);
-        System.out.println(">> JavaScript:\n" + compiledVersion);
-
-        proxyOutput.reset();
-        jsContext.eval("js", compiledVersion);
-        return new String(proxyOutput.toByteArray());
     }
 
     private String compileToString(CompilerLog log, String literalScript) {

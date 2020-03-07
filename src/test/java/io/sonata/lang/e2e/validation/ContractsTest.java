@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.validation;
 
-import io.sonata.lang.e2e.GraalvmTest;
+import io.sonata.lang.e2e.CompilerTest;
 import org.junit.jupiter.api.Test;
 
-public class ContractsTest extends GraalvmTest {
+public class ContractsTest extends CompilerTest {
     @Test
     public void canNotBeRedefined() {
         assertSyntaxError("Can not redefine a contract, however, contract 'Pinger' has been already defined", "validation/contracts/must-not-be-redefined");

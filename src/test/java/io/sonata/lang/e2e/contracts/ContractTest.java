@@ -7,10 +7,10 @@
 
 package io.sonata.lang.e2e.contracts;
 
-import io.sonata.lang.e2e.NodeTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Test;
 
-public class ContractTest extends NodeTest {
+public class ContractTest extends EndToEndTest {
     @Test
     public void shouldBeAbleToParseAContract() throws Exception {
         assertResourceScriptOutputs("", "/e2e/contracts/contract.sn");

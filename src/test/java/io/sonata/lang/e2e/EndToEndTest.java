@@ -25,7 +25,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public abstract class NodeTest {
+public abstract class EndToEndTest {
     private static File TARGET_DIRECTORY;
 
     static {

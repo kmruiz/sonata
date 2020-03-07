@@ -7,12 +7,12 @@
 
 package io.sonata.lang.e2e.let.fn;
 
-import io.sonata.lang.e2e.GraalvmTest;
+import io.sonata.lang.e2e.EndToEndTest;
 import org.junit.jupiter.api.Test;
 
-public class FunctionCompositionTest extends GraalvmTest {
+public class FunctionCompositionTest extends EndToEndTest {
     @Test
-    public void aFunctionCompositionShouldBeCallable() {
-        assertResourceScriptOutputs("Result is 5", "let/fn/composition");
+    public void aFunctionCompositionShouldBeCallable() throws Exception {
+        assertResourceScriptOutputs("Result is 5", "/e2e/let/fn/composition.sn");
     }
 }
