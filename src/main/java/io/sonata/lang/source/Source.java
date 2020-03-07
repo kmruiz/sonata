@@ -41,7 +41,7 @@ public class Source implements AutoCloseable {
     }
 
     public static Source fromLiteral(String literal) {
-        return new Source(literal, Type.LITERAL, new ByteArrayInputStream(literal.getBytes(Charset.defaultCharset())));
+        return new Source("<literal>", Type.LITERAL, new ByteArrayInputStream(literal.getBytes(Charset.defaultCharset())));
     }
 
     public static Source fromResourceModule(String moduleName) {

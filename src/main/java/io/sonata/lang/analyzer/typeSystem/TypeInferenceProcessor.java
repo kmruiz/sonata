@@ -151,7 +151,7 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
 
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
-        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync, new ASTTypeReference(infer(scope, node)));
     }
 
     @Override
@@ -177,7 +177,10 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
             Lambda lambda = (Lambda) expression;
             Expression body = lambda.body;
 
-            return infer(scope, body);
+            List<Type> paramTypes = lambda.parameters.stream().map(e -> Scope.TYPE_ANY).collect(toList());
+            Type bodyType = infer(scope, body);
+
+            return new FunctionType(lambda.definition, "<anonymous>", bodyType, paramTypes);
         }
 
         if (expression instanceof FunctionCall) {

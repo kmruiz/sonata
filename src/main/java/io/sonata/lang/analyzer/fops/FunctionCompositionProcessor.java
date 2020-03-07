@@ -10,8 +10,10 @@ package io.sonata.lang.analyzer.fops;
 import io.sonata.lang.analyzer.Processor;
 import io.sonata.lang.analyzer.ProcessorIterator;
 import io.sonata.lang.analyzer.ProcessorWrapper;
+import io.sonata.lang.analyzer.typeSystem.ASTTypeReference;
 import io.sonata.lang.analyzer.typeSystem.FunctionType;
 import io.sonata.lang.analyzer.typeSystem.Scope;
+import io.sonata.lang.analyzer.typeSystem.Type;
 import io.sonata.lang.exception.SonataSyntaxError;
 import io.sonata.lang.log.CompilerLog;
 import io.sonata.lang.parser.ast.Node;
@@ -24,11 +26,12 @@ import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.requires.RequiresNode;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
@@ -142,7 +145,7 @@ public final class FunctionCompositionProcessor implements ProcessorIterator {
 
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
-        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync, node.typeRepresentation);
     }
 
     @Override
@@ -175,8 +178,8 @@ public final class FunctionCompositionProcessor implements ProcessorIterator {
         }
 
         if (expr instanceof Atom) {
-            final Scope.Variable variable = scope.resolveVariable(((Atom) expr).value).get();
-            return variable.type instanceof FunctionType;
+            ASTTypeReference typeRef = (ASTTypeReference) ((Atom) expr).type;
+            return typeRef.type instanceof FunctionType;
         }
 
         if (expr instanceof SimpleExpression) {
@@ -188,17 +191,15 @@ public final class FunctionCompositionProcessor implements ProcessorIterator {
     }
 
     private List<SimpleParameter> parametersOf(Scope scope, Expression expr) {
-        if (expr instanceof Atom) {
-            final Scope.Variable variable = scope.resolveVariable(((Atom) expr).value).get();
-            FunctionType fnType = (FunctionType) variable.type;
-            return fnType.namedParameters();
+        ASTTypeRepresentation typeRepr = expr.type();
+        if (typeRepr instanceof ASTTypeReference) {
+            Type type = ((ASTTypeReference) typeRepr).type;
+            if (type instanceof FunctionType) {
+                return ((FunctionType) type).namedParameters();
+            }
         }
 
-        if (expr instanceof Lambda) {
-            return ((Lambda) expr).parameters;
-        }
-
-        return Collections.emptyList();
+        return emptyList();
     }
 
     private Expression compositionOf(List<SimpleParameter> params, Expression a, Expression b) {

@@ -10,6 +10,7 @@ import io.sonata.lang.parser.ast.Node;
 import io.sonata.lang.parser.ast.Scoped;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
+import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.FunctionASTTypeRepresentation;
 import io.sonata.lang.source.SourcePosition;
 
@@ -23,21 +24,19 @@ public class Lambda extends ComposedExpression implements Scoped {
     public final List<SimpleParameter> parameters;
     public final Expression body;
     public final boolean isAsync;
+    public final ASTTypeRepresentation typeRepresentation;
 
-    public Lambda(String lambdaId, SourcePosition definition, List<SimpleParameter> parameters, Expression body, boolean isAsync) {
+    public Lambda(String lambdaId, SourcePosition definition, List<SimpleParameter> parameters, Expression body, boolean isAsync, ASTTypeRepresentation typeRepresentation) {
         this.lambdaId = lambdaId;
         this.definition = definition;
         this.parameters = parameters;
         this.body = body;
         this.isAsync = isAsync;
-    }
-
-    public Lambda(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
-        this(UUID.randomUUID().toString(), definition, parameters, body, false);
+        this.typeRepresentation = typeRepresentation;
     }
 
     public static Lambda synthetic(SourcePosition definition, List<SimpleParameter> parameters, Expression body) {
-        return new Lambda(definition, parameters, body);
+        return new Lambda(UUID.randomUUID().toString(), definition, parameters, body, false, new EmptyASTTypeRepresentation());
     }
 
     @Override

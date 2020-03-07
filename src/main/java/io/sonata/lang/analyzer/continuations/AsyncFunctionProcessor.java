@@ -127,7 +127,7 @@ public final class AsyncFunctionProcessor implements ProcessorIterator {
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
         final boolean isAsync = hasContinuations(body);
-        return new Lambda(node.lambdaId, node.definition, node.parameters, body, isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, isAsync, node.typeRepresentation);
     }
 
     @Override

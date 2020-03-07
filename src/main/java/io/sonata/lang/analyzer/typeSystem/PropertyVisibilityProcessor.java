@@ -139,7 +139,7 @@ public final class PropertyVisibilityProcessor implements ProcessorIterator {
 
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
-        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync, node.typeRepresentation);
     }
 
     @Override
@@ -153,7 +153,7 @@ public final class PropertyVisibilityProcessor implements ProcessorIterator {
     }
 
     private void validate(Scope scope, MethodReference expression) {
-        if (expression.representation().equals("self")) {
+        if (expression.receiver.representation().equals("self")) {
             return;
         }
 

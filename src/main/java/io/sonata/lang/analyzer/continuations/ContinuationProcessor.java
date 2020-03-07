@@ -160,7 +160,7 @@ public final class ContinuationProcessor implements ProcessorIterator {
 
     @Override
     public Expression apply(Processor processor, Scope scope, Lambda node, Expression body, Node parent) {
-        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync);
+        return new Lambda(node.lambdaId, node.definition, node.parameters, body, node.isAsync, node.typeRepresentation);
     }
 
     @Override
