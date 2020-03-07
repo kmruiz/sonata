@@ -42,7 +42,7 @@ public class Sonata {
                 ClassScopeProcessor.processorInstance(scope, log),
                 LetVariableProcessor.processorInstance(scope, log),
                 TypeInferenceProcessor.processorInstance(scope),
-                new ContractFulfillmentProcessor(log, scope),
+                ContractFulfillmentProcessor.processorInstance(scope, log),
                 PropertyVisibilityProcessor.processorInstance(scope, log),
                 ImmutabilityCheckProcessor.processorInstance(scope, log),
                 EqualitySpecializationProcessor.processorInstance(scope, log),

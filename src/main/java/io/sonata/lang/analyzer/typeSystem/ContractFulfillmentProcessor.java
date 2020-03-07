@@ -15,7 +15,11 @@ public final class ContractFulfillmentProcessor implements Processor {
     private final CompilerLog log;
     private final Scope scope;
 
-    public ContractFulfillmentProcessor(CompilerLog log, Scope scope) {
+    public static Processor processorInstance(Scope scope, CompilerLog log) {
+        return new ContractFulfillmentProcessor(scope, log);
+    }
+
+    private ContractFulfillmentProcessor(Scope scope, CompilerLog log) {
         this.log = log;
         this.scope = scope;
     }
