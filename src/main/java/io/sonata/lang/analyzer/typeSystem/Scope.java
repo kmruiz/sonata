@@ -131,6 +131,11 @@ public final class Scope {
             return Optional.of(typeIfAny);
         }
 
+        if (astTypeRepresentation instanceof ASTTypeReference) {
+            final ASTTypeReference typeRef = (ASTTypeReference) astTypeRepresentation;
+            return Optional.of(typeRef.type);
+        }
+
         return Optional.empty();
     }
 

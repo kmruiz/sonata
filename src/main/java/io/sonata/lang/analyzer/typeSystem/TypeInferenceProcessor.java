@@ -19,7 +19,6 @@ import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.requires.RequiresNode;
 import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
-import io.sonata.lang.parser.ast.type.BasicASTTypeRepresentation;
 import io.sonata.lang.parser.ast.type.EmptyASTTypeRepresentation;
 
 import java.util.List;
@@ -42,7 +41,7 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
     @Override
     public Expression apply(Processor processor, Scope scope, FunctionCall node, Expression receiver, List<Expression> arguments, Node parent) {
         Type inferredType = infer(scope, node);
-        return new FunctionCall(receiver, arguments, new BasicASTTypeRepresentation(node.definition(), inferredType.name()));
+        return new FunctionCall(receiver, arguments, new ASTTypeReference(inferredType));
     }
 
     @Override
@@ -147,7 +146,7 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
 
         final List<Type> paramTypes = node.parameters.stream().map(e -> Scope.TYPE_ANY).collect(toList());
         scope.enrichVariable(node.letName, node, new FunctionType(node.definition(), node.letName, returnType, paramTypes));
-        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, typeRepresentation, body, node.isAsync, node.isClassLevel);
+        return new LetFunction(node.letId, node.definition, node.letName, node.parameters, new ASTTypeReference(returnType), body, node.isAsync, node.isClassLevel);
     }
 
     @Override
