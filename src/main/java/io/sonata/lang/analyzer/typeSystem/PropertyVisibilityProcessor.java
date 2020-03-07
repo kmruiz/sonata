@@ -20,10 +20,10 @@ import io.sonata.lang.parser.ast.exp.*;
 import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.requires.RequiresNode;
+import io.sonata.lang.parser.ast.type.ASTTypeRepresentation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public final class PropertyVisibilityProcessor implements ProcessorIterator {
     private final CompilerLog log;
@@ -152,20 +152,19 @@ public final class PropertyVisibilityProcessor implements ProcessorIterator {
         return new Continuation(node.definition, body, node.fanOut);
     }
 
-    private void validate(Scope scope, MethodReference ref) {
-        if (!(ref.receiver instanceof Atom)) {
+    private void validate(Scope scope, MethodReference expression) {
+        if (expression.representation().equals("self")) {
             return;
         }
 
-        Atom receiver = (Atom) ref.receiver;
-
-        if (receiver.value.equals("self")) {
+        ASTTypeRepresentation astType = expression.receiver.type();
+        if (!(astType instanceof ASTTypeReference)) {
             return;
         }
 
-        final Optional<Scope.Variable> variable = scope.resolveVariable(receiver.value);
-        if (variable.isPresent() && variable.get().type.isEntity()) {
-            log.syntaxError(new SonataSyntaxError(ref, "It's forbidden to access properties of another entity instance."));
+        Type inferredType = ((ASTTypeReference) astType).type;
+        if (inferredType.isEntity()) {
+            log.syntaxError(new SonataSyntaxError(expression, "It's forbidden to access properties of another entity instance."));
         }
     }
 }

@@ -161,7 +161,7 @@ public final class StackTraceProcessor implements ProcessorIterator {
         block.expressions.remove(block.expressions.size() - 1);
         block.expressions.add(new LetConstant(last.definition(), "__ret", null, last));
         block.expressions.add(new PopStackTraceFrame(body.definition()));
-        block.expressions.add(new Atom(last.definition(), "__ret"));
+        block.expressions.add(new Atom(last.definition(), "__ret", last.type()));
 
         return block;
     }

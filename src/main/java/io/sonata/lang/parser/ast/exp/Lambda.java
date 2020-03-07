@@ -47,7 +47,7 @@ public class Lambda extends ComposedExpression implements Scoped {
 
     @Override
     public ASTTypeRepresentation type() {
-        return new FunctionASTTypeRepresentation(definition, parameters.stream().map(e -> e.astTypeRepresentation).collect(Collectors.toList()), body.type());
+        return new FunctionASTTypeRepresentation(definition, parameters.stream().map(e -> e.type).collect(Collectors.toList()), body.type());
     }
 
     @Override

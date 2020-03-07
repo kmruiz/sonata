@@ -25,16 +25,17 @@ public class Atom extends ComposedExpression implements Expression {
     public final SourcePosition definition;
     public final String value;
     public final Kind kind;
+    public final ASTTypeRepresentation type;
 
     public static Atom unknown(SourcePosition definition) {
-        return new Atom(definition, "?");
+        return new Atom(definition, "?", null);
     }
 
     public static boolean isUnknownAtom(Node node) {
         return node instanceof Atom && ((Atom) node).kind == Kind.UNKNOWN;
     }
 
-    public Atom(SourcePosition definition, String value) {
+    public Atom(SourcePosition definition, String value, ASTTypeRepresentation type) {
         this.definition = definition;
         this.value = value;
 
@@ -49,6 +50,8 @@ public class Atom extends ComposedExpression implements Expression {
         } else {
             kind = Kind.IDENTIFIER;
         }
+
+        this.type = orElseFromKind(type);
     }
 
     @Override
@@ -63,6 +66,14 @@ public class Atom extends ComposedExpression implements Expression {
 
     @Override
     public ASTTypeRepresentation type() {
+        return type;
+    }
+
+    private ASTTypeRepresentation orElseFromKind(ASTTypeRepresentation representation) {
+        if (representation != null) {
+            return representation;
+        }
+
         switch (kind) {
             case NUMERIC:
                 return new BasicASTTypeRepresentation(definition, "number");

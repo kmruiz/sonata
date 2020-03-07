@@ -205,7 +205,7 @@ public final class FunctionCompositionProcessor implements ProcessorIterator {
         return Lambda.synthetic(a.definition(), params,
                 new FunctionCall(b, singletonList(
                         new FunctionCall(a,
-                                params.stream().map(p -> new Atom(p.definition, p.name)).collect(toList())
+                                params.stream().map(p -> new Atom(p.definition, p.name, p.type)).collect(toList())
                         )
                 ))
         );

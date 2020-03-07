@@ -179,7 +179,7 @@ public final class QuestionMarkPartialFunctionProcessor implements ProcessorIter
             return new SimpleExpression(left, operator, right);
         } else if (expression instanceof Atom) {
             if (Atom.isUnknownAtom(expression)) {
-                return new Atom(expression.definition(), paramNameSupplier.get());
+                return new Atom(expression.definition(), paramNameSupplier.get(), expression.type());
             }
 
             return expression;

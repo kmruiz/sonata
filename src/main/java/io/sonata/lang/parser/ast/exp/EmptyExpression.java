@@ -54,7 +54,7 @@ public class EmptyExpression implements Expression {
             return null;
         }
 
-        return new Atom(token.sourcePosition(), token.representation());
+        return new Atom(token.sourcePosition(), token.representation(), null);
     }
 
     @Override

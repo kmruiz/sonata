@@ -54,7 +54,7 @@ public class RootNode implements Node {
                     return PartialClassLetFunction.initial(token.sourcePosition());
             }
 
-            return new Atom(token.sourcePosition(), token.representation());
+            return new Atom(token.sourcePosition(), token.representation(), null);
         }
 
         if (token instanceof SeparatorToken && token.representation().equals("\n")) {

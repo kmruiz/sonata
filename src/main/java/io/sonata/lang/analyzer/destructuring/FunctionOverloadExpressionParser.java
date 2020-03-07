@@ -58,7 +58,7 @@ public final class FunctionOverloadExpressionParser implements DestructuringExpr
     public Stream<Expression> generateGuardCondition(String parameterName, Parameter parameter) {
         Stream<Expression> result = whenIsExpressionParameter(parameter, tp -> {
             if (tp.expression instanceof Atom) {
-                return Stream.of(new SimpleExpression(new Atom(tp.expression.definition(), parameterName), "===", tp.expression));
+                return Stream.of(new SimpleExpression(new Atom(tp.expression.definition(), parameterName, tp.expression.type()), "===", tp.expression));
             }
 
             return Stream.of(tp.expression);
@@ -88,7 +88,7 @@ public final class FunctionOverloadExpressionParser implements DestructuringExpr
     private <T> T whenIsTypedParameter(Parameter parameter, Function<TypedParameterTouchPoint, T> fn) {
         if (parameter instanceof SimpleParameter) {
             SimpleParameter simpleParam = (SimpleParameter) parameter;
-            return fn.apply(new TypedParameterTouchPoint(scope.resolveType(simpleParam.astTypeRepresentation).orElse(Scope.TYPE_ANY)));
+            return fn.apply(new TypedParameterTouchPoint(scope.resolveType(simpleParam.type).orElse(Scope.TYPE_ANY)));
         }
 
         return null;

@@ -71,7 +71,7 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
 
     @Override
     public Expression apply(Processor processor, Scope scope, Atom node, Node parent) {
-        return node;
+        return new Atom(node.definition, node.value, new ASTTypeReference(inferAtom(scope, node)));
     }
 
     @Override
@@ -170,25 +170,19 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
         }
 
         if (expression instanceof Atom) {
-            switch (((Atom) expression).kind) {
-                case NUMERIC:
-                    return Scope.TYPE_NUMBER;
-                case STRING:
-                    return Scope.TYPE_STRING;
-                case BOOLEAN:
-                    return Scope.TYPE_BOOLEAN;
-            }
-
-            return scope.resolveVariable(expression.representation()).map(e -> e.type).orElse(Scope.TYPE_ANY);
+            return inferAtom(scope, (Atom) expression);
         }
 
         if (expression instanceof Lambda) {
             Lambda lambda = (Lambda) expression;
-            return scope.resolveType(lambda.type()).orElse(Scope.TYPE_ANY);
+            Expression body = lambda.body;
+
+            return infer(scope, body);
         }
 
         if (expression instanceof FunctionCall) {
             FunctionCall fc = (FunctionCall) expression;
+
             if (fc.receiver instanceof Atom) {
                 Atom fnName = (Atom) fc.receiver;
                 return scope.resolveVariable(fnName.value)
@@ -234,6 +228,18 @@ public final class TypeInferenceProcessor implements ProcessorIterator {
         if (expression instanceof IfElse) {
             IfElse ifElse = (IfElse) expression;
             return infer(scope.diveInIfNeeded(ifElse.whenTrue), ifElse.whenTrue);
+        }
+
+        return Scope.TYPE_ANY;
+    }
+
+    private Type inferAtom(Scope scope, Atom atom) {
+        switch (atom.kind) {
+            case STRING: return Scope.TYPE_STRING;
+            case BOOLEAN: return Scope.TYPE_BOOLEAN;
+            case NUMERIC: return Scope.TYPE_NUMBER;
+            case UNKNOWN: return Scope.TYPE_ANY;
+            case IDENTIFIER: return scope.resolveVariable(atom.value).map(e -> e.type).orElse(Scope.TYPE_ANY);
         }
 
         return Scope.TYPE_ANY;

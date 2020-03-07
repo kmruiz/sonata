@@ -48,7 +48,7 @@ public final class ValueClassDestructuringExpressionParser implements Destructur
             int field = argIdx.incrementAndGet();
             String fieldName = tp.valueClass.definedFields.get(field).name();
 
-            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), Objects.requireNonNullElse(parameterName, tp.valueClass.name)), ".", new Atom(arg.definition(), fieldName)));
+            return new LetConstant(arg.definition(), fieldName, null, new SimpleExpression(new Atom(arg.definition(), Objects.requireNonNullElse(parameterName, tp.valueClass.name), arg.type()), ".", new Atom(arg.definition(), fieldName, arg.type())));
         }));
     }
 
@@ -69,7 +69,7 @@ public final class ValueClassDestructuringExpressionParser implements Destructur
             if (arg instanceof Atom) {
                 Atom atom = ((Atom) arg);
                 if (atom.kind != Atom.Kind.IDENTIFIER) {
-                    return new SimpleExpression(new Atom(atom.definition(), tp.valueClass.definedFields.get(field).name()), "===", arg);
+                    return new SimpleExpression(new Atom(atom.definition(), tp.valueClass.definedFields.get(field).name(), atom.type()), "===", arg);
                 }
             } else if (arg instanceof Expression) {
                 return arg;

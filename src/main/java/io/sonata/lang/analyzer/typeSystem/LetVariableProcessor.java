@@ -215,7 +215,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
         node.parameters.stream().filter(e -> e instanceof SimpleParameter).forEach(parameter -> {
             String paramName = ((SimpleParameter) parameter).name;
             try {
-                fnScope.registerVariable(paramName, parameter, fnScope.resolveType(((SimpleParameter) parameter).astTypeRepresentation).orElse(Scope.TYPE_ANY));
+                fnScope.registerVariable(paramName, parameter, fnScope.resolveType(((SimpleParameter) parameter).type).orElse(Scope.TYPE_ANY));
             } catch (TypeCanNotBeReassignedException e) {
                 log.syntaxError(new SonataSyntaxError(node, "Parameter '" + paramName + "' has been already defined. Found on " + e.initialAssignment()));
             }
@@ -256,7 +256,7 @@ public final class LetVariableProcessor implements ProcessorIterator {
 
         Scope methodScope = scope.diveInIfNeeded(method);
         List<Type> parameters = method.parameters.stream().map(p -> (SimpleParameter) p).map(param -> {
-            Optional<Type> paramType = scope.resolveType(param.astTypeRepresentation);
+            Optional<Type> paramType = scope.resolveType(param.type);
             Type paramDefinedType = paramType.orElse(Scope.TYPE_ANY);
             try {
                 methodScope.registerVariable(param.name, param, paramDefinedType);
