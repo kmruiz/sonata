@@ -57,7 +57,7 @@ function ENQUEUEFN(self, contract, method) {
         return new Promise((resolve, reject) => {
             const args = Array.prototype.slice.apply(arguments);
             const execution = { method: method, arguments: args, resolve: resolve, reject: reject };
-            const context = Object.assign({}, self.__context);
+            const context = { stacktrace: _globalST };
             PUSHFRAME(self.frames[contract], context);
 
             _mailbox.push({ actor: self, context: context, execution: execution });
@@ -76,5 +76,9 @@ function END() {
 }
 
 function exit() {
-    setTimeout(END, 50);
+    Array.prototype.slice.apply(_directory.values()).forEach(function (e) { e.stop() });
+    setTimeout(function () {
+        console.error('Could not stop in less than 1 second. Hard exit.');
+        END();
+    }, 1000);
 }

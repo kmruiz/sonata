@@ -5,7 +5,12 @@ entity class Controller(partition: Partition) {
 }
 
 entity class Partition(shard: Shard) {
-    let do() = shard.do()
+    let logger = defaultLogger('Partition', ConsoleLogAppender())
+
+    let do() = {
+        logger.error('At partition some error happened', true)
+        shard.do()
+    }
 }
 
 entity class Shard {
@@ -16,7 +21,7 @@ entity class Shard {
 
 let shard = Shard()
 let partition = Partition(shard)
-let controller = Controller(shard)
+let controller = Controller(partition)
 
 controller.do()
 exit()

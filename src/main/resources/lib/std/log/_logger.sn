@@ -9,7 +9,7 @@ entity class Logger(name: string, appender: LogAppender, format: string) {
 
     let _append(level: string, message: string) = self.appender.append(self._item(level, message).format(self.format))
     let _item(level: string, message: string) = {
-        let frame = GETFRAME(5, self)
+        let frame = GETFRAME(4, self)
         LogItem(self.name, level, frame.where, frame.when, frame.entityClass, frame.functionName, message)
     }
 
