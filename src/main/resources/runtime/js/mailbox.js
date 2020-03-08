@@ -37,16 +37,28 @@ function DELIVER(message) {
     const entity = message.actor;
     entity.__context = message.context;
     const execution = message.execution;
-    entity[execution.method].apply(null, execution.arguments);
+    try {
+        const result = entity[execution.method].apply(null, execution.arguments);
+        if (result && result.then) {
+            result.then(execution.resolve).catch(execution.reject);
+        } else {
+            execution.resolve(result);
+        }
+    } catch (e) {
+        execution.reject(e);
+    }
 }
 
 function ENQUEUEFN(self, method, frame) {
     return function () {
-        const args = Array.prototype.slice.apply(arguments);
-        const execution = { method: method, arguments: args };
-        const context = Object.assign({}, self.__context);
-        PUSHFRAME(frame, context);
-        _mailbox.push({ actor: self, context: context, execution: execution });
+        return new Promise((resolve, reject) => {
+            const args = Array.prototype.slice.apply(arguments);
+            const execution = { method: method, arguments: args, resolve: resolve, reject: reject };
+            const context = Object.assign({}, self.__context);
+            PUSHFRAME(frame, context);
+
+            _mailbox.push({ actor: self, context: context, execution: execution });
+        });
     }
 }
 
