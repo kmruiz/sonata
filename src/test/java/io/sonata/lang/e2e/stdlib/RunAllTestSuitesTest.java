@@ -10,7 +10,6 @@ package io.sonata.lang.e2e.stdlib;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import io.sonata.lang.e2e.EndToEndTest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -25,18 +24,17 @@ public class RunAllTestSuitesTest extends EndToEndTest {
     private static final Gson GSON = new Gson();
 
     @Test
-    @Disabled
     public void std_lib_stream() throws Exception {
-        assertTestsRunSuccessfully("stream");
+        assertTestsRunSuccessfully("/lib/std/stream_test.sn");
     }
 
     @Test
     public void std_lib_io_file() throws Exception {
-        assertTestsRunSuccessfully("io/file");
+        assertTestsRunSuccessfully("/lib/std/io/file_test.sn");
     }
 
     private void assertTestsRunSuccessfully(String module) throws Exception {
-        String output = runScriptAndGetOutput("/lib/std/" + module + "_test.sn");
+        String output = runScriptAndGetOutput(module);
         TestSuiteResult result = null;
         try {
             result = GSON.fromJson(output, TestSuiteResult.class);
