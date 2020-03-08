@@ -1,5 +1,6 @@
 function PUSHFRAME(frame, context) {
-    context.stacktrace = context.stacktrace.concat([frame]);
+    const frameWithDate = Object.assign({ when: +new Date() }, frame);
+    context.stacktrace = context.stacktrace.concat([frameWithDate]);
 }
 
 function GETFRAME(depth, entity) {

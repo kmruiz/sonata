@@ -52,13 +52,13 @@ function DELIVER(message) {
     }
 }
 
-function ENQUEUEFN(self, method, frame) {
+function ENQUEUEFN(self, contract, method) {
     return function () {
         return new Promise((resolve, reject) => {
             const args = Array.prototype.slice.apply(arguments);
             const execution = { method: method, arguments: args, resolve: resolve, reject: reject };
             const context = Object.assign({}, self.__context);
-            PUSHFRAME(frame, context);
+            PUSHFRAME(self.frames[contract], context);
 
             _mailbox.push({ actor: self, context: context, execution: execution });
         });
@@ -76,5 +76,5 @@ function END() {
 }
 
 function exit() {
-    setTimeout(END, 10);
+    setTimeout(END, 50);
 }

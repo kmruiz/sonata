@@ -374,7 +374,17 @@ public class JavaScriptBackend implements CompilerBackend {
         emit("){let self=ENTITYCLASS('", node.name, "',[",node.implementingContracts.stream().map(Node::representation).map(e -> "'" + e + "'").collect(Collectors.joining(",")),"]);");
         emitEnqueueFunctionFor("stop", "__stop");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
-        node.body.forEach(e -> emitNode(e, context.inEntityClass()));
+        emit("self.frames={};");
+        node.body.forEach(e -> {
+            if (e instanceof LetFunction) {
+                LetFunction letFn = (LetFunction) e;
+                emit("self.frames.", letFn.letName, "={");
+                emit("where:'",letFn.definition.toString(), "',");
+                emit("entityClass:'",node.name, "',");
+                emit("functionName:'",letFn.letName, "'};");
+            }
+            emitNode(e, context.inEntityClass());
+        });
         emit("START();");
         emit("return self;}");
     }
@@ -469,7 +479,7 @@ public class JavaScriptBackend implements CompilerBackend {
     }
 
     private void emitEnqueueFunctionFor(String contract, String implementation) {
-        emit("self.", contract, "=ENQUEUEFN(self,'", implementation, "', {});");
+        emit("self.", contract, "=ENQUEUEFN(self, '", contract,"', '", implementation, "');");
     }
 
     private void emit(String... args) {
