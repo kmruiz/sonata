@@ -20,7 +20,7 @@ function CONSUME() {
         return;
     }
 
-    const message = _mailbox.pop();
+    const message = _mailbox[0];
     const actor = message.actor;
     const execution = message.execution;
     const context = message.context;
@@ -30,22 +30,33 @@ function CONSUME() {
         _deadletter.push(message);
     }
 
+    if (ISBUSY(actor)) {
+        return;
+    }
+
+    _mailbox = _mailbox.slice(1);
     DELIVER(message);
 }
 
 function DELIVER(message) {
     const entity = message.actor;
+    BUSY(entity);
     entity.__context = message.context;
     const execution = message.execution;
+    let result = null;
+
     try {
-        const result = entity[execution.method].apply(null, execution.arguments);
-        if (result && result.then) {
-            result.then(execution.resolve).catch(execution.reject);
-        } else {
-            execution.resolve(result);
-        }
+        result = entity[execution.method].apply(null, execution.arguments);
     } catch (e) {
         execution.reject(e);
+        FREE(entity);
+    }
+
+    if (result && result.then) {
+        result.then(execution.resolve).catch(execution.reject).finally(() => FREE(entity));
+    } else {
+        execution.resolve(result);
+        FREE(entity);
     }
 }
 

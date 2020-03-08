@@ -10,6 +10,7 @@ function ENTITYCLASS(className, contracts) {
     obj._id = className + (new Date()) + Math.random();
     obj.class = className;
     obj.contracts = contracts;
+    FREE(obj);
 
     _directory.set(obj._id, obj);
     obj.__stop = function () {
@@ -18,4 +19,16 @@ function ENTITYCLASS(className, contracts) {
     };
 
     return obj;
+}
+
+function BUSY(entity) {
+    entity._busy$ = true;
+}
+
+function FREE(entity) {
+    entity._busy$ = false;
+}
+
+function ISBUSY(entity) {
+    return false;
 }
