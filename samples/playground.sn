@@ -1,26 +1,32 @@
-requires std.log
+requires std.io
 
-entity class Controller(partition: Partition) {
-    let write(message: string) = self.partition.write(message)
-}
+entity class pinger() {
+    let ping(ponger: ponger, time: number) = {
+        println(time + '> ping')
+        ponger.pong(self, time)
+    }
 
-entity class Partition(key: string, shard: Shard) {
-    let write(message: string) = self.shard.write(self.key, message)
-}
-
-entity class Shard {
-    let logger = defaultLogger('Shard', ConsoleLogAppender())
-
-    let write(key: string, message: string) = {
-        logger.error('for key ' + key + ': ' + message, true)
+    let ping(ponger: ponger, time == 2) = {
+        println('ping end')
+        ponger.pong(self, time)
+        self.stop()
     }
 }
 
-let shard = Shard()
-let partition = Partition('123', shard)
-let controller = Controller(partition)
+entity class ponger() {
+    let pong(pinger: pinger, time: number) = {
+        println(time + '> pong')
+        pinger.ping(self, time + 1)
+    }
 
-controller.write('Hello World')
+    let pong(pinger: pinger, time == 2) = {
+        println('pong end')
+        self.stop()
+    }
+}
 
-exit()
+let _pinger = pinger()
+let _ponger = ponger()
 
+_pinger.ping(_ponger, 0)
+println('doing things asynchronously')

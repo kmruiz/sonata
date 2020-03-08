@@ -23,12 +23,13 @@ import io.sonata.lang.parser.ast.let.LetConstant;
 import io.sonata.lang.parser.ast.let.LetFunction;
 import io.sonata.lang.parser.ast.let.fn.SimpleParameter;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 public class JavaScriptBackend implements CompilerBackend {
     private static class Context {
@@ -172,12 +173,11 @@ public class JavaScriptBackend implements CompilerBackend {
         if (context.isInEntityClass && !base.isClassLevel) {
             internalFunctionName += "$";
             emitEnqueueFunctionFor(base.letName, internalFunctionName);
+            emit("self.", internalFunctionName, "=", internalFunctionName, ";");
         }
 
         if (context.isInValueClass || base.isClassLevel) {
-            emit("self.");
-            emit(base.letName);
-            emit("=");
+            emit("self.", base.letName, "=");
         }
 
         if (context.isInEntityClass || base.isAsync) {
@@ -371,16 +371,11 @@ public class JavaScriptBackend implements CompilerBackend {
         final List<String> fields = node.definedFields.stream().map(e -> (SimpleField) e).map(e -> e.name).collect(Collectors.toList());
         emit("async function ", node.name, "(");
         emit(String.join(",", fields));
-        emit("){let self=ECP('", node.name, "',[",node.implementingContracts.stream().map(Node::representation).map(e -> "'" + e + "'").collect(Collectors.joining(",")),"]);");
-        emit("let $stop$ = ST(self);");
-        emit("self.$stop$=$stop$;");
-        emitEnqueueFunctionFor("stop", "$stop$");
+        emit("){let self=ENTITYCLASS('", node.name, "',[",node.implementingContracts.stream().map(Node::representation).map(e -> "'" + e + "'").collect(Collectors.joining(",")),"]);");
+        emitEnqueueFunctionFor("stop", "__stop");
         fields.forEach(field -> emit("self.", field, "=", field, ";"));
         node.body.forEach(e -> emitNode(e, context.inEntityClass()));
-        emit("let $evict$ = EVT(self);");
-        emitEnqueueFunctionFor("evict", "$evict$");
-        emit("let $recover$ = REC(self);");
-        emitEnqueueFunctionFor("recover", "$recover$");
+        emit("START();");
         emit("return self;}");
     }
 
@@ -462,36 +457,31 @@ public class JavaScriptBackend implements CompilerBackend {
 
     private void emitPreface(Scope scope) {
         emit("\"use strict\";");
-        emit("const _snall=[];");
-        emit("const _snst=[];");
-        emit("function _snstString(){return _snst.slice().reverse().reduce(function (a, b) { return a + '\\n\\t' + b.entityClass + '#' + b.functionName + ' at ' + b.where }, '')};");
-        emit("function __SNST(n) {if(_snst.length >= n)return _snst[_snst.length-n]; else return ({})}");
-        emit("function __SNSTF(n) {return __SNST(n) || {where:0,entity:0,method:0}}");
         if (scope.isClassLoaded("IOChannel")) {
             emit("const fsPromises=require('fs').promises;");
         }
-        emit("function ECP(c,C){let o={};_snall.push(o);o._p$=false;o._s$=0;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}");
-        emit("function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}");
-        emit("function _$(p){return Array.prototype.slice.call(p)}");
-        emit("function SI(a,b){return setInterval(a,b)}");
-        emit("function CI(a){clearInterval(a)}");
-        emit("function ST(s){const F=function(){s._s$=1;if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}");
-        emit("function PS(s,f,n){return function(){const a=_$(arguments);const v=_P();const p=v[0];const r=v[1];");
-        emit("if(s._s$==0){const F=function(){r(f.apply(null,a))};F.messageName=n;s._m$.push(F)}else{r(undefined);}");
-        emit("return p}}");
-        emit("function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}");
-        emit("function VCE(a,b){return JSON.stringify(a)==JSON.stringify(b)}");
-        emit("function EVT(s){const x=s.evict||function(){}; const F=function(){x();}; F.messageName='evict'; return F;}");
-        emit("function REC(s){const x=s.recover||function(){}; const F=function(){x();}; F.messageName='recover'; return F;}");
-        emit("function exit(){setTimeout(function(){_snall.forEach(function(s){CI(s._i$)})},100)}");
+        emitRuntimeResource("/runtime/js/directory.js");
+        emitRuntimeResource("/runtime/js/entity.js");
+        emitRuntimeResource("/runtime/js/value.js");
+        emitRuntimeResource("/runtime/js/mailbox.js");
+        emitRuntimeResource("/runtime/js/stacktrace.js");
     }
 
-    private void emitEnqueueFunctionFor(String baseName, String internalFunctionName) {
-        emit("self.", baseName, "=PS(self,", internalFunctionName, ", '", baseName, "');");
+    private void emitEnqueueFunctionFor(String contract, String implementation) {
+        emit("self.", contract, "=ENQUEUEFN(self,'", implementation, "', {});");
     }
 
     private void emit(String... args) {
         Arrays.stream(args).forEach(this::safeWrite);
+    }
+
+    private void emitRuntimeResource(String resource) {
+        emit(getLiteralResource(resource));
+    }
+
+    private String getLiteralResource(String resource) {
+        InputStream stream = this.getClass().getResourceAsStream(resource);
+        return new BufferedReader(new InputStreamReader(stream)).lines().collect(joining("\n"));
     }
 
     private void safeWrite(String args) {
