@@ -9,11 +9,11 @@ entity class Logger(name: string, appender: LogAppender, format: string) {
 
     let _append(level: string, message: string) = self.appender.append(self._item(level, message).format(self.format))
     let _item(level: string, message: string) = {
-        let frame = __SNSTF(5)
+        let frame = GETFRAME(5, self)
         LogItem(self.name, level, frame.where, frame.when, frame.entityClass, frame.functionName, message)
     }
 
-    let _withTrace(message: string, printTrace: boolean) = message + _snstString()
+    let _withTrace(message: string, printTrace: boolean) = message + STRSTACKTRACE(self)
     let _withTrace(message: string, false) = message
 
     let close() = {

@@ -460,6 +460,7 @@ public class JavaScriptBackend implements CompilerBackend {
         if (scope.isClassLoaded("IOChannel")) {
             emit("const fsPromises=require('fs').promises;");
         }
+
         emitRuntimeResource("/runtime/js/directory.js");
         emitRuntimeResource("/runtime/js/entity.js");
         emitRuntimeResource("/runtime/js/value.js");

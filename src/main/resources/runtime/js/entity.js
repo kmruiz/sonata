@@ -3,6 +3,7 @@ function ENTITYCLASS(className, contracts) {
     obj._id = className + (+(new Date())) + Math.random();
     obj.class = className;
     obj.contracts = contracts;
+    obj.__context = { stacktrace: [] };
     FREE(obj);
 
     REGISTER(obj);
