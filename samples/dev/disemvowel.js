@@ -5,16 +5,32 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-"use strict";let _directory = new Map();function ENTITYCLASS(className, contracts) {
+"use strict";let _directory = new Map();
+
+function REGISTER(entity) {
+    _directory.set(entity._id, entity);
+}
+
+function UNREGISTER(entity) {
+    _directory.delete(entity._id);
+}
+
+function HASENTITY(entity) {
+    _directory.has(entity._id);
+}
+
+function DIRECTORYEMPTY() {
+    return _directory.size === 0;
+}function ENTITYCLASS(className, contracts) {
     let obj = {};
-    obj._id = className + (new Date()) + Math.random();
+    obj._id = className + (+(new Date())) + Math.random();
     obj.class = className;
     obj.contracts = contracts;
     FREE(obj);
 
-    _directory.set(obj._id, obj);
+    REGISTER(obj);
     obj.__stop = function () {
-        _directory.delete(obj._id);
+        UNREGISTER(obj);
         STOP();
     };
 
@@ -52,9 +68,8 @@ function CONSUME() {
     const actor = message.actor;
     const execution = message.execution;
     const context = message.context;
-    if (!_directory.has(actor._id)) {
+    if (!HASENTITY(actor)) {
         const msgPrintable = { execution: execution, context: context };
-        console.error('Could not deliver message', msgPrintable, ' to actor ', actor._id, ' because it does not exist. Message will be delivered to the deadletter.');
         _deadletter.push(message);
     }
 
@@ -102,7 +117,7 @@ function ENQUEUEFN(self, method, frame) {
 }
 
 function STOP() {
-    if (_directory.size === 0) {
+    if (DIRECTORYEMPTY()) {
         END();
     }
 }
