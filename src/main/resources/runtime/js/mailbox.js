@@ -17,9 +17,8 @@ function CONSUME() {
     const actor = message.actor;
     const execution = message.execution;
     const context = message.context;
-    if (!_directory.has(actor._id)) {
+    if (!HASENTITY(actor)) {
         const msgPrintable = { execution: execution, context: context };
-        console.error('Could not deliver message', msgPrintable, ' to actor ', actor._id, ' because it does not exist. Message will be delivered to the deadletter.');
         _deadletter.push(message);
     }
 
@@ -67,7 +66,7 @@ function ENQUEUEFN(self, method, frame) {
 }
 
 function STOP() {
-    if (_directory.size === 0) {
+    if (DIRECTORYEMPTY()) {
         END();
     }
 }

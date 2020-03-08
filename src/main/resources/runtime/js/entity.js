@@ -1,13 +1,13 @@
 function ENTITYCLASS(className, contracts) {
     let obj = {};
-    obj._id = className + (new Date()) + Math.random();
+    obj._id = className + (+(new Date())) + Math.random();
     obj.class = className;
     obj.contracts = contracts;
     FREE(obj);
 
-    _directory.set(obj._id, obj);
+    REGISTER(obj);
     obj.__stop = function () {
-        _directory.delete(obj._id);
+        UNREGISTER(obj);
         STOP();
     };
 

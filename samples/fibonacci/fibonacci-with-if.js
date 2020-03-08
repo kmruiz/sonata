@@ -5,4 +5,114 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-"use strict";function ECP(c,C){let o={};o._p$=false;o._s$=0;o.class=c;o.contracts=C;o._m$=[];o._i$=SI(DQ(o),0);return o}function _P(){let z,y,x=new Promise(function(r, R){y=r;z=R;});return[x,y,z]}function _$(p){return Array.prototype.slice.call(p)}function SI(a,b){return setInterval(a,b)}function CI(a){clearInterval(a)}function ST(s){const F=function(){s._s$=1;if(s._m$.length>0){setTimeout(s.stop, 0)}else{CI(s._i$)}};F.messageName='stop';return F;}function PS(s,f){return function(){const a=_$(arguments);const v=_P();const p=v[0];const r=v[1];if(s._s$==0)s._m$.push(function(){r(f.apply(null,a))});else r(undefined);return p}}function DQ(s){return function(){if(s._m$.length>0){s._m$.shift()()}}}function VCE(a,b){return JSON.stringify(a)==JSON.stringify(b)}(async function (){function println(text){return console.log(text)};function f(a){if(a<=1){return 1;}else{return f(a-1)+f(a-2);}};println('f(1) '+f(1));println('f(2) '+f(2));println('f(3) '+f(3));println('f(4) '+f(4));println('f(5) '+f(5));})()
+"use strict";let _directory = new Map();function ENTITYCLASS(className, contracts) {
+    let obj = {};
+    obj._id = className + (new Date()) + Math.random();
+    obj.class = className;
+    obj.contracts = contracts;
+    FREE(obj);
+
+    _directory.set(obj._id, obj);
+    obj.__stop = function () {
+        _directory.delete(obj._id);
+        STOP();
+    };
+
+    return obj;
+}
+
+function BUSY(entity) {
+    entity._busy$ = true;
+}
+
+function FREE(entity) {
+    entity._busy$ = false;
+}
+
+function ISBUSY(entity) {
+    return false;
+}function VCE(a, b) {
+    return JSON.stringify(a) == JSON.stringify(b)
+}let _mailbox = [];
+let _deadletter = [];
+let _interval = null;
+
+function START() {
+    if (!_interval) {
+        _interval = setInterval(CONSUME, 0);
+    }
+}
+
+function CONSUME() {
+    if (_mailbox.length === 0) {
+        return;
+    }
+
+    const message = _mailbox[0];
+    const actor = message.actor;
+    const execution = message.execution;
+    const context = message.context;
+    if (!_directory.has(actor._id)) {
+        const msgPrintable = { execution: execution, context: context };
+        console.error('Could not deliver message', msgPrintable, ' to actor ', actor._id, ' because it does not exist. Message will be delivered to the deadletter.');
+        _deadletter.push(message);
+    }
+
+    if (ISBUSY(actor)) {
+        return;
+    }
+
+    _mailbox = _mailbox.slice(1);
+    DELIVER(message);
+}
+
+function DELIVER(message) {
+    const entity = message.actor;
+    BUSY(entity);
+    entity.__context = message.context;
+    const execution = message.execution;
+    let result = null;
+
+    try {
+        result = entity[execution.method].apply(null, execution.arguments);
+    } catch (e) {
+        execution.reject(e);
+        FREE(entity);
+    }
+
+    if (result && result.then) {
+        result.then(execution.resolve).catch(execution.reject).finally(() => FREE(entity));
+    } else {
+        execution.resolve(result);
+        FREE(entity);
+    }
+}
+
+function ENQUEUEFN(self, method, frame) {
+    return function () {
+        return new Promise((resolve, reject) => {
+            const args = Array.prototype.slice.apply(arguments);
+            const execution = { method: method, arguments: args, resolve: resolve, reject: reject };
+            const context = Object.assign({}, self.__context);
+            PUSHFRAME(frame, context);
+
+            _mailbox.push({ actor: self, context: context, execution: execution });
+        });
+    }
+}
+
+function STOP() {
+    if (_directory.size === 0) {
+        END();
+    }
+}
+
+function END() {
+    clearInterval(_interval);
+}
+
+function exit() {
+    setTimeout(END, 10);
+}function PUSHFRAME(frame, context) {
+    context.stacktrace = (context.stacktrace || []).concat([frame]);
+}(async function (){function println(text){return console.log(text)}function f(a){if(a<=1){return 1;}else{return f(a-1)+f(a-2);}}println('f(1) '+f(1));println('f(2) '+f(2));println('f(3) '+f(3));println('f(4) '+f(4));println('f(5) '+f(5));})();
