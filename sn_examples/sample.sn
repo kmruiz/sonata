@@ -1,0 +1,1 @@
+let mutable x: number = 1

@@ -1,0 +1,9 @@
+capability class IO(path: String = '/')
+
+entity class File(path: String) requires (io: IO) {
+    require io.allowed && Path(io.path).parentOf(path)
+}
+
+entity class Service(file: File)
+
+let x = Service(myFile) with IO(path='/tmp')
