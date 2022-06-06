@@ -70,15 +70,7 @@ int main(int argc, char **argv) {
         all_tokens.splice(all_tokens.end(), processed);
     }
 
-    nlohmann::json j1, j2;
-    auto document = parser.parse(all_tokens);
-    document->to_json(j1);
-    std::cout << j1.dump(2) << std::endl;
-    pass_manager.run(document);
-    document->to_json(j2);
-    std::cout << j2.dump(2) << std::endl;
-
-    backend.write(document);
+    backend.write(parser.parse(all_tokens));
 
     scc::diagnostic::finish();
     scc::diagnostic::print_user_diagnostic();

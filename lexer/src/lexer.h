@@ -13,6 +13,7 @@ namespace scc::lexer {
     using std::list;
 
     typedef list<shared_ptr<token>> token_stream;
+    typedef list<shared_ptr<token>>::const_iterator token_stream_iterator;
 
     class lexer {
     public:
