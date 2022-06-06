@@ -20,7 +20,8 @@ namespace scc::ast {
         type_constraints type;
     };
 
-    typedef variant<nlet_function_named_parameter, expression_ref> nlet_function_parameter;
+    typedef std::shared_ptr<nlet_function_named_parameter> nlet_function_named_parameter_ref;
+    typedef variant<nlet_function_named_parameter_ref, expression_ref> nlet_function_parameter;
 
     struct nlet_function : public node {
         nlet_function();

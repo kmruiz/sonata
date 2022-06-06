@@ -116,6 +116,47 @@ namespace scc::parser::test {
         return root->body.has_value();
     }
 
+    inline bool has_parameters(const shared_ptr<ast::nlet_function> &root) {
+        return !root->parameters.empty();
+    }
+
+    template <int ChildIndex, class ArgType>
+    inline std::shared_ptr<typename std::enable_if<not std::is_same<ArgType, nlet_function_named_parameter>::value, ArgType>::type>
+    parameter_nth(const shared_ptr<ast::nlet_function> &root) {
+        int idx = 0;
+        for (auto &x : root->parameters) {
+            if (idx == ChildIndex) {
+                if (std::holds_alternative<expression_ref>(x)) {
+                    return std::dynamic_pointer_cast<ArgType>(std::get<expression_ref>(x));
+                }
+                break;
+            }
+
+            idx++;
+        }
+
+        return nullptr;
+    }
+
+    template <int ChildIndex, class ArgType>
+    shared_ptr<typename std::enable_if<std::is_same<ArgType, nlet_function_named_parameter>::value, ArgType>::type>
+    inline parameter_nth(const shared_ptr<ast::nlet_function> &root) {
+        int idx = 0;
+        for (auto &x : root->parameters) {
+            if (idx == ChildIndex) {
+                if (std::holds_alternative<nlet_function_named_parameter_ref>(x)) {
+                    return std::get<nlet_function_named_parameter_ref>(x);
+                }
+
+                break;
+            }
+
+            idx++;
+        }
+
+        return nullptr;
+    }
+
     inline ast::ast_root parse(const string &code) {
         scc::lexer::lexer _lexer;
         scc::parser::parser _parser;

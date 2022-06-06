@@ -32,12 +32,12 @@ namespace scc::ast {
         for (const auto &param : this->parameters) {
             json pj;
 
-            if (std::holds_alternative<nlet_function_named_parameter>(param)) {
-                const auto &v = std::get<nlet_function_named_parameter>(param);
+            if (std::holds_alternative<nlet_function_named_parameter_ref>(param)) {
+                const auto &v = std::get<nlet_function_named_parameter_ref>(param);
 
                 pj["kind"] = "named";
-                pj["name"] = v.name;
-                pj["type"] = v.type;
+                pj["name"] = v->name;
+                pj["type"] = v->type;
             } else {
                 const auto &v = std::get<expression_ref>(param);
                 pj["kind"] = "expression";

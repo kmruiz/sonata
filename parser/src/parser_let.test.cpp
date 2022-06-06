@@ -60,4 +60,19 @@ TEST(parser_let, reads_a_function_expression_without_parameters_and_without_body
     ASSERT_EQ(let->name, "foo");
     ASSERT_EQ(get<type_constraint_equality>(let->return_type).type, "number");
     ASSERT_FALSE(has_body(let));
+    ASSERT_FALSE(has_parameters(let));
+}
+
+TEST(parser_let, reads_a_function_expression_with_a_named_parameter_and_without_body) {
+    const auto result = parse("let foo(param: string): number");
+    const auto let = child_nth<0, nlet_function>(result);
+
+    ASSERT_EQ(let->name, "foo");
+    ASSERT_EQ(get<type_constraint_equality>(let->return_type).type, "number");
+    ASSERT_FALSE(has_body(let));
+    ASSERT_TRUE(has_parameters(let));
+
+    auto param = parameter_nth<0, nlet_function_named_parameter>(let);
+    ASSERT_EQ(get<type_constraint_equality>(param->type).type, "string");
+    ASSERT_EQ(param->name, "param");
 }

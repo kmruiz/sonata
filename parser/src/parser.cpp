@@ -16,17 +16,30 @@ namespace scc::parser {
     using std::make_tuple;
 
     static const token_stream skip_whitespace(const token_stream &tokens);
+
     static const token_stream skip_whitespace_no_newline(const token_stream &tokens);
+
     static const token_stream next_token_stream(const token_stream &tokens);
+
     static const token_stream panic(const token_stream &tokens);
+
     static const token_stream assert_token_keyword(const string &kw, const token_stream &tokens);
+
     static const token_stream assert_token_type(const token_type &type, const token_stream &tokens);
+
     static tuple<node_ref, token_stream> parse_node(const token_stream &tokens);
+
     static tuple<expression_ref, token_stream> parse_expression(const token_stream &tokens);
+
     static tuple<node_ref, token_stream> parse_let_expression(const token_stream &tokens);
+
     static tuple<node_ref, token_stream> parse_let_function_definition(const string &name, const token_stream &tokens);
+
     static tuple<type_constraints, token_stream> parse_type_constraints(const token_stream &tokens);
-    static tuple<expression_ref, token_stream> parse_function_call(const expression_ref &left, const token_stream &tokens);
+
+    static tuple<expression_ref, token_stream>
+    parse_function_call(const expression_ref &left, const token_stream &tokens);
+
     static tuple<node_ref, token_stream> parse_class(const token_stream &tokens);
 
     parser::parser() {
@@ -104,16 +117,16 @@ namespace scc::parser {
             }
 
             D_ERROR("Expected identifier " + kw + " but " + token_data + " found.", {
-                    diagnostic::diagnostic_log_marker { .key = "expected", .value = kw },
-                    diagnostic::diagnostic_log_marker { .key = "found", .value = token_data },
+                    diagnostic::diagnostic_log_marker{.key = "expected", .value = kw},
+                    diagnostic::diagnostic_log_marker{.key = "found", .value = token_data},
             });
 
             return panic(tokens);
         }
 
         D_ERROR("Expected identifier " + kw + " but token type " + to_string(current->type) + " found.", {
-                diagnostic::diagnostic_log_marker { .key = "expected", .value = kw },
-                diagnostic::diagnostic_log_marker { .key = "found type", .value = to_string(current->type) },
+                diagnostic::diagnostic_log_marker{.key = "expected", .value = kw},
+                diagnostic::diagnostic_log_marker{.key = "found type", .value = to_string(current->type)},
         });
 
         return panic(tokens);
@@ -125,10 +138,11 @@ namespace scc::parser {
             return next_token_stream(tokens);
         }
 
-        D_ERROR("Expected token type " + to_string(type) + " but found token type " + to_string(current->type) + " found.", {
-                diagnostic::diagnostic_log_marker { .key = "expected type", .value = to_string(type) },
-                diagnostic::diagnostic_log_marker { .key = "found type", .value = to_string(current->type) },
-        });
+        D_ERROR("Expected token type " + to_string(type) + " but found token type " + to_string(current->type) +
+                " found.", {
+                        diagnostic::diagnostic_log_marker{.key = "expected type", .value = to_string(type)},
+                        diagnostic::diagnostic_log_marker{.key = "found type", .value = to_string(current->type)},
+                });
 
         return panic(tokens);
     }
@@ -178,7 +192,7 @@ namespace scc::parser {
             if (ncontent.content == "true" || ncontent.content == "false") {
                 auto nconst = std::make_shared<nconstant>();
                 nconst->type = ast::nconstant_type::BOOLEAN;
-                nconst->content = info_boolean { .value = get<info_identifier>(value->metadata).content == "true"};
+                nconst->content = info_boolean{.value = get<info_identifier>(value->metadata).content == "true"};
                 result = nconst;
             } else {
                 auto nident = std::make_shared<nidentifier>();
@@ -307,13 +321,39 @@ namespace scc::parser {
         auto node = std::make_shared<ast::nlet_function>();
         node->name = name;
         node->return_type = type_constraint_none();
-
         auto next_tokens = skip_whitespace(tokens);
-        next_tokens = skip_whitespace_no_newline(assert_token_type(token_type::CLOSE_PAREN, tokens));
+
+        if (next_tokens.front()->type == token_type::CLOSE_PAREN) {
+            next_tokens = skip_whitespace(next_token_stream(next_tokens));
+        } else {
+            while (true) {
+                auto param = std::make_shared<nlet_function_named_parameter>();
+                next_tokens = skip_whitespace(next_tokens);
+                auto field_name = next_tokens.front();
+                if (field_name->type != token_type::IDENTIFIER) {
+                    return make_tuple(nullptr, panic(next_tokens));
+                }
+
+                next_tokens = skip_whitespace(next_token_stream(next_tokens));
+                next_tokens = assert_token_type(token_type::COLON, skip_whitespace(next_tokens));
+                tie(param->type, next_tokens) = parse_type_constraints(skip_whitespace(next_tokens));
+                next_tokens = skip_whitespace(next_tokens);
+
+                param->name = get<info_identifier>(field_name->metadata).content;
+                node->parameters.emplace_back(param);
+                if (next_tokens.front()->type == token_type::CLOSE_PAREN) {
+                    next_tokens = skip_whitespace(next_token_stream(next_tokens));
+                    break;
+                }
+
+                next_tokens = assert_token_type(token_type::COMMA, next_tokens);
+            }
+        }
 
         auto colon_or_eq = next_tokens.front();
         if (colon_or_eq->type == token_type::COLON) {
-            tie(node->return_type, next_tokens) = parse_type_constraints(skip_whitespace_no_newline(next_token_stream(next_tokens)));
+            tie(node->return_type, next_tokens) = parse_type_constraints(
+                    skip_whitespace_no_newline(next_token_stream(next_tokens)));
             next_tokens = skip_whitespace(next_tokens);
             colon_or_eq = next_tokens.front();
         }
@@ -352,10 +392,11 @@ namespace scc::parser {
         }
 
         string base_type_name = get<info_identifier>(base->metadata).content;
-        return make_tuple(type_constraint_equality { .type = base_type_name }, next_token_stream(next_tokens));
+        return make_tuple(type_constraint_equality{.type = base_type_name}, next_token_stream(next_tokens));
     }
 
-    static tuple<expression_ref, token_stream> parse_function_call(const expression_ref &left, const token_stream &tokens) {
+    static tuple<expression_ref, token_stream>
+    parse_function_call(const expression_ref &left, const token_stream &tokens) {
         auto result = std::make_shared<nfunction_call>();
         result->left = left;
 
