@@ -1,1 +1,2 @@
-printf('hello world')
+printf('%s %s!', 'hello', 'world')
+printf('called 2 times %s %s!', 'hello', 'world')
