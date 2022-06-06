@@ -1,6 +1,1 @@
-let mutable x: number = 1
-
-capability class IO(path: string)
-
-let foo(bar: string, baz: string)
-
+printf('hello world')

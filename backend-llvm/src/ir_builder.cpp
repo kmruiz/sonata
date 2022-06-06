@@ -1,5 +1,6 @@
 #include "ir_builder.h"
 #include "diagnostic.h"
+#include "ast.h"
 
 namespace scc::backend::llvm {
     ir_builder::ir_builder(
@@ -22,8 +23,20 @@ namespace scc::backend::llvm {
         _builder->SetInsertPoint(BB);
 
         for (const auto &node : document->children) {
-
+            if (std::dynamic_pointer_cast<ast::nfunction_call>(node) != nullptr) {
+                auto function_call = std::dynamic_pointer_cast<ast::nfunction_call>(node);
+                auto cte = std::dynamic_pointer_cast<ast::nidentifier>(function_call->left);
+                auto fn = _module->getFunction(cte->name);
+                std::vector<Value *> args;
+                for (auto &arg : function_call->arguments) {
+                    auto expr = std::get<ast::expression_ref>(arg);
+                    auto str = std::dynamic_pointer_cast<ast::nconstant>(expr);
+                    args.emplace_back(_builder->CreateGlobalStringPtr(get<common::info_string>(str->content).content));
+                }
+                _builder->CreateCall(fn, args);
+            }
         }
+
 //        for (const auto &node_uq: document->children) {
 //            auto node = node_uq.get();
 //            to_value(node);
