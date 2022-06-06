@@ -8,6 +8,7 @@
 #include "ast/src/node.h"
 #include "parser/src/parser.h"
 #include "backend-llvm/src/backend.h"
+#include "passes/src/pass_manager.h"
 
 int main(int argc, char **argv) {
     bool diagnostic = false;
@@ -44,6 +45,7 @@ int main(int argc, char **argv) {
     scc::discovery::discovery discovery;
     scc::lexer::lexer lexer;
     scc::parser::parser parser;
+    scc::passes::pass_manager pass_manager({}, {});
     scc::backend::llvm::llvm_backend backend;
 
     if (directories_to_process.empty()) {
@@ -59,11 +61,13 @@ int main(int argc, char **argv) {
         all_tokens.splice(all_tokens.end(), processed);
     }
 
-    nlohmann::json j;
+    nlohmann::json j1, j2;
     auto document = parser.parse(all_tokens);
-    document->to_json(j);
-
-    std::cout << j.dump(2) << std::endl;
+    document->to_json(j1);
+    std::cout << j1.dump(2) << std::endl;
+    pass_manager.run(document);
+    document->to_json(j2);
+    std::cout << j2.dump(2) << std::endl;
 
     backend.write(document);
 

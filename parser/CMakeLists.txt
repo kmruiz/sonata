@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(../diagnostic/src)
 include_directories(../ast/src)
-include_directories(../lexer/src)
 include_directories(../common/src)
+include_directories(../lexer/src)
 
 add_library(parser src/parser.cpp src/parser.h)
 target_link_libraries(parser lexer ast)
