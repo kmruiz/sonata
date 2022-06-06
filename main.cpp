@@ -12,14 +12,23 @@
 
 int main(int argc, char **argv) {
     bool diagnostic = false;
+    std::string diagnostic_file = "scc-diagnostic.json";
     scc::diagnostic::diagnostic_log_level allowed_level = scc::diagnostic::diagnostic_log_level::WARN;
     std::list<std::string> directories_to_process;
     int c;
 
-    while ((c = getopt(argc, argv, "DL::")) != -1) {
+    while ((c = getopt(argc, argv, "D:L::")) != -1) {
         switch (c) {
             case 'D':
                 diagnostic = true;
+                std::cout << optarg << std::endl;
+                if (std::string(optarg) != "default") {
+                    diagnostic_file = optarg;
+                    if (!diagnostic_file.ends_with(".json")) {
+                        diagnostic_file += ".json";
+                    }
+                }
+
                 break;
             case 'L':
                 std::string level = optarg;
@@ -75,7 +84,7 @@ int main(int argc, char **argv) {
     scc::diagnostic::print_user_diagnostic();
 
     if (diagnostic) {
-        scc::diagnostic::dump_diagnostic("./scc-diagnostic.json");
+        scc::diagnostic::dump_diagnostic(diagnostic_file);
     }
 
     return 0;

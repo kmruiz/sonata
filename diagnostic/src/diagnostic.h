@@ -15,7 +15,12 @@ namespace scc::diagnostic {
     using std::tm;
 
     enum class diagnostic_phase_id : unsigned char {
-        DISCOVERY, LEXER, PARSER, GENERATE_LLVM_IR, OPTIMIZE_LLVM_IR
+        DISCOVERY,
+        LEXER,
+        PARSER,
+        PASS,
+        GENERATE_LLVM_IR,
+        OPTIMIZE_LLVM_IR
     };
 
     typedef unsigned int count_t;
