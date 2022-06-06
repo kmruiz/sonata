@@ -16,30 +16,17 @@ namespace scc::parser {
     using std::make_tuple;
 
     static const token_stream skip_whitespace(const token_stream &tokens);
-
     static const token_stream skip_whitespace_no_newline(const token_stream &tokens);
-
     static const token_stream next_token_stream(const token_stream &tokens);
-
     static const token_stream panic(const token_stream &tokens);
-
     static const token_stream assert_token_keyword(const string &kw, const token_stream &tokens);
-
     static const token_stream assert_token_type(const token_type &type, const token_stream &tokens);
-
     static tuple<node_ref, token_stream> parse_node(const token_stream &tokens);
-
     static tuple<expression_ref, token_stream> parse_expression(const token_stream &tokens);
-
     static tuple<node_ref, token_stream> parse_let_expression(const token_stream &tokens);
-
     static tuple<node_ref, token_stream> parse_let_function_definition(const string &name, const token_stream &tokens);
-
     static tuple<type_constraints, token_stream> parse_type_constraints(const token_stream &tokens);
-
-    static tuple<expression_ref, token_stream>
-    parse_function_call(const expression_ref &left, const token_stream &tokens);
-
+    static tuple<expression_ref, token_stream> parse_function_call(const expression_ref &left, const token_stream &tokens);
     static tuple<node_ref, token_stream> parse_class(const token_stream &tokens);
 
     parser::parser() {
