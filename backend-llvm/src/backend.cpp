@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "intrinsics/intrinsics.h"
+#include "diagnostic.h"
 
 using namespace llvm;
 using namespace llvm::sys;
@@ -90,6 +91,7 @@ namespace scc::backend::llvm {
             throw std::exception();
         }
 
+        D_START_PHASE(scc::diagnostic::diagnostic_phase_id::OPTIMIZE_LLVM_IR);
         legacy::PassManager pass;
         auto FileType = CGFT_ObjectFile;
 
@@ -100,6 +102,7 @@ namespace scc::backend::llvm {
 
         pass.run(*_module);
         dest.flush();
+        D_END_PHASE();
 
 #ifdef DEBUG
         _module->print(errs(), nullptr);

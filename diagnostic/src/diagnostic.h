@@ -20,7 +20,8 @@ namespace scc::diagnostic {
         PARSER,
         PASS,
         GENERATE_LLVM_IR,
-        OPTIMIZE_LLVM_IR
+        OPTIMIZE_LLVM_IR,
+        EMIT_LLVM
     };
 
     typedef unsigned int count_t;
