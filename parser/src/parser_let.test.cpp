@@ -91,3 +91,23 @@ TEST(parser_let, reads_an_external_function_expression) {
     ASSERT_EQ(get<type_constraint_equality>(param->type).type, "string");
     ASSERT_EQ(param->name, "format");
 }
+
+TEST(parser_let, reads_an_external_function_with_mapping_expression) {
+    const auto result = parse("let extern printf(format: mapping[string, c_string]): none");
+    const auto let = child_nth<0, nlet_function>(result);
+
+    ASSERT_EQ(let->name, "printf");
+    ASSERT_EQ(get<type_constraint_equality>(let->return_type).type, "none");
+    ASSERT_FALSE(has_body(let));
+    ASSERT_TRUE(has_parameters(let));
+    ASSERT_TRUE(let->external);
+
+    auto param = parameter_nth<0, nlet_function_named_parameter>(let);
+    ASSERT_EQ(param->name, "format");
+    auto gentype = get<type_constraint_generic>(param->type);
+    ASSERT_EQ(gentype.base, "mapping");
+    auto p1 = generic_parameter_nth<0, type_constraint_equality>(gentype);
+    ASSERT_EQ(p1.type, "string");
+    auto p2 = generic_parameter_nth<1, type_constraint_equality>(gentype);
+    ASSERT_EQ(p2.type, "c_string");
+}

@@ -384,6 +384,7 @@ namespace scc::parser {
         // if we find a '[', we have a generic type
         next_tokens = skip_whitespace_no_newline(++next_tokens, end);
         if ((*next_tokens)->type == token_type::OPEN_BRACKET) {
+            next_tokens = skip_whitespace_no_newline(++next_tokens, end);
             // generic type
             type_constraint_generic type;
             type.base = base_type_name;
@@ -395,7 +396,7 @@ namespace scc::parser {
                 type.parameters.emplace_back(new_type);
 
                 if ((*next_tokens)->type == token_type::COMMA) {
-                    next_tokens++;
+                    next_tokens = skip_whitespace_no_newline(++next_tokens, end);
                 } else if ((*next_tokens)->type == token_type::CLOSE_BRACKET) {
                     break;
                 }
