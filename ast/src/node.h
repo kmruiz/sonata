@@ -29,14 +29,18 @@ namespace scc::ast {
         type_constraint_equality base_constraint;
         string value;
     };
-    struct type_constraint_generic {
-        list<variant<type_constraint_equality, type_constraint_covariant, type_constraint_contravariant, type_constraint_generic, type_constraint_sum, type_constraint_constant>> parameters;
-    };
-    struct type_constraint_sum {
-        list<variant<type_constraint_equality, type_constraint_covariant, type_constraint_contravariant, type_constraint_generic, type_constraint_sum, type_constraint_constant>> types;
-    };
+    struct type_constraint_generic;
+    struct type_constraint_sum;
 
     typedef variant<type_constraint_none, type_constraint_equality, type_constraint_covariant, type_constraint_contravariant, type_constraint_generic, type_constraint_sum, type_constraint_constant> type_constraints;
+
+    struct type_constraint_generic {
+        string base;
+        list<type_constraints> parameters;
+    };
+    struct type_constraint_sum {
+        list<type_constraints> types;
+    };
 
     struct node {
         node_id id;

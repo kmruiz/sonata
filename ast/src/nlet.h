@@ -31,6 +31,7 @@ namespace scc::ast {
         list<nlet_function_parameter> parameters;
         type_constraints return_type;
         optional<expression_ref> body;
+        bool external;
 
         void to_json(json& j) override;
     };

@@ -17,14 +17,13 @@ namespace scc::parser {
 
     static const token_stream_iterator skip_whitespace(token_stream_iterator tokens, token_stream_iterator end);
     static const token_stream_iterator skip_whitespace_no_newline(token_stream_iterator tokens, token_stream_iterator end);
-    static const token_stream_iterator next_token_stream(token_stream_iterator tokens, token_stream_iterator end);
     static const token_stream_iterator panic(token_stream_iterator tokens, token_stream_iterator end);
     static const token_stream_iterator assert_token_keyword(const string &kw, token_stream_iterator tokens, token_stream_iterator end);
     static const token_stream_iterator assert_token_type(const token_type &type, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_node(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_expression(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_let_expression(token_stream_iterator tokens, token_stream_iterator end);
-    static tuple<node_ref, token_stream_iterator> parse_let_function_definition(const string &name, token_stream_iterator tokens, token_stream_iterator end);
+    static tuple<node_ref, token_stream_iterator> parse_let_function_definition(const string &name, bool external, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<type_constraints, token_stream_iterator> parse_type_constraints(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_class(token_stream_iterator tokens, token_stream_iterator end);
@@ -203,10 +202,11 @@ namespace scc::parser {
         return make_tuple(result, next_tokens);
     }
 
-    // let [mutable] identifier[(...params)][: type definition] [= initial value]
+    // let [mutable/extern] identifier[(...params)][: type definition] [= initial value]
     static tuple<node_ref, token_stream_iterator> parse_let_expression(token_stream_iterator tokens, token_stream_iterator end) {
         auto node = std::make_shared<ast::nlet>();
         node->constraints = type_constraint_none();
+        bool external = false;
 
         auto next_tokens = skip_whitespace(tokens, end);
         auto name_or_mutable_token = (*next_tokens);
@@ -228,6 +228,10 @@ namespace scc::parser {
         auto name_or_mutable_content = std::get<info_identifier>(name_or_mutable_token->metadata).content;
         if (name_or_mutable_content == "mutable") {
             node->mutable_p = true;
+            next_tokens = skip_whitespace(++next_tokens, end);
+            name_or_mutable_token = (*next_tokens);
+        } else if (name_or_mutable_content == "extern") {
+            external = true;
             next_tokens = skip_whitespace(++next_tokens, end);
             name_or_mutable_token = (*next_tokens);
         }
@@ -284,7 +288,7 @@ namespace scc::parser {
         } else if (colon_param_equals_or_else->type == token_type::NEW_LINE) {
             return make_tuple(node, skip_whitespace(next_tokens, end));
         } else if (colon_param_equals_or_else->type == token_type::OPEN_PAREN) {
-            return parse_let_function_definition(node->name, ++next_tokens, end);
+            return parse_let_function_definition(node->name, external, ++next_tokens, end);
         }
 
         D_ERROR("Unexpected token. Expected colon, equals or a new line.", {
@@ -301,9 +305,10 @@ namespace scc::parser {
         return make_tuple(nullptr, panic(next_tokens, end));
     }
 
-    static tuple<node_ref, token_stream_iterator> parse_let_function_definition(const string &name, token_stream_iterator tokens, token_stream_iterator end) {
+    static tuple<node_ref, token_stream_iterator> parse_let_function_definition(const string &name, bool external, token_stream_iterator tokens, token_stream_iterator end) {
         auto node = std::make_shared<ast::nlet_function>();
         node->name = name;
+        node->external = external;
         node->return_type = type_constraint_none();
         auto next_tokens = skip_whitespace(tokens, end);
 
@@ -376,7 +381,30 @@ namespace scc::parser {
         }
 
         string base_type_name = get<info_identifier>(base->metadata).content;
-        return make_tuple(type_constraint_equality{.type = base_type_name}, ++next_tokens);
+        // if we find a '[', we have a generic type
+        next_tokens = skip_whitespace_no_newline(++next_tokens, end);
+        if ((*next_tokens)->type == token_type::OPEN_BRACKET) {
+            // generic type
+            type_constraint_generic type;
+            type.base = base_type_name;
+
+            while (true) {
+                type_constraints new_type;
+                tie(new_type, next_tokens) = parse_type_constraints(next_tokens, end);
+                next_tokens = skip_whitespace(next_tokens, end);
+                type.parameters.emplace_back(new_type);
+
+                if ((*next_tokens)->type == token_type::COMMA) {
+                    next_tokens++;
+                } else if ((*next_tokens)->type == token_type::CLOSE_BRACKET) {
+                    break;
+                }
+            }
+
+            return make_tuple(type, ++next_tokens);
+        }
+
+        return make_tuple(type_constraint_equality{.type = base_type_name}, next_tokens);
     }
 
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator next_tokens, token_stream_iterator end) {

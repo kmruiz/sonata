@@ -20,7 +20,14 @@ include_directories(../diagnostic/src)
 include_directories(../common/src)
 
 add_definitions(-fexceptions)
-add_library(backend-llvm src/backend.cpp src/backend.h src/ir_builder.cpp src/ir_builder.h src/intrinsics/intrinsics.h src/intrinsics/internal_std_io.cpp)
+add_library(backend-llvm
+        src/backend.cpp
+        src/backend.h
+        src/ir_builder.cpp
+        src/ir_builder.h
+        src/intrinsics/intrinsics.h
+)
+
 target_link_libraries(backend-llvm ${LIBS} ${SYS_LIBS} ${LDF} diagnostic ast)
 
 target_include_directories(backend-llvm PUBLIC ${INCLUDE_DIR} /usr/lib/llvm-13/include/)

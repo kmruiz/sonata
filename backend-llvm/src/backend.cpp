@@ -77,9 +77,6 @@ namespace scc::backend::llvm {
     }
 
     void llvm_backend::write(const ast_root &document) {
-        internal_std_io istdio;
-        istdio.register_into(_context, _module);
-
         _ir_builder->build_ir(document);
 
         auto Filename = "output.o";

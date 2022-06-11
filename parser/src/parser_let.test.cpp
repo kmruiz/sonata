@@ -76,3 +76,18 @@ TEST(parser_let, reads_a_function_expression_with_a_named_parameter_and_without_
     ASSERT_EQ(get<type_constraint_equality>(param->type).type, "string");
     ASSERT_EQ(param->name, "param");
 }
+
+TEST(parser_let, reads_an_external_function_expression) {
+    const auto result = parse("let extern printf(format: string): none");
+    const auto let = child_nth<0, nlet_function>(result);
+
+    ASSERT_EQ(let->name, "printf");
+    ASSERT_EQ(get<type_constraint_equality>(let->return_type).type, "none");
+    ASSERT_FALSE(has_body(let));
+    ASSERT_TRUE(has_parameters(let));
+    ASSERT_TRUE(let->external);
+
+    auto param = parameter_nth<0, nlet_function_named_parameter>(let);
+    ASSERT_EQ(get<type_constraint_equality>(param->type).type, "string");
+    ASSERT_EQ(param->name, "format");
+}

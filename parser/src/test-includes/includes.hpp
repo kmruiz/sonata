@@ -157,6 +157,21 @@ namespace scc::parser::test {
         return nullptr;
     }
 
+    template <int ChildIndex, class ChildType>
+    inline ChildType generic_parameter_nth(const type_constraints &root) {
+        int idx = 0;
+
+        for (auto &x : get<type_constraint_generic>(root).parameters) {
+            if (idx == ChildIndex) {
+                return get<ChildType>(x);
+            }
+
+            idx++;
+        }
+
+        throw std::runtime_error(std::string("Could not find a generic parameter with type ") + typeid(ChildType).name());
+    }
+
     inline ast::ast_root parse(const string &code) {
         scc::lexer::lexer _lexer;
         scc::parser::parser _parser;

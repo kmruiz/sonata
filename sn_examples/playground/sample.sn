@@ -1,2 +1,3 @@
-printf('%s %s!', 'hello', 'world')
-printf('called 2 times %s %s!', 'hello', 'world')
+let extern printf(text: string): none
+let sayHi() = printf('Hello World from an extern function!')
+sayHi()
