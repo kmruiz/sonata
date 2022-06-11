@@ -2,7 +2,6 @@
 #include "diagnostic.h"
 
 #include <filesystem>
-#include <sstream>
 
 namespace scc::discovery {
 
