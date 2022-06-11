@@ -13,7 +13,7 @@ namespace scc::discovery {
 
     }
 
-    list<string> discovery::discover_directories(const list<string> &directories) {
+    list<string> discovery::discover_source_files(const list<string> &directories) {
         D_START_PHASE(diagnostic::diagnostic_phase_id::DISCOVERY);
         list<string> unique = list(directories);
 

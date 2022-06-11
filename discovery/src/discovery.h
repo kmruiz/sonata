@@ -12,6 +12,6 @@ namespace scc::discovery {
         explicit discovery();
         ~discovery();
 
-        list<string> discover_directories(const list<string> &directories);
+        list<string> discover_source_files(const list<string> &directories);
     };
 }

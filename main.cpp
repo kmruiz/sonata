@@ -48,6 +48,10 @@ int main(int argc, char **argv) {
         directories_to_process.emplace_back(argv[optind]);
     }
 
+    if (directories_to_process.empty()) {
+        directories_to_process.emplace_back(".");
+    }
+
     scc::diagnostic::initialize(allowed_level);
     scc::discovery::discovery discovery;
     scc::lexer::lexer lexer;
@@ -55,11 +59,7 @@ int main(int argc, char **argv) {
     scc::passes::pass_manager pass_manager({}, {});
     scc::backend::llvm::llvm_backend backend;
 
-    if (directories_to_process.empty()) {
-        directories_to_process.emplace_back(".");
-    }
-
-    std::list<std::string> files_to_process = discovery.discover_directories(directories_to_process);
+    std::list<std::string> files_to_process = discovery.discover_source_files(directories_to_process);
     scc::lexer::token_stream all_tokens;
 
     for (const auto &source_file : files_to_process) {
