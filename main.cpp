@@ -70,7 +70,10 @@ int main(int argc, char **argv) {
         all_tokens.splice(all_tokens.end(), processed);
     }
 
-    backend.write(parser.parse(all_tokens));
+    auto result = parser.parse(all_tokens);
+    pass_manager.run(result);
+
+    backend.write(result);
 
     scc::diagnostic::finish();
     scc::diagnostic::print_user_diagnostic();
