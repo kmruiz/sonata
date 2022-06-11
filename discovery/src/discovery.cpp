@@ -1,11 +1,8 @@
-//
-// Created by kevin on 5/21/22.
-//
-
 #include "discovery.h"
 #include "diagnostic.h"
 
 #include <filesystem>
+#include <sstream>
 
 namespace scc::discovery {
 
@@ -19,9 +16,19 @@ namespace scc::discovery {
 
     list<string> discovery::discover_directories(const list<string> &directories) {
         D_START_PHASE(diagnostic::diagnostic_phase_id::DISCOVERY);
+        list<string> unique = list(directories);
+
+        unique.sort();
+        unique.unique();
+
+        std::ostringstream oss;
+        copy(unique.begin(), unique.end(), std::ostream_iterator<string>(oss, ","));
+
+        D_DEBUG("Discovering files in directories. ", { diagnostic::diagnostic_log_marker { .key = "directories", .value = oss.str() }});
+
         list<string> paths;
 
-        for (const auto &directory : directories) {
+        for (const auto &directory : unique) {
             for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(directory)) {
                 if (dirEntry.path().extension() == ".sn") {
                     D_DEBUG("Found file. It's going to be processed because it has extension .sn", { diagnostic::diagnostic_log_marker { .key = "file", .value = dirEntry.path() }});
@@ -31,6 +38,9 @@ namespace scc::discovery {
                 }
             }
         }
+
+        paths.sort();
+        paths.unique();
 
         D_END_PHASE();
         return paths;

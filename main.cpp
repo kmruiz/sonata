@@ -5,7 +5,6 @@
 #include "lexer/src/lexer.h"
 #include "diagnostic/src/diagnostic.h"
 #include "discovery/src/discovery.h"
-#include "ast/src/node.h"
 #include "parser/src/parser.h"
 #include "backend-llvm/src/backend.h"
 #include "passes/src/pass_manager.h"
@@ -17,11 +16,10 @@ int main(int argc, char **argv) {
     std::list<std::string> directories_to_process;
     int c;
 
-    while ((c = getopt(argc, argv, "D:L::")) != -1) {
+    while ((c = getopt(argc, argv, "D:L:")) != -1) {
         switch (c) {
             case 'D':
                 diagnostic = true;
-                std::cout << optarg << std::endl;
                 if (std::string(optarg) != "default") {
                     diagnostic_file = optarg;
                     if (!diagnostic_file.ends_with(".json")) {
@@ -47,7 +45,7 @@ int main(int argc, char **argv) {
     }
 
     for(; optind < argc; optind++){
-        directories_to_process.push_back(argv[optind]);
+        directories_to_process.emplace_back(argv[optind]);
     }
 
     scc::diagnostic::initialize(allowed_level);
