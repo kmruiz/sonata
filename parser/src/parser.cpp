@@ -356,8 +356,6 @@ namespace scc::parser {
 
     // <empty> : none
     // T       : equality
-    // +T      : covariant (only in generic)
-    // -T      : contravariant (only in generic)
     // A[B,C]  : generic
     // A | B   : sum
     // T       : constant (if T != identifier)

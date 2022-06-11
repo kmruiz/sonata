@@ -23,8 +23,6 @@ namespace scc::ast {
     struct type_constraint_none {};
     struct type_constraint_sum;
     struct type_constraint_equality { string type; };
-    struct type_constraint_covariant { string of_type; };
-    struct type_constraint_contravariant { string of_type; };
     struct type_constraint_constant {
         type_constraint_equality base_constraint;
         string value;
@@ -32,7 +30,7 @@ namespace scc::ast {
     struct type_constraint_generic;
     struct type_constraint_sum;
 
-    typedef variant<type_constraint_none, type_constraint_equality, type_constraint_covariant, type_constraint_contravariant, type_constraint_generic, type_constraint_sum, type_constraint_constant> type_constraints;
+    typedef variant<type_constraint_none, type_constraint_equality, type_constraint_generic, type_constraint_sum, type_constraint_constant> type_constraints;
 
     struct type_constraint_generic {
         string base;
@@ -74,10 +72,7 @@ namespace scc::ast {
     void to_json(json& j, const type_constraint_none& tcnone);
     void to_json(json& j, const type_constraint_sum& tcsum);
     void to_json(json& j, const type_constraint_equality& tceq);
-    void to_json(json& j, const type_constraint_covariant& tcova);
-    void to_json(json& j, const type_constraint_contravariant& tcntra);
     void to_json(json& j, const type_constraint_constant& tconstant);
     void to_json(json& j, const type_constraint_generic& tcgen);
-    void to_json(json& j, const variant<type_constraint_equality, type_constraint_covariant, type_constraint_contravariant, type_constraint_generic, type_constraint_sum, type_constraint_constant> &tcinner);
     void to_json(json& j, const type_constraints & tconstraints);
 }

@@ -58,16 +58,6 @@ namespace scc::ast {
         j["equals"] = tceq.type;
     }
 
-    void to_json(json& j, const type_constraint_covariant& tcova) {
-        j["type_constraint"] = "covariant";
-        j["on"] = tcova.of_type;
-    }
-
-    void to_json(json& j, const type_constraint_contravariant& tcntra) {
-        j["type_constraint"] = "contravariant";
-        j["on"] = tcntra.of_type;
-    }
-
     void to_json(json& j, const type_constraint_constant& tconstant) {
         j["type_constraint"] = "constant";
         j["base"] = tconstant.base_constraint;
@@ -83,32 +73,6 @@ namespace scc::ast {
         j["parameters"] = params;
     }
 
-    void to_json(json& j, const variant<type_constraint_equality, type_constraint_covariant, type_constraint_contravariant, type_constraint_generic, type_constraint_sum, type_constraint_constant> &tcinner) {
-        if (std::holds_alternative<type_constraint_equality>(tcinner)) {
-            j = std::get<type_constraint_equality>(tcinner);
-        }
-
-        if (std::holds_alternative<type_constraint_covariant>(tcinner)) {
-            j = std::get<type_constraint_covariant>(tcinner);
-        }
-
-        if (std::holds_alternative<type_constraint_contravariant>(tcinner)) {
-            j = std::get<type_constraint_contravariant>(tcinner);
-        }
-
-        if (std::holds_alternative<type_constraint_generic>(tcinner)) {
-            j = std::get<type_constraint_generic>(tcinner);
-        }
-
-        if (std::holds_alternative<type_constraint_sum>(tcinner)) {
-            j = std::get<type_constraint_sum>(tcinner);
-        }
-
-        if (std::holds_alternative<type_constraint_constant>(tcinner)) {
-            j = std::get<type_constraint_constant>(tcinner);
-        }
-    }
-
     void to_json(json& j, const type_constraints& tconstraints) {
         if (std::holds_alternative<type_constraint_none>(tconstraints)) {
             j = std::get<type_constraint_none>(tconstraints);
@@ -116,14 +80,6 @@ namespace scc::ast {
 
         if (std::holds_alternative<type_constraint_equality>(tconstraints)) {
             j = std::get<type_constraint_equality>(tconstraints);
-        }
-
-        if (std::holds_alternative<type_constraint_covariant>(tconstraints)) {
-            j = std::get<type_constraint_covariant>(tconstraints);
-        }
-
-        if (std::holds_alternative<type_constraint_contravariant>(tconstraints)) {
-            j = std::get<type_constraint_contravariant>(tconstraints);
         }
 
         if (std::holds_alternative<type_constraint_generic>(tconstraints)) {
