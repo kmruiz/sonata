@@ -3,5 +3,5 @@ let sayHi() = printf('Hello World from an extern function!')
 sayHi()
 
 value class Amount(currency: string, value: number) {
-    let print() = printf('%s%d', currency, value)
+    let print() = printf('%s%d', self.currency, self.value)
 }

@@ -13,6 +13,7 @@ add_library(ast
         src/nfunction_call.cpp src/nfunction_call.h
         src/nidentifier.cpp src/nidentifier.h
         src/nlet.cpp src/nlet.h
+        src/ntype.cpp src/ntype.h
         src/ast.h
         )
 

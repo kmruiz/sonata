@@ -25,6 +25,7 @@ namespace scc::parser {
     static tuple<node_ref, token_stream_iterator> parse_let_expression(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_let_function_definition(const string &name, bool external, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<type_constraints, token_stream_iterator> parse_type_constraints(token_stream_iterator tokens, token_stream_iterator end);
+    static tuple<shared_ptr<ntype>, token_stream_iterator> parse_type(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_class(token_stream_iterator tokens, token_stream_iterator end);
 
@@ -140,6 +141,8 @@ namespace scc::parser {
             const auto &token_data = std::get<info_identifier>(current->metadata).content;
             if (token_data == "let") {
                 return parse_let_expression(++tokens, end);
+            } else if (token_data == "type") {
+                return parse_type(++tokens, end);
             } else if (token_data == "capability" || token_data == "value" || token_data == "entity") {
                 return parse_class(tokens, end);
             } else {
@@ -367,7 +370,16 @@ namespace scc::parser {
         next_tokens = skip_whitespace(next_tokens, end);
         auto base = (*next_tokens);
         if (base->type != token_type::IDENTIFIER) {
-            D_ERROR("Expected type identifier.", {
+            if (base->type == token_type::STRING) {
+                return make_tuple(type_constraint_constant { .base_constraint = type_constraint_equality{.type = "string"}, .value = get<info_string>(base->metadata).content}, ++next_tokens);
+            }
+
+            if (base->type == token_type::FLOATING || base->type == token_type::INTEGER) {
+                auto value = base->type == token_type::FLOATING ? get<info_floating>(base->metadata).representation : get<info_integer>(base->metadata).representation;
+                return make_tuple(type_constraint_constant { .base_constraint = type_constraint_equality{.type = "number"}, .value = value }, ++next_tokens);
+            }
+
+            D_ERROR("Expected type identifier or constant value.", {
                     diagnostic::diagnostic_log_marker{
                             .key = "found token type", .value = to_string(base->type)
                     }, diagnostic::diagnostic_log_marker{
@@ -404,6 +416,31 @@ namespace scc::parser {
         }
 
         return make_tuple(type_constraint_equality{.type = base_type_name}, next_tokens);
+    }
+
+    static tuple<shared_ptr<ntype>, token_stream_iterator> parse_type(token_stream_iterator next_tokens, token_stream_iterator end) {
+        auto type = std::make_shared<ntype>();
+        next_tokens = skip_whitespace(++next_tokens, end);
+        auto type_name = (*next_tokens);
+        if (type_name->type != token_type::IDENTIFIER) {
+            D_ERROR("Expected type identifier.", {
+                    diagnostic::diagnostic_log_marker{
+                            .key = "found token type", .value = to_string(type_name->type)
+                    }, diagnostic::diagnostic_log_marker{
+                            .key = "origin", .value = "parse_type_constraints"
+                    }
+            });
+
+            return make_tuple(nullptr, panic(next_tokens, end));
+        }
+
+        type->name = get<info_identifier>(type_name->metadata).content;
+        next_tokens = skip_whitespace(++next_tokens, end);
+        next_tokens = assert_token_type(token_type::EQUALS, next_tokens, end);
+        next_tokens = skip_whitespace(next_tokens, end);
+
+        tie(type->constraints, next_tokens) = parse_type_constraints(next_tokens, end);
+        return make_tuple(type, next_tokens);
     }
 
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator next_tokens, token_stream_iterator end) {
