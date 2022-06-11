@@ -64,6 +64,7 @@ namespace scc::backend::llvm {
     private: // IR generation methods
         Value *to_value(const expression_ref &expr);
         Value *to_value(const shared_ptr<ast::nfunction_call> &expr);
+        Value *to_value(const shared_ptr<ast::nconstant> &expr);
         void register_extern_function(const shared_ptr<ast::nlet_function> &letfn);
         void register_function(const shared_ptr<ast::nlet_function> &letfn);
     private: // private state

@@ -30,7 +30,7 @@ namespace scc::backend::llvm {
                 for (auto &arg: function_call->arguments) {
                     auto expr = std::get<ast::expression_ref>(arg);
                     auto str = std::dynamic_pointer_cast<ast::nconstant>(expr);
-                    args.emplace_back(_builder->CreateGlobalStringPtr(get<common::info_string>(str->content).content));
+                    args.emplace_back(to_value(expr));
                 }
                 _builder->CreateCall(fn, args);
             }
@@ -57,6 +57,7 @@ namespace scc::backend::llvm {
 
     Value *ir_builder::to_value(const expression_ref &expr) {
         DD(ast::nfunction_call, to_value)
+        DD(ast::nconstant, to_value)
 
         return nullptr;
     }
@@ -74,6 +75,31 @@ namespace scc::backend::llvm {
             args.emplace_back(_builder->CreateGlobalStringPtr(get<common::info_string>(str->content).content));
         }
         return _builder->CreateCall(fn, args);
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::nconstant> &expr) {
+        switch (expr->type) {
+            case ast::nconstant_type::BOOLEAN: {
+                auto value = get<info_boolean>(expr->content).value;
+                return _builder->CreateRet(ConstantInt::get(*_context, APInt(1, value ? 1 : 0)));
+            }
+            case ast::nconstant_type::INTEGER: {
+                auto value = get<info_integer>(expr->content).representation;
+                char *end;
+                return _builder->CreateRet(ConstantInt::get(*_context, APInt(32, std::strtol(value.c_str(), &end, (int) get<info_integer>(expr->content).base))));
+            }
+            case ast::nconstant_type::FLOATING: {
+                auto value = get<info_floating>(expr->content).representation;
+                char *end;
+                return _builder->CreateRet(ConstantFP::get(*_context, APFloat(std::strtof(value.c_str(), &end))));
+            }
+            case ast::nconstant_type::STRING: {
+                auto value = get<info_string>(expr->content).content;
+                return _builder->CreateGlobalStringPtr(value);
+            }
+        }
+
+        return nullptr;
     }
 
     void ir_builder::register_extern_function(const shared_ptr<ast::nlet_function> &nletfn) {
