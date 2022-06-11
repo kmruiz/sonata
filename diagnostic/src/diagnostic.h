@@ -76,6 +76,7 @@ namespace scc::diagnostic {
 
     void dump_diagnostic(const string &where);
     void print_user_diagnostic();
+    int return_code();
 }
 
 inline void D_START_PHASE(scc::diagnostic::diagnostic_phase_id phase) {

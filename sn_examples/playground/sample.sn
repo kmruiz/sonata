@@ -1,3 +1,7 @@
 let extern printf(text: string): none
 let sayHi() = printf('Hello World from an extern function!')
 sayHi()
+
+value class Amount(currency: string, value: number) {
+    let print() = printf('%s%d', currency, value)
+}

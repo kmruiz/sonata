@@ -82,5 +82,5 @@ int main(int argc, char **argv) {
         scc::diagnostic::dump_diagnostic(diagnostic_file);
     }
 
-    return 0;
+    return scc::diagnostic::return_code();
 }

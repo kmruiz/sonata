@@ -11,6 +11,7 @@ using json = nlohmann::json;
 static std::unique_ptr<scc::diagnostic::diagnostic> S_diagnostic;
 static std::shared_ptr<scc::diagnostic::diagnostic_phase> S_current_phase;
 static const char *TM_FMT = "%OH:%OM:%OS";
+static bool had_error = false;
 
 using std::cout;
 using std::endl;
@@ -35,6 +36,10 @@ static const char *phase_id_to_string(scc::diagnostic::diagnostic_phase_id id) {
             return "GENERATE_LLVM_IR";
         case scc::diagnostic::diagnostic_phase_id::OPTIMIZE_LLVM_IR:
             return "OPTIMIZE_LLVM_IR";
+        case scc::diagnostic::diagnostic_phase_id::PASS:
+            break;
+        case scc::diagnostic::diagnostic_phase_id::EMIT_LLVM:
+            return "EMIT_LLVM";
     }
 
     return "UNKNOWN?";
@@ -108,6 +113,10 @@ namespace scc::diagnostic {
     }
 
     void log(const diagnostic_log_level level, const string &format, const initializer_list<diagnostic_log_marker> markers) {
+        if (level >= diagnostic_log_level::ERROR) {
+            had_error = true;
+        }
+
         auto log_msg = std::make_shared<diagnostic_log>();
         if (level == diagnostic_log_level::WARN) {
             S_current_phase->warnings++;
@@ -210,5 +219,9 @@ namespace scc::diagnostic {
         }
 
         cout << "in " << seconds << " seconds." << endl;
+    }
+
+    int return_code() {
+        return had_error ? 1 : 0;
     }
 }
