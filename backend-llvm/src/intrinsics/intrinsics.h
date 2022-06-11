@@ -11,10 +11,4 @@ namespace scc::backend::llvm::intrinsics {
     public:
         virtual void register_into(shared_ptr<LLVMContext> &context, shared_ptr<Module> &module) = 0;
     };
-
-    class internal_std_io : public intrinsics {
-    public:
-        void register_into(shared_ptr<LLVMContext> &context, shared_ptr<Module> &module) override;
-    };
-
 }
