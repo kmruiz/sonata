@@ -16,6 +16,10 @@ namespace scc::type_system {
             BOOLEAN, ENUM
         };
 
+        enum class selector_type : unsigned char {
+            EMBEDDED, REFERENCE
+        };
+
         struct big_bag_reservation_enum_translation {
             unsigned int enum_value;
             unsigned int bit;
@@ -50,6 +54,11 @@ namespace scc::type_system {
             layout_type type;
             std::vector<memory_storage> storages;
         };
+
+        struct selector {
+            selector_type type;
+            unsigned int offset;
+        };
     }
 
     enum class type_kind : unsigned char {
@@ -73,6 +82,7 @@ namespace scc::type_system {
     struct field {
         std::shared_ptr<type> base_type;
         std::string name;
+        memory::selector selector;
     };
 
     struct method {

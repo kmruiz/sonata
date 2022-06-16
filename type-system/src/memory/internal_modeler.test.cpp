@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "internal_modeler.h"
-#include "../type_registry.h"
 
 using namespace scc::type_system::memory;
 using namespace scc::type_system;
@@ -28,6 +27,10 @@ TEST(internal_modeler, merges_two_boolean_fields_into_a_bitbag_with_padding) {
     ASSERT_EQ(bb.reservations[0].type, bit_bag_reservation_type::BOOLEAN);
     ASSERT_EQ(bb.reservations[1].bits, 1);
     ASSERT_EQ(bb.reservations[1].type, bit_bag_reservation_type::BOOLEAN);
+    ASSERT_EQ(entity->fields[0]->selector.type, selector_type::EMBEDDED);
+    ASSERT_EQ(entity->fields[0]->selector.offset, 0);
+    ASSERT_EQ(entity->fields[1]->selector.type, selector_type::EMBEDDED);
+    ASSERT_EQ(entity->fields[1]->selector.offset, 1);
 }
 
 TEST(internal_modeler, merges_value_classes_with_booleans_into_parent) {

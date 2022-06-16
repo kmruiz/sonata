@@ -6,12 +6,14 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(../diagnostic/src)
 include_directories(../ast/src)
 include_directories(../common/src)
+include_directories(../type-system/src)
 
 add_library(passes
         src/pass_manager.cpp src/pass_manager.h
         src/pass.h)
 
-target_link_libraries(passes ast)
+target_link_libraries(passes ast type-system)
+
 #
 #enable_testing()
 #find_package(GTest REQUIRED)
