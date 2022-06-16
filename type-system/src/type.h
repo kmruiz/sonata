@@ -9,7 +9,7 @@
 namespace scc::type_system {
     namespace memory {
         enum class layout_type : unsigned char {
-            STATIC, FLEX
+            NONE, STATIC, FLEX
         };
 
         enum class bit_bag_reservation_type : unsigned char {
@@ -41,7 +41,7 @@ namespace scc::type_system {
         };
 
         struct padding {
-            unsigned int bits;
+            unsigned int size;
         };
 
         typedef std::variant<bit_bag, direct_mapping, reference, padding> memory_storage;
@@ -53,7 +53,7 @@ namespace scc::type_system {
     }
 
     enum class type_kind : unsigned char {
-        UNKNOWN, VALUE, ENTITY, CAPABILITY
+        UNKNOWN, PRIMITIVE, VALUE, ENTITY, CAPABILITY
     };
 
     struct type;
@@ -62,7 +62,8 @@ namespace scc::type_system {
 
     struct type {
         type_kind kind;
-        bool is_clustered;
+        std::string name;
+        bool clustered;
         std::shared_ptr<type> parent;
         memory::layout layout;
         std::vector<std::shared_ptr<field>> fields;
