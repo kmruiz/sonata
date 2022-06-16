@@ -9,7 +9,7 @@
 namespace scc::type_system {
     namespace memory {
         enum class layout_type : unsigned char {
-            NONE, STATIC, FLEX
+            NONE, STATIC, FLEXIBLE
         };
 
         enum class bit_bag_reservation_type : unsigned char {
