@@ -9,7 +9,7 @@ TEST(internal_modeler, merges_two_boolean_fields_into_a_bitbag_with_padding) {
     auto registry = std::make_shared<type_registry>();
     internal_modeler modeler(64, registry);
 
-    auto entity = registry->resolve("example");
+    auto entity = registry->resolve("example_entity");
     auto boolean = registry->resolve("boolean");
 
     entity->kind = type_kind::ENTITY;
@@ -19,9 +19,9 @@ TEST(internal_modeler, merges_two_boolean_fields_into_a_bitbag_with_padding) {
 
     modeler.model_type(entity);
 
+    auto bb = std::get<bit_bag>(entity->layout.storages[0]);
     ASSERT_EQ(entity->layout.type, layout_type::STATIC);
 
-    auto bb = std::get<bit_bag>(entity->layout.storages[0]);
     ASSERT_EQ(bb.size, 8);
     ASSERT_EQ(bb.reservations[0].bits, 1);
     ASSERT_EQ(bb.reservations[0].type, bit_bag_reservation_type::BOOLEAN);
