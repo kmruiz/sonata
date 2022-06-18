@@ -2,6 +2,7 @@
 #include "diagnostic.h"
 
 #include <filesystem>
+#include <iterator>
 
 namespace scc::discovery {
 
