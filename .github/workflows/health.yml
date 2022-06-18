@@ -1,0 +1,89 @@
+on: push
+
+jobs:
+  BuildProject:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Build Essentials
+        run: |
+          sudo apt-get install -y llvm llvm-dev clang libgtest-dev cmake
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Build cmake Project
+        run: cmake -S . -B cmake-build/
+
+      - name: Compile Project
+        run: |
+          export CC=/usr/bin/clang
+          export CXX=/usr/bin/clang++
+
+          cd cmake-build
+          make all
+          cd ../
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: cmake-build
+          path: cmake-build
+
+  RunLexerTests:
+    runs-on: ubuntu-latest
+    needs: BuildProject
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@master
+        with:
+          name: cmake-build
+          path: .
+
+      - name: Run Tests
+        run: |
+          chmod +x ./lexer/lexer_tests
+          ./lexer/lexer_tests
+
+  RunParserTests:
+    runs-on: ubuntu-latest
+    needs: BuildProject
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@master
+        with:
+          name: cmake-build
+          path: .
+
+      - name: Run Tests
+        run: |
+          chmod +x ./parser/parser_tests
+          ./parser/parser_tests
+
+  RunDiagnosticTests:
+    runs-on: ubuntu-latest
+    needs: BuildProject
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@master
+        with:
+          name: cmake-build
+          path: .
+
+      - name: Run Tests
+        run: |
+          chmod +x ./diagnostic/diagnostic_tests
+          ./diagnostic/diagnostic_tests
+
+  RunTypeSystemTests:
+    runs-on: ubuntu-latest
+    needs: BuildProject
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@master
+        with:
+          name: cmake-build
+          path: .
+
+      - name: Run Tests
+        run: |
+          chmod +x ./type-system/type-system_tests
+          ./type-system/type-system_tests
