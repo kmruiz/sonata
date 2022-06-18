@@ -149,8 +149,6 @@ namespace scc::parser {
                 return parse_type(++tokens, end);
             } else if (token_data == "capability" || token_data == "value" || token_data == "entity") {
                 return parse_class(tokens, end);
-            } else if (token_data == "self") {
-                return parse_self_expression(tokens, end);
             } else {
                 return parse_expression(tokens, end);
             }
@@ -186,6 +184,8 @@ namespace scc::parser {
                 nconst->type = ast::nconstant_type::BOOLEAN;
                 nconst->content = info_boolean{.value = get<info_identifier>(value->metadata).content == "true"};
                 result = nconst;
+            } else if (ncontent.content == "self") {
+                return parse_self_expression(tokens, end);
             } else {
                 auto nident = std::make_shared<nidentifier>();
                 nident->name = ncontent.content;

@@ -1,9 +1,6 @@
-let extern printf(text: string): none
-printf('Hello World')
-
 value class InnerTest(a: boolean, b: boolean, c: boolean, d: integer)
 value class Test(a: boolean, b: boolean, c: boolean, d: integer, e: InnerTest)
 
 entity class EntityTest(a: Test) {
-    let x() = 1
+    let do() = self.e.a = true
 }

@@ -48,7 +48,7 @@ namespace scc::passes::mutations {
                 auto free_fn = std::make_shared<nstruct_function_def>();
                 free_fn->name = "_free";
                 free_fn->retval = VOID;
-                spawn_fn->body = std::make_shared<block>();
+                free_fn->body = std::make_shared<block>();
 
                 new_children.emplace_back(free_fn);
                 // ----- transform methods -----
