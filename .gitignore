@@ -6,3 +6,4 @@
 *.out
 *.json
 /perf.data
+/perf.data.old

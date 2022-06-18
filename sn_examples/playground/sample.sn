@@ -1,4 +1,5 @@
 let extern printf(text: string): none
 printf('Hello World')
 
-value class Test(a: boolean, b: boolean, c: boolean, d: integer, e: InnerTest)   value class InnerTest(a: boolean, b: boolean, c: boolean, d: integer)
+value class InnerTest(a: boolean, b: boolean, c: boolean, d: integer)
+value class Test(a: boolean, b: boolean, c: boolean, d: integer, e: InnerTest)
