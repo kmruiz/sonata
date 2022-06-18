@@ -107,6 +107,10 @@ namespace scc::type_system::memory {
         }
 
         unsigned int pad = 0;
+        if (size == 0) {
+            return;
+        }
+
         if (size > goal_cache_size) {
             pad += size % goal_cache_size;
         } else {
