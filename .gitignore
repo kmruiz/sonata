@@ -5,3 +5,4 @@
 *.o
 *.out
 *.json
+/perf.data

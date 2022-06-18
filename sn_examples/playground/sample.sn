@@ -1,7 +1,2 @@
 let extern printf(text: string): none
-
-value class Amount(currency: string, value: number) {
-    let print() = printf('%s%d', self.currency, self.value)
-}
-
-Amount('$', 52)
+printf('Hello World')
