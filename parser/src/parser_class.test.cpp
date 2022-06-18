@@ -77,7 +77,6 @@ TEST(parser_class, reads_a_value_class_with_multiple_field) {
     ASSERT_EQ(get<type_constraint_equality>(permissions_field->type).type, "String");
 }
 
-
 TEST(parser_class, reads_an_entity_interface_with_a_method) {
     const auto result = parse("entity interface Ping {\n"
                               " let do(): forget\n"
@@ -95,4 +94,15 @@ TEST(parser_class, reads_an_entity_interface_with_a_method) {
     auto fdef = child_nth<0, nlet_function>(klass);
     ASSERT_EQ(fdef->name, "do");
     ASSERT_EQ(get<type_constraint_equality>(fdef->return_type).type, "forget");
+}
+
+TEST(parser_class, reads_a_self_set_value) {
+    const auto result = parse("self.field = 1");
+    const auto setter = child_nth<0, nclass_self_set>(result);
+
+    ASSERT_EQ(setter->field, "field");
+
+    auto nconst = std::dynamic_pointer_cast<nconstant>(setter->value);
+    ASSERT_EQ(nconst->type, nconstant_type::INTEGER);
+    ASSERT_EQ(std::get<info_integer>(nconst->content).representation, "1");
 }

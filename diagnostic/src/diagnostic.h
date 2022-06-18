@@ -20,6 +20,8 @@ namespace scc::diagnostic {
         PARSER,
         PASS_DETECT_CLASSES,
         PASS_INTERNAL_MODELER,
+        PASS_VALUE_CLASS_IR_TRANSFORMER,
+        PASS_ENTITY_CLASS_IR_TRANSFORMER,
         GENERATE_LLVM_IR,
         OPTIMIZE_LLVM_IR,
         EMIT_LLVM

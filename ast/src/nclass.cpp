@@ -78,4 +78,13 @@ namespace scc::ast {
             body.value()->to_json(j["body"]);
         }
     }
+
+    void nclass_self_set::to_json(json &j) {
+        json jv;
+
+        value->to_json(jv);
+
+        j["field"] = field;
+        j["value"] = jv;
+    }
 }

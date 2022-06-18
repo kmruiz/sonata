@@ -41,4 +41,11 @@ namespace scc::ast {
 
         void to_json(json& j) override;
     };
+
+    struct nclass_self_set : public expression {
+        string field;
+        expression_ref value;
+
+        void to_json(json& j) override;
+    };
 }

@@ -7,3 +7,5 @@
 #include "nidentifier.h"
 #include "nlet.h"
 #include "ntype.h"
+
+#include "ir/nstruct.h"

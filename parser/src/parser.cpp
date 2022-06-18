@@ -28,6 +28,7 @@ namespace scc::parser {
     static tuple<shared_ptr<ntype>, token_stream_iterator> parse_type(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_class(token_stream_iterator tokens, token_stream_iterator end);
+    static tuple<expression_ref , token_stream_iterator> parse_self_expression(token_stream_iterator tokens, token_stream_iterator end);
 
     parser::parser() {
 
@@ -93,11 +94,13 @@ namespace scc::parser {
     }
 
     static const token_stream_iterator assert_token_keyword(const string &kw, token_stream_iterator tokens, token_stream_iterator end) {
-        const auto &current = (*tokens);
+        auto next_tokens = skip_whitespace_no_newline(tokens, end);
+
+        const auto &current = (*next_tokens);
         if (current->type == token_type::IDENTIFIER) {
             const auto &token_data = std::get<info_identifier>(current->metadata).content;
             if (token_data == kw) {
-                return ++tokens;
+                return ++next_tokens;
             }
 
             D_ERROR("Expected identifier " + kw + " but " + token_data + " found.", {
@@ -105,7 +108,7 @@ namespace scc::parser {
                     diagnostic::diagnostic_log_marker{.key = "found", .value = token_data},
             });
 
-            return panic(tokens, end);
+            return panic(next_tokens, end);
         }
 
         D_ERROR("Expected identifier " + kw + " but token type " + to_string(current->type) + " found.", {
@@ -117,9 +120,10 @@ namespace scc::parser {
     }
 
     static const token_stream_iterator assert_token_type(const token_type &type, token_stream_iterator tokens, token_stream_iterator end) {
-        const auto &current = (*tokens);
+        auto next_tokens = skip_whitespace_no_newline(tokens, end);
+        const auto &current = (*next_tokens);
         if (current->type == type) {
-            return ++tokens;
+            return ++next_tokens;
         }
 
         D_ERROR("Expected token type " + to_string(type) + " but found token type " + to_string(current->type) +
@@ -128,7 +132,7 @@ namespace scc::parser {
                         diagnostic::diagnostic_log_marker{.key = "found type", .value = to_string(current->type)},
                 });
 
-        return panic(tokens, end);
+        return panic(next_tokens, end);
     }
 
     static tuple<node_ref, token_stream_iterator> parse_node(token_stream_iterator tokens, token_stream_iterator end) {
@@ -145,6 +149,8 @@ namespace scc::parser {
                 return parse_type(++tokens, end);
             } else if (token_data == "capability" || token_data == "value" || token_data == "entity") {
                 return parse_class(tokens, end);
+            } else if (token_data == "self") {
+                return parse_self_expression(tokens, end);
             } else {
                 return parse_expression(tokens, end);
             }
@@ -555,5 +561,19 @@ namespace scc::parser {
         }
 
         return make_tuple(result, next_tokens);
+    }
+
+    static tuple<expression_ref , token_stream_iterator> parse_self_expression(token_stream_iterator tokens, token_stream_iterator end) {
+        auto nset = std::make_shared<nclass_self_set>();
+
+        auto next_tokens = tokens;
+        next_tokens = assert_token_keyword("self", next_tokens, end);
+        next_tokens = assert_token_type(token_type::DOT, next_tokens, end);
+        auto field_id = (*next_tokens);
+        next_tokens = assert_token_type(token_type::EQUALS, ++next_tokens, end);
+        tie(nset->value, next_tokens) = parse_expression(next_tokens, end);
+        nset->field = get<info_identifier>(field_id->metadata).content;
+
+        return make_tuple(nset, next_tokens);
     }
 }

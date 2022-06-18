@@ -14,6 +14,7 @@ add_library(ast
         src/nidentifier.cpp src/nidentifier.h
         src/nlet.cpp src/nlet.h
         src/ntype.cpp src/ntype.h
+        src/ir/nstruct.cpp src/ir/nstruct.h
         src/ast.h
         )
 

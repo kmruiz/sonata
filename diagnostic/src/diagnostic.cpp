@@ -40,6 +40,10 @@ static const char *phase_id_to_string(scc::diagnostic::diagnostic_phase_id id) {
             return "PASS_DETECT_CLASSES";
         case scc::diagnostic::diagnostic_phase_id::PASS_INTERNAL_MODELER:
             return "PASS_INTERNAL_MODELER";
+        case scc::diagnostic::diagnostic_phase_id::PASS_VALUE_CLASS_IR_TRANSFORMER:
+            return "PASS_VALUE_CLASS_IR_TRANSFORMER";
+        case scc::diagnostic::diagnostic_phase_id::PASS_ENTITY_CLASS_IR_TRANSFORMER:
+            return "PASS_ENTITY_CLASS_IR_TRANSFORMER";
         case scc::diagnostic::diagnostic_phase_id::EMIT_LLVM:
             return "EMIT_LLVM";
     }

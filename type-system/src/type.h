@@ -72,7 +72,6 @@ namespace scc::type_system {
     struct type {
         type_kind kind;
         std::string name;
-        bool clustered;
         std::shared_ptr<type> parent;
         memory::layout layout;
         std::vector<std::shared_ptr<field>> fields;
