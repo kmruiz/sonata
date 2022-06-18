@@ -53,7 +53,8 @@ int main(int argc, char **argv) {
         directories_to_process.emplace_back(".");
     }
 
-    std::shared_ptr<scc::type_system::type_registry> types = std::make_shared<scc::type_system::type_registry>();
+    auto types = std::make_shared<scc::type_system::type_registry>();
+
     scc::diagnostic::initialize(allowed_level);
     scc::discovery::discovery discovery;
     scc::lexer::lexer lexer;

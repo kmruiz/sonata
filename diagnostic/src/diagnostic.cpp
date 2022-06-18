@@ -38,6 +38,8 @@ static const char *phase_id_to_string(scc::diagnostic::diagnostic_phase_id id) {
             return "OPTIMIZE_LLVM_IR";
         case scc::diagnostic::diagnostic_phase_id::PASS_DETECT_CLASSES:
             return "PASS_DETECT_CLASSES";
+        case scc::diagnostic::diagnostic_phase_id::PASS_INTERNAL_MODELER:
+            return "PASS_INTERNAL_MODELER";
         case scc::diagnostic::diagnostic_phase_id::EMIT_LLVM:
             return "EMIT_LLVM";
     }

@@ -16,7 +16,7 @@ namespace scc::passes::analyzers {
         diagnostic::diagnostic_phase_id pass_phase() const override;
 
     private:
-        const std::shared_ptr<memory::internal_modeler> &modeler;
+        const std::shared_ptr<memory::internal_modeler> modeler;
     };
 
 }

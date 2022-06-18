@@ -121,4 +121,10 @@ namespace scc::type_system::memory {
             root->layout.storages.emplace_back(padding { .size = pad });
         }
     }
+
+    void internal_modeler::model_all_types() const {
+        for (auto &t : types->all_types()) {
+            model_type(t);
+        }
+    }
 }

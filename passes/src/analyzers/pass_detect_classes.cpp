@@ -8,7 +8,6 @@ namespace scc::passes::analyzers {
     }
 
     pass_detect_classes::~pass_detect_classes() = default;
-
     void pass_detect_classes::execute(ast::ast_root &root) const {
 
     }

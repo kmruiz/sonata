@@ -15,7 +15,7 @@ namespace scc::passes::analyzers {
         diagnostic::diagnostic_phase_id pass_phase() const override;
 
     private:
-        std::shared_ptr<type_registry> types;
+        const std::shared_ptr<type_registry> types;
     };
 
 }

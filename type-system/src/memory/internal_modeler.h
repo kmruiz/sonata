@@ -9,6 +9,7 @@ namespace scc::type_system::memory {
         explicit internal_modeler(const unsigned int goal_cache_size, std::shared_ptr<type_registry> &types);
         ~internal_modeler();
 
+        void model_all_types() const;
         void model_type(std::shared_ptr<type> &type) const;
     private:
         const unsigned int goal_cache_size;
