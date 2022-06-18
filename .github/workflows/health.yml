@@ -6,7 +6,8 @@ jobs:
     steps:
       - name: Install Build Essentials
         run: |
-          sudo apt-get install -y llvm llvm-dev clang libgtest-dev nlohmann-json-dev cmake
+          sudo apt update -y
+          sudo apt install -y llvm llvm-dev clang libgtest-dev nlohmann-json3-dev cmake
 
       - name: Checkout Code
         uses: actions/checkout@v2
