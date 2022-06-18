@@ -6,7 +6,7 @@
 namespace scc::passes {
     class pass {
     public:
-        virtual ~pass() = 0;
+        virtual ~pass() = default;
         virtual void execute(scc::ast::ast_root &root) const = 0;
         virtual diagnostic::diagnostic_phase_id pass_phase() const = 0;
     };

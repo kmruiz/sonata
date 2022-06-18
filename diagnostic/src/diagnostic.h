@@ -18,7 +18,7 @@ namespace scc::diagnostic {
         DISCOVERY,
         LEXER,
         PARSER,
-        PASS,
+        PASS_DETECT_CLASSES,
         GENERATE_LLVM_IR,
         OPTIMIZE_LLVM_IR,
         EMIT_LLVM

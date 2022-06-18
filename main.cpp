@@ -8,6 +8,7 @@
 #include "parser/src/parser.h"
 #include "backend-llvm/src/backend.h"
 #include "passes/src/pass_manager.h"
+#include "type-system/src/type_registry.h"
 
 int main(int argc, char **argv) {
     bool diagnostic = false;
@@ -52,11 +53,12 @@ int main(int argc, char **argv) {
         directories_to_process.emplace_back(".");
     }
 
+    std::shared_ptr<scc::type_system::type_registry> types = std::make_shared<scc::type_system::type_registry>();
     scc::diagnostic::initialize(allowed_level);
     scc::discovery::discovery discovery;
     scc::lexer::lexer lexer;
     scc::parser::parser parser;
-    scc::passes::pass_manager pass_manager;
+    scc::passes::pass_manager pass_manager(types);
     scc::backend::llvm::llvm_backend backend;
 
     std::list<std::string> files_to_process = discovery.discover_source_files(directories_to_process);

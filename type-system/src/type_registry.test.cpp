@@ -36,3 +36,13 @@ TEST(type_registry, types_are_marked_as_existing_when_kind_is_not_unknown) {
 
     ASSERT_TRUE(reg.defined("type"));
 }
+
+
+TEST(type_registry, returns_all_registered_types) {
+    scc::type_system::type_registry reg;
+    reg.resolve("type");
+
+    auto res = reg.all_types();
+    ASSERT_EQ(res.size(), 1);
+    ASSERT_EQ(res.front()->name, "type");
+}

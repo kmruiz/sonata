@@ -19,6 +19,7 @@ include_directories(common/src)
 include_directories(diagnostic/src)
 include_directories(discovery/src)
 include_directories(lexer/src)
+include_directories(type-system/src)
 
 add_executable(scc main.cpp)
 target_link_libraries(scc lexer diagnostic ast parser discovery common passes backend-llvm)

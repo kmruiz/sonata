@@ -9,8 +9,10 @@ include_directories(../common/src)
 include_directories(../type-system/src)
 
 add_library(passes
+        src/pass.h
+        src/analyzers/pass_detect_classes.cpp src/analyzers/pass_detect_classes.h
         src/pass_manager.cpp src/pass_manager.h
-        src/pass.h)
+        )
 
 target_link_libraries(passes ast type-system)
 
