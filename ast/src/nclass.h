@@ -43,8 +43,14 @@ namespace scc::ast {
     };
 
     struct nclass_self_set : public expression {
-        string field;
+        list<string> selector;
         expression_ref value;
+
+        void to_json(json& j) override;
+    };
+
+    struct nclass_self_get : public expression {
+        list<string> selector;
 
         void to_json(json& j) override;
     };

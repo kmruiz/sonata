@@ -569,10 +569,29 @@ namespace scc::parser {
         auto next_tokens = tokens;
         next_tokens = assert_token_keyword("self", next_tokens, end);
         next_tokens = assert_token_type(token_type::DOT, next_tokens, end);
-        auto field_id = (*next_tokens);
-        next_tokens = assert_token_type(token_type::EQUALS, ++next_tokens, end);
+
+        do {
+            auto field_id = (*next_tokens);
+            nset->selector.emplace_back(get<info_identifier>(field_id->metadata).content);
+
+            next_tokens = skip_whitespace_no_newline(++next_tokens, end);
+            if ((*next_tokens)->type == token_type::EQUALS) {
+                ++next_tokens;
+                break;
+            }
+
+            if ((*next_tokens)->type == token_type::DOT) {
+                ++next_tokens;
+                continue;
+            }
+
+            // is a getter
+            auto nget = std::make_shared<nclass_self_get>();
+            nget->selector = nset->selector;
+            return make_tuple(nget, next_tokens);
+        } while (true);
+
         tie(nset->value, next_tokens) = parse_expression(next_tokens, end);
-        nset->field = get<info_identifier>(field_id->metadata).content;
 
         return make_tuple(nset, next_tokens);
     }

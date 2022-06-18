@@ -80,11 +80,26 @@ namespace scc::ast {
     }
 
     void nclass_self_set::to_json(json &j) {
+        std::vector<string> js;
         json jv;
+
+        for (auto &k : selector) {
+            js.emplace_back(k);
+        }
 
         value->to_json(jv);
 
-        j["field"] = field;
+        j["selector"] = js;
         j["value"] = jv;
+    }
+
+    void nclass_self_get::to_json(json &j) {
+        std::vector<string> js;
+
+        for (auto &k : selector) {
+            js.emplace_back(k);
+        }
+
+        j["selector"] = js;
     }
 }

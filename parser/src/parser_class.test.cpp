@@ -100,9 +100,32 @@ TEST(parser_class, reads_a_self_set_value) {
     const auto result = parse("self.field = 1");
     const auto setter = child_nth<0, nclass_self_set>(result);
 
-    ASSERT_EQ(setter->field, "field");
+    ASSERT_EQ(setter->selector, std::list<string> { "field" });
 
     auto nconst = std::dynamic_pointer_cast<nconstant>(setter->value);
     ASSERT_EQ(nconst->type, nconstant_type::INTEGER);
     ASSERT_EQ(std::get<info_integer>(nconst->content).representation, "1");
 }
+
+TEST(parser_class, reads_a_self_set_value_deep) {
+    const auto result = parse("self.field1.field2 = 1");
+    const auto setter = child_nth<0, nclass_self_set>(result);
+
+    auto list = std::list<string> { "field1", "field2" };
+    ASSERT_EQ(setter->selector, list);
+
+    auto nconst = std::dynamic_pointer_cast<nconstant>(setter->value);
+    ASSERT_EQ(nconst->type, nconstant_type::INTEGER);
+    ASSERT_EQ(std::get<info_integer>(nconst->content).representation, "1");
+}
+
+
+TEST(parser_class, reads_a_get_value_deep) {
+    const auto result = parse("self.field1.field2");
+    const auto getter = child_nth<0, nclass_self_get>(result);
+
+    auto list = std::list<string> { "field1", "field2" };
+    ASSERT_EQ(getter->selector, list);
+}
+
+
