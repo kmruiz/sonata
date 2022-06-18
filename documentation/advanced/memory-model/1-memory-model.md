@@ -116,3 +116,40 @@ value class Amount(value: double, currency: 'USD' | 'EUR', debt: boolean)
 | 1        | 2     | 3   | 4   | 5   | 6   | 7   | 8   | 9-16  |
 |----------|-------|-----|-----|-----|-----|-----|-----|-------|
 | currency | debt  | --- | --- | --- | --- | --- | --- | value |
+
+### References
+
+References are fixed size, but they point to a region in memory. They are used to store overspilled flexible objects.
+
+### Paddings
+
+Bits without specific meaning that are used to pad elements in the memory model to the byte level.
+
+## Flexible Packing
+
+Flexible objects, like strings, can grow to any size in memory. An example are strings that act as labels that can be just
+a single word, and texts with descriptions of objects. 
+
+However, for some cases, strings and other objects can be packed into a fixed size. 
+Packed strings are fit into a direct mapping of fixed size that store the string metadata, allow the co-location
+of the string information with the owner entity.
+
+Consider the following case:
+
+```sn
+entity class Account(id: int64, active: boolean, public: boolean, owner: string)
+```
+
+Assuming a maximum size of 64 bytes per object, we have the following schema:
+
+| 1      | 2      | 3   | 4                     | 5          | 6          | 7          | 8          | 16-80 | 80-512 |
+|--------|--------|-----|-----------------------|------------|------------|------------|------------|-------|--------|
+| active | public | --- | owner.overspilled = 0 | owner.size | owner.size | owner.size | owner.size | id    | owner  |
+
+By using this layout, we can co-locate up to 55 bytes (55 ascii characters). But, what happens when we need bigger strings? Here, overspilling happens, and we can do the following:
+
+| 1      | 2      | 3   | 4                     | 5          | 6          | 7          | 8          | 16-80 | 80-512     |
+|--------|--------|-----|-----------------------|------------|------------|------------|------------|-------|------------|
+| active | public | --- | owner.overspilled = 1 | owner.size | owner.size | owner.size | owner.size | id    | owner.data |
+
+Data can be overspilled and packed at the same time for optimization of specific use cases. For example, a queue could pack the latest two values in memory and reference the rest of the values.
