@@ -48,11 +48,6 @@ namespace scc::type_system::memory {
         auto remaining_from_bitbag = BYTE_SIZE;
 
         for (auto &field : type->fields) {
-            auto field_type = field->base_type;
-            if (field_type->layout.type == layout_type::NONE) {
-                model_type(field_type);
-            }
-
             merge_into_parent(type, offset, current_bitbag, remaining_from_bitbag, field);
         }
 
@@ -72,7 +67,7 @@ namespace scc::type_system::memory {
                 field->selector = selector { .type = selector_type::BIT_BAG, .offset = current_bitbag.size - remaining_from_bitbag };
                 current_bitbag.reservations.emplace_back(bit_bag_reservation { .bits = 1, .type = bit_bag_reservation_type::BOOLEAN });
 
-                remaining_from_bitbag -= 1;
+                remaining_from_bitbag--;
             }
 
             if (field_type == byte_type || field_type == short_type || field_type == integer_type || field_type == long_type || field_type == floating_type || field_type == double_type) {

@@ -33,7 +33,7 @@ namespace scc::discovery {
                 if (dirEntry.path().extension() == ".sn") {
                     D_DEBUG("Found file. It's going to be processed because it has extension .sn", { diagnostic::diagnostic_log_marker { .key = "file", .value = dirEntry.path() }});
                     paths.push_back(dirEntry.path());
-                } else {
+                } else if (!dirEntry.is_directory()) {
                     D_DEBUG("Found file. It's not going to be processed because it doesn't have extension .sn", { diagnostic::diagnostic_log_marker { .key = "file", .value = dirEntry.path() }});
                 }
             }

@@ -571,6 +571,13 @@ namespace scc::parser {
 
         auto next_tokens = tokens;
         next_tokens = assert_token_keyword("self", next_tokens, end);
+
+        if ((*next_tokens)->type != token_type::DOT) {
+            auto nself = std::make_shared<nidentifier>();
+            nself->name = "self";
+            return make_tuple(nself, next_tokens);
+        }
+
         next_tokens = assert_token_type(token_type::DOT, next_tokens, end);
 
         do {
