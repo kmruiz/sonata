@@ -43,6 +43,16 @@ namespace scc::backend::llvm {
                     register_function(nletfn);
                 }
             }
+
+            if (std::dynamic_pointer_cast<ast::ir::nstruct_function_def>(node) != nullptr) {
+                auto nstrdef = std::dynamic_pointer_cast<ast::ir::nstruct_function_def>(node);
+                register_function(nstrdef);
+            }
+
+            if (std::dynamic_pointer_cast<ast::ir::nstruct>(node) != nullptr) {
+                auto nstruct = std::dynamic_pointer_cast<ast::ir::nstruct>(node);
+                register_struct(nstruct);
+            }
         }
 
         _builder->CreateRet(ConstantInt::get(*_context, APInt(32, 0)));
@@ -58,6 +68,13 @@ namespace scc::backend::llvm {
     Value *ir_builder::to_value(const expression_ref &expr) {
         DD(ast::nfunction_call, to_value)
         DD(ast::nconstant, to_value)
+        DD(ast::ir::nstruct_malloc, to_value)
+        DD(ast::ir::nstruct_free, to_value)
+        DD(ast::ir::nstruct_function_call, to_value)
+        DD(ast::ir::nstruct_bitbag_set, to_value)
+        DD(ast::ir::nstruct_direct_set, to_value)
+        DD(ast::ir::nstruct_bitbag_get, to_value)
+        DD(ast::ir::nstruct_direct_get, to_value)
 
         return nullptr;
     }
@@ -130,5 +147,41 @@ namespace scc::backend::llvm {
         _params.clear();
         verifyFunction(*llvmfn);
         _pass_manager->run(*llvmfn);
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_malloc> &expr) {
+        return nullptr;
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_free> &expr) {
+        return nullptr;
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_function_call> &expr) {
+        return nullptr;
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_bitbag_set> &expr) {
+        return nullptr;
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_direct_set> &expr) {
+        return nullptr;
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_bitbag_get> &expr) {
+        return nullptr;
+    }
+
+    Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_direct_get> &expr) {
+        return nullptr;
+    }
+
+    void ir_builder::register_function(const shared_ptr<ast::ir::nstruct_function_def> &letfn) {
+
+    }
+
+    void ir_builder::register_struct(const shared_ptr<ast::ir::nstruct> &nstruct) {
+
     }
 }

@@ -65,8 +65,17 @@ namespace scc::backend::llvm {
         Value *to_value(const expression_ref &expr);
         Value *to_value(const shared_ptr<ast::nfunction_call> &expr);
         Value *to_value(const shared_ptr<ast::nconstant> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_malloc> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_free> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_function_call> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_bitbag_set> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_direct_set> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_bitbag_get> &expr);
+        Value *to_value(const shared_ptr<ast::ir::nstruct_direct_get> &expr);
         void register_extern_function(const shared_ptr<ast::nlet_function> &letfn);
         void register_function(const shared_ptr<ast::nlet_function> &letfn);
+        void register_function(const shared_ptr<ast::ir::nstruct_function_def> &letfn);
+        void register_struct(const shared_ptr<ast::ir::nstruct> &nstruct);
     private: // private state
         shared_ptr<LLVMContext> _context;
         shared_ptr<IRBuilder<>> _builder;
