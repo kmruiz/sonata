@@ -17,15 +17,17 @@
 #include <vector>
 
 #include "intrinsics/intrinsics.h"
+#include "type_registry.h"
 #include "diagnostic.h"
 
 using namespace llvm;
 using namespace llvm::sys;
 
 namespace scc::backend::llvm {
+    using scc::type_system::type_registry;
     using namespace intrinsics;
 
-    llvm_backend::llvm_backend() {
+    llvm_backend::llvm_backend(std::shared_ptr<type_registry> &sonata_types) {
         _context = std::make_shared<LLVMContext>();
         _module = std::make_shared<Module>("Sonata", *_context);
         _builder = std::make_shared<IRBuilder<>>(*_context);
@@ -34,7 +36,8 @@ namespace scc::backend::llvm {
                 _context,
                 _builder,
                 _module,
-                _pass_manager
+                _pass_manager,
+                sonata_types
         );
 
         InitializeAllTargetInfos();

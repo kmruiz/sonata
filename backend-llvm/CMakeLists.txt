@@ -18,6 +18,7 @@ string(STRIP ${CMAKE_CXX_FLAGS} CMAKE_CXX_FLAGS)
 include_directories(../ast/src)
 include_directories(../diagnostic/src)
 include_directories(../common/src)
+include_directories(../type-system/src)
 
 add_definitions(-fexceptions)
 add_library(backend-llvm
@@ -28,6 +29,6 @@ add_library(backend-llvm
         src/intrinsics/intrinsics.h
 )
 
-target_link_libraries(backend-llvm ${LIBS} ${SYS_LIBS} ${LDF} diagnostic ast)
+target_link_libraries(backend-llvm ${LIBS} ${SYS_LIBS} ${LDF} diagnostic ast type-system)
 
 target_include_directories(backend-llvm PUBLIC ${INCLUDE_DIR} /usr/lib/llvm-13/include/)

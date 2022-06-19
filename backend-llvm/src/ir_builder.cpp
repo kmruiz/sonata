@@ -7,8 +7,9 @@ namespace scc::backend::llvm {
             shared_ptr<LLVMContext> &context,
             shared_ptr<IRBuilder<>> &ir,
             shared_ptr<Module> &module,
-            shared_ptr<FunctionPassManager> &pass_manager)
-            : _context(context), _builder(ir), _module(module), _pass_manager(pass_manager) {
+            shared_ptr<FunctionPassManager> &pass_manager,
+            shared_ptr<type_registry> &sonata_types)
+            : _context(context), _builder(ir), _module(module), _pass_manager(pass_manager), _sonata_types(sonata_types) {
 
     }
 
@@ -150,7 +151,10 @@ namespace scc::backend::llvm {
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_malloc> &expr) {
-        return nullptr;
+        std::vector<Type *> parameters { Type::getInt32Ty(*_context) };
+        auto malloc = _module->getOrInsertFunction("malloc", FunctionType::get(Type::getInt32Ty(*_context),parameters, false));
+
+        return _builder->CreateCall(malloc, {  });
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_free> &expr) {

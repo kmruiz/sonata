@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     scc::lexer::lexer lexer;
     scc::parser::parser parser;
     scc::passes::pass_manager pass_manager(types);
-    scc::backend::llvm::llvm_backend backend;
+    scc::backend::llvm::llvm_backend backend(types);
 
     std::list<std::string> files_to_process = discovery.discover_source_files(directories_to_process);
     scc::lexer::token_stream all_tokens;

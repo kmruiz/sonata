@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "ast.h"
+#include "type_registry.h"
 
 namespace scc::backend::llvm {
     using namespace ::llvm;
@@ -42,6 +43,7 @@ namespace scc::backend::llvm {
     using ::llvm::legacy::FunctionPassManager;
     using std::shared_ptr;
     using scc::ast::node_ref;
+    using scc::type_system::type_registry;
     using std::shared_ptr;
     using std::make_shared;
     using std::map;
@@ -56,7 +58,8 @@ namespace scc::backend::llvm {
                 shared_ptr<LLVMContext> &context,
                 shared_ptr<IRBuilder<>> &ir,
                 shared_ptr<Module> &module,
-                shared_ptr<FunctionPassManager> &pass_manager
+                shared_ptr<FunctionPassManager> &pass_manager,
+                shared_ptr<type_registry> &sonata_types
         );
 
         ~ir_builder() = default;
@@ -77,6 +80,7 @@ namespace scc::backend::llvm {
         void register_function(const shared_ptr<ast::ir::nstruct_function_def> &letfn);
         void register_struct(const shared_ptr<ast::ir::nstruct> &nstruct);
     private: // private state
+
         shared_ptr<LLVMContext> _context;
         shared_ptr<IRBuilder<>> _builder;
         shared_ptr<Module> _module;
@@ -84,6 +88,7 @@ namespace scc::backend::llvm {
         map<string, AllocaInst *> _locals;
         map<string, Value *> _params;
         map<string, Type *> _types;
+        shared_ptr<type_registry> _sonata_types;
     };
 }
 

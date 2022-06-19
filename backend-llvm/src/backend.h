@@ -48,7 +48,7 @@ namespace scc::backend::llvm {
 
     class llvm_backend {
     public:
-        explicit llvm_backend();
+        explicit llvm_backend(std::shared_ptr<type_registry> &sonata_types);
         void write(const ast_root &document);
     private:
         shared_ptr<LLVMContext> _context;

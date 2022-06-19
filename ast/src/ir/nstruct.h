@@ -21,8 +21,7 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_malloc : public expression {
-        std::string name;
-        std::list<expression_ref> arguments;
+        std::string type;
 
         void to_json(json &j) override;
     };
