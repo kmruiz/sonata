@@ -43,6 +43,7 @@ namespace scc::type_system::memory {
     void internal_modeler::model_type(std::shared_ptr<type> &type) const {
         type->layout.type = layout_type::STATIC;
 
+        unsigned int offset = 0;
         auto current_bitbag = bit_bag { .size = BYTE_SIZE, .reservations = {} };
         auto remaining_from_bitbag = BYTE_SIZE;
 
@@ -52,7 +53,7 @@ namespace scc::type_system::memory {
                 model_type(field_type);
             }
 
-            merge_into_parent_bit_bag(type, current_bitbag, remaining_from_bitbag, field);
+            merge_into_parent(type, offset, current_bitbag, remaining_from_bitbag, field);
         }
 
         if (!current_bitbag.reservations.empty()) {
@@ -62,25 +63,26 @@ namespace scc::type_system::memory {
         pad_to_cacheable(type);
     }
 
-    void internal_modeler::merge_into_parent_bit_bag(std::shared_ptr<type> &root, bit_bag &current_bitbag, unsigned int &remaining_from_bitbag, const std::shared_ptr<field> &field) const {
+    void internal_modeler::merge_into_parent(std::shared_ptr<type> &root, unsigned int &offset, bit_bag &current_bitbag, unsigned int &remaining_from_bitbag, const std::shared_ptr<field> &field) const {
         const auto field_type = field->base_type;
 
         if (field_type->kind == type_kind::PRIMITIVE) {
             // primitives can be easily merged because they are always static and have a fixed size
             if (field_type == boolean_type) {
-                field->selector = selector { .type = selector_type::EMBEDDED, .offset = current_bitbag.size - remaining_from_bitbag };
+                field->selector = selector { .type = selector_type::BIT_BAG, .offset = current_bitbag.size - remaining_from_bitbag };
                 current_bitbag.reservations.emplace_back(bit_bag_reservation { .bits = 1, .type = bit_bag_reservation_type::BOOLEAN });
 
                 remaining_from_bitbag -= 1;
             }
 
             if (field_type == byte_type || field_type == short_type || field_type == integer_type || field_type == long_type || field_type == floating_type || field_type == double_type) {
+                field->selector = selector { .type = selector_type::DIRECT, .offset = offset++ };
                 root->layout.storages.insert(root->layout.storages.end(), field_type->layout.storages.begin(),field_type->layout.storages.end());
             }
 
         } else if (field_type->kind == type_kind::VALUE) {
             for (const auto& inner_field : field_type->fields) {
-                merge_into_parent_bit_bag(root, current_bitbag, remaining_from_bitbag, inner_field);
+                merge_into_parent(root, offset, current_bitbag, remaining_from_bitbag, inner_field);
             }
         }
     }

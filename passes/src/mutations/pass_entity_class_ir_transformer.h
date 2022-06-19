@@ -14,6 +14,8 @@ namespace scc::passes::mutations {
         void execute(scc::ast::ast_root &root) const override;
         diagnostic::diagnostic_phase_id pass_phase() const override;
     private:
+        void parse_self_refs(std::shared_ptr<type> &type, scc::ast::expression_ref &expr, scc::ast::ast_block &block) const;
+
         const std::shared_ptr<type_registry> types;
     };
 }

@@ -23,7 +23,7 @@ namespace scc::type_system::memory {
         std::shared_ptr<type> floating_type;
         std::shared_ptr<type> double_type;
 
-        void merge_into_parent_bit_bag(std::shared_ptr<type> &root, bit_bag &current_bitbag, unsigned int &remaining_from_bitbag, const std::shared_ptr<field> &field) const;
+        void merge_into_parent(std::shared_ptr<type> &root, unsigned int &offset, bit_bag &current_bitbag, unsigned int &remaining_from_bitbag, const std::shared_ptr<field> &field) const;
         void pad_to_cacheable(std::shared_ptr<type> &root) const;
     };
 }

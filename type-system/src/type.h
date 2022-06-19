@@ -17,7 +17,7 @@ namespace scc::type_system {
         };
 
         enum class selector_type : unsigned char {
-            EMBEDDED, REFERENCE
+            BIT_BAG, DIRECT
         };
 
         struct big_bag_reservation_enum_translation {

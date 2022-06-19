@@ -5,6 +5,8 @@ namespace scc::passes::mutations {
     using namespace scc::ast::ir;
     using namespace scc::type_system::memory;
 
+    static shared_ptr<field> select_field_from_type(std::shared_ptr<type> &type, std::list<string>::iterator begin, std::list<string>::iterator end);
+
     pass_entity_class_ir_transformer::pass_entity_class_ir_transformer(const std::shared_ptr<type_registry> &types)
         : types(types) {
 
@@ -58,9 +60,11 @@ namespace scc::passes::mutations {
                             auto nfn = std::dynamic_pointer_cast<nlet_function>(m);
                             auto nstrf = std::make_shared<nstruct_function_def>();
 
-                            nstrf->body = std::make_shared<block>();
-                            nstrf->body->children.emplace_back(nfn->body.value());
+                            nstrf->name = nklass->name + "_" + nfn->name;
 
+                            nstrf->body = std::make_shared<block>();
+
+                            parse_self_refs(ntype, nfn->body.value(), nstrf->body);
                             new_children.emplace_back(nstrf);
                         } else {
                             new_children.emplace_back(m);
@@ -77,6 +81,48 @@ namespace scc::passes::mutations {
 
     diagnostic::diagnostic_phase_id pass_entity_class_ir_transformer::pass_phase() const {
         return diagnostic::diagnostic_phase_id::PASS_ENTITY_CLASS_IR_TRANSFORMER;
+    }
+
+    void pass_entity_class_ir_transformer::parse_self_refs(std::shared_ptr<type> &type, expression_ref &expr, ast_block &block) const {
+        if (std::dynamic_pointer_cast<nclass_self_set>(expr)) {
+            auto selfset = std::dynamic_pointer_cast<nclass_self_set>(expr);
+            shared_ptr<field> fieldef = select_field_from_type(type, selfset->selector.begin(), selfset->selector.end());
+
+            switch (fieldef->selector.type) {
+                case type_system::memory::selector_type::BIT_BAG: {
+                    auto bbset = std::make_shared<nstruct_bitbag_set>();
+                    bbset->value = selfset->value;
+                    bbset->bit = fieldef->selector.offset;
+
+                    block->children.emplace_back(bbset);
+                } break;
+                case type_system::memory::selector_type::DIRECT: {
+                    auto ddset = std::make_shared<nstruct_direct_set>();
+                    ddset->value = selfset->value;
+                    ddset->field = fieldef->name;
+
+                    block->children.emplace_back(ddset);
+                } break;
+            }
+        } else {
+            block->children.emplace_back(expr);
+        }
+    }
+
+    static shared_ptr<field> select_field_from_type(std::shared_ptr<type> &type, std::list<string>::iterator begin, std::list<string>::iterator end) {
+        auto cur = *begin;
+
+        for (auto &f : type->fields) {
+            if (f->name == cur) {
+                if (++begin == end) {
+                    return f;
+                }
+
+                return select_field_from_type(f->base_type, begin, end);
+            }
+        }
+
+        return nullptr;
     }
 }
 

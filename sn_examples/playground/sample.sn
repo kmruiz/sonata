@@ -1,6 +1,13 @@
-value class InnerTest(a: boolean, b: boolean, c: boolean, d: integer)
-value class Test(a: boolean, b: boolean, c: boolean, d: integer, e: InnerTest)
+let extern printf(text: string): none
+printf('Hello World')
 
-entity class EntityTest(a: Test) {
-    let do() = self.e.a = true
+value class Test(first: boolean)
+
+entity class EntityTest(a: Test, second: boolean) {
+    let do1() = self.a.first = true
+    let do2() = self.second = true
+    let print() = printf('%d', self.a.first)
 }
+
+let x = EntityTest(Test(false))
+

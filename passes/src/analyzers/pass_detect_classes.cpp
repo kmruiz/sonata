@@ -34,7 +34,7 @@ namespace scc::passes::analyzers {
 
                 for (auto &f : nclass->fields) {
                     auto base_type = types->resolve(std::get<scc::ast::type_constraint_equality>(f->type).type);
-                    auto zero = memory::selector { .type = type_system::memory::selector_type::EMBEDDED, .offset = 0 };
+                    auto zero = memory::selector { .type = type_system::memory::selector_type::DIRECT, .offset = 0 };
 
                     type->fields.emplace_back(std::make_shared<field>(field { .base_type = base_type, .name = f->name, .selector = zero}));
                 }

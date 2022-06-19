@@ -58,7 +58,7 @@ namespace scc::ast::ir {
     struct nstruct_bitbag_set : public expression {
         expression_ref self;
         unsigned int bit;
-        unsigned int value;
+        expression_ref value;
 
         void to_json(json &j) override;
     };
