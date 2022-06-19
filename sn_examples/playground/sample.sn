@@ -1,10 +1,11 @@
 let extern printf(text: string, value1: boolean, value2: boolean): nothing
 
-entity class EntityTest(first: boolean, second: boolean) {
-    let do1() = self.first = true
-    let do2() = self.second = true
+value class HasFlag(flag: boolean)
+entity class EntityTest(first: HasFlag, second: HasFlag) {
+    let do1() = self.first.flag = true
+    let do2() = self.second.flag = true
 
-    let print() = printf('Values are: %d | %d\n', self.first, self.second)
+    let print() = printf('Values are: %d | %d\n', self.first.flag, self.second.flag)
 }
 
 let x = EntityTest_spawn()
