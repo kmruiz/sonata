@@ -49,14 +49,12 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_function_call : public expression {
-        expression_ref self;
         std::list<expression_ref> arguments;
 
         void to_json(json &j) override;
     };
 
     struct nstruct_bitbag_set : public expression {
-        expression_ref self;
         unsigned int bit;
         expression_ref value;
 
@@ -64,10 +62,19 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_direct_set : public expression {
-        expression_ref self;
         std::string field;
         expression_ref value;
 
+        void to_json(json &j) override;
+    };
+
+    struct nstruct_bitbag_get : public expression {
+        unsigned int bit;
+        void to_json(json &j) override;
+    };
+
+    struct nstruct_direct_get : public expression {
+        std::string field;
         void to_json(json &j) override;
     };
 }

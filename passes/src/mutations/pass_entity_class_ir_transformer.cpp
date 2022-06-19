@@ -104,6 +104,24 @@ namespace scc::passes::mutations {
                     block->children.emplace_back(ddset);
                 } break;
             }
+        } else if (std::dynamic_pointer_cast<nclass_self_get>(expr)) {
+            auto selfget = std::dynamic_pointer_cast<nclass_self_get>(expr);
+            shared_ptr<field> fieldef = select_field_from_type(type, selfget->selector.begin(), selfget->selector.end());
+
+            switch (fieldef->selector.type) {
+                case type_system::memory::selector_type::BIT_BAG: {
+                    auto bbget = std::make_shared<nstruct_bitbag_get>();
+                    bbget->bit = fieldef->selector.offset;
+
+                    block->children.emplace_back(bbget);
+                } break;
+                case type_system::memory::selector_type::DIRECT: {
+                    auto ddget = std::make_shared<nstruct_direct_get>();
+                    ddget->field = fieldef->name;
+
+                    block->children.emplace_back(ddget);
+                } break;
+            }
         } else {
             block->children.emplace_back(expr);
         }

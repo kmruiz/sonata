@@ -32,4 +32,12 @@ namespace scc::ast::ir {
     void nstruct_direct_set::to_json(json &j) {
 
     }
+
+    void nstruct_bitbag_get::to_json(json &j) {
+
+    }
+
+    void nstruct_direct_get::to_json(json &j) {
+
+    }
 }
