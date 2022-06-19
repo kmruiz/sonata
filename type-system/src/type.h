@@ -51,6 +51,7 @@ namespace scc::type_system {
         typedef std::variant<bit_bag, direct_mapping, reference, padding> memory_storage;
 
         struct layout {
+            unsigned int size_in_bytes;
             layout_type type;
             std::vector<memory_storage> storages;
         };

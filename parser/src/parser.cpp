@@ -1,4 +1,5 @@
 #include <tuple>
+#include <regex>
 
 #include "parser.h"
 
@@ -194,7 +195,9 @@ namespace scc::parser {
         } else if (value->type == token_type::STRING) {
             auto nconst = std::make_shared<nconstant>();
             nconst->type = ast::nconstant_type::STRING;
-            nconst->content = get<info_string>(value->metadata);
+            auto content = get<info_string>(value->metadata).content;
+            content = std::regex_replace(content, std::regex("\\\\n"), "\n");
+            nconst->content = info_string { .content = content };
             result = nconst;
         }
 

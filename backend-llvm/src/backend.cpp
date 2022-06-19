@@ -104,9 +104,10 @@ namespace scc::backend::llvm {
         dest.flush();
         D_END_PHASE();
 
-#ifdef DEBUG
-        _module->print(errs(), nullptr);
-#endif
+        if (D_DEBUGGING()) {
+            _module->print(errs(), nullptr);
+        }
+
     }
 }
 

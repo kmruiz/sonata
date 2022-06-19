@@ -126,6 +126,9 @@ namespace scc::type_system::memory {
         if (pad > 0) {
             root->layout.storages.emplace_back(padding { .size = pad });
         }
+
+        size += pad;
+        root->layout.size_in_bytes = size / 8;
     }
 
     void internal_modeler::model_all_types() const {

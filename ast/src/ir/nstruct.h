@@ -27,8 +27,6 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_free : public expression {
-        expression_ref ref;
-
         void to_json(json &j) override;
     };
 
@@ -38,9 +36,15 @@ namespace scc::ast::ir {
         void to_json(json &j) override;
     };
 
-    struct nstruct_function_def : public expression {
+    struct nstruct_function_arg {
         std::string name;
-        std::list<nstruct_field_type> signature;
+        nstruct_field_type type;
+    };
+
+    struct nstruct_function_def : public expression {
+        std::string struct_name;
+        std::string name;
+        std::list<nstruct_function_arg> signature;
         nstruct_field_type retval;
         ast_block body;
 
@@ -61,7 +65,7 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_direct_set : public expression {
-        std::string field;
+        unsigned int index;
         expression_ref value;
 
         void to_json(json &j) override;
@@ -73,7 +77,7 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_direct_get : public expression {
-        std::string field;
+        unsigned int index;
         void to_json(json &j) override;
     };
 }

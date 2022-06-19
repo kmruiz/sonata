@@ -65,9 +65,11 @@ namespace scc::backend::llvm {
         ~ir_builder() = default;
         void build_ir(const scc::ast::ast_root &document);
     private: // IR generation methods
+        Value *to_value(const node_ref &expr);
         Value *to_value(const expression_ref &expr);
         Value *to_value(const shared_ptr<ast::nfunction_call> &expr);
         Value *to_value(const shared_ptr<ast::nconstant> &expr);
+        Value *to_value(const shared_ptr<ast::nidentifier> &expr);
         Value *to_value(const shared_ptr<ast::ir::nstruct_malloc> &expr);
         Value *to_value(const shared_ptr<ast::ir::nstruct_free> &expr);
         Value *to_value(const shared_ptr<ast::ir::nstruct_function_call> &expr);
@@ -75,6 +77,8 @@ namespace scc::backend::llvm {
         Value *to_value(const shared_ptr<ast::ir::nstruct_direct_set> &expr);
         Value *to_value(const shared_ptr<ast::ir::nstruct_bitbag_get> &expr);
         Value *to_value(const shared_ptr<ast::ir::nstruct_direct_get> &expr);
+        Value *to_value(const ast_block &expr);
+
         void register_extern_function(const shared_ptr<ast::nlet_function> &letfn);
         void register_function(const shared_ptr<ast::nlet_function> &letfn);
         void register_function(const shared_ptr<ast::ir::nstruct_function_def> &letfn);
@@ -85,7 +89,7 @@ namespace scc::backend::llvm {
         shared_ptr<IRBuilder<>> _builder;
         shared_ptr<Module> _module;
         shared_ptr<FunctionPassManager> _pass_manager;
-        map<string, AllocaInst *> _locals;
+        map<string, Value *> _locals;
         map<string, Value *> _params;
         map<string, Type *> _types;
         shared_ptr<type_registry> _sonata_types;

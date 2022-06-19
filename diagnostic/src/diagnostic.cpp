@@ -230,4 +230,8 @@ namespace scc::diagnostic {
     int return_code() {
         return had_error ? 1 : 0;
     }
+
+    bool debug() {
+        return S_diagnostic->allowed_level == diagnostic_log_level::DEBUG;
+    }
 }

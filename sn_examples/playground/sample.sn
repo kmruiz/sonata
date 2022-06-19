@@ -1,14 +1,15 @@
-let extern printf(text: string): none
-printf('Hello World')
+let extern printf(text: string, value1: boolean, value2: boolean): nothing
 
-value class Test(first: boolean)
-
-entity class EntityTest(a: Test, second: boolean) {
-    let do1() = self.a.first = true
+entity class EntityTest(first: boolean, second: boolean) {
+    let do1() = self.first = true
     let do2() = self.second = true
 
-    let v() = self.second
+    let print() = printf('Values are: %d | %d\n', self.first, self.second)
 }
 
-let x = EntityTest(Test(false))
-
+let x = EntityTest_spawn()
+EntityTest_print(x)
+EntityTest_do1(x)
+EntityTest_print(x)
+EntityTest_do2(x)
+EntityTest_print(x)

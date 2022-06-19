@@ -80,6 +80,7 @@ namespace scc::diagnostic {
     void dump_diagnostic(const string &where);
     void print_user_diagnostic();
     int return_code();
+    bool debug();
 }
 
 inline void D_START_PHASE(scc::diagnostic::diagnostic_phase_id phase) {
@@ -108,4 +109,8 @@ inline void D_ERROR(const std::string &fmt, const std::initializer_list<scc::dia
 
 inline void D_FATAL(const std::string &fmt, const std::initializer_list<scc::diagnostic::diagnostic_log_marker> markers) {
     scc::diagnostic::log(scc::diagnostic::diagnostic_log_level::FATAL, fmt, markers);
+}
+
+inline bool D_DEBUGGING() {
+    return scc::diagnostic::debug();
 }
