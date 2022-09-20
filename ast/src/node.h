@@ -46,8 +46,10 @@ namespace scc::ast {
         virtual void to_json(json& j) = 0;
     };
 
+    typedef std::string type_name;
     struct expression : public node {
         type_constraints constraints;
+        type_name analysed_type;
     };
 
     typedef std::shared_ptr<node> node_ref;

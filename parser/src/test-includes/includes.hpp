@@ -66,6 +66,11 @@ namespace scc::parser::test {
         return std::dynamic_pointer_cast<LeftType>(root->left);
     }
 
+    template <class LeftType>
+    inline shared_ptr<LeftType> left_op(const shared_ptr<ast::nmethod_call> &root) {
+        return std::dynamic_pointer_cast<LeftType>(root->left);
+    }
+
     template <int ChildIndex, class ArgType>
     inline std::shared_ptr<typename std::enable_if<not std::is_same<ArgType, nfunction_call_named_argument>::value, ArgType>::type>
     argument_nth(const shared_ptr<ast::nfunction_call> &root) {

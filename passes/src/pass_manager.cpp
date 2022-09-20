@@ -4,8 +4,7 @@
 #include "analyzers/pass_internal_modeler.h"
 #include "mutations/pass_value_class_ir_transformer.h"
 #include "mutations/pass_entity_class_ir_transformer.h"
-
-#include "diagnostic.h"
+#include "mutations/pass_entity_class_method_resolution.h"
 
 namespace scc::passes {
 
@@ -15,6 +14,7 @@ namespace scc::passes {
 
         mutations.emplace_back(std::make_unique<mutations::pass_value_class_ir_transformer>(types));
         mutations.emplace_back(std::make_unique<mutations::pass_entity_class_ir_transformer>(types));
+        mutations.emplace_back(std::make_unique<mutations::pass_entity_class_method_resolution>(types));
     }
 
     void pass_manager::run(ast::ast_root &root) {

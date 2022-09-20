@@ -6,6 +6,7 @@
 #include "nfunction_call.h"
 #include "nidentifier.h"
 #include "nlet.h"
+#include "nmethod_call.h"
 #include "ntype.h"
 
 #include "ir/nstruct.h"

@@ -14,6 +14,7 @@ add_library(passes
         src/analyzers/pass_internal_modeler.cpp src/analyzers/pass_internal_modeler.h
         src/mutations/pass_value_class_ir_transformer.cpp src/mutations/pass_value_class_ir_transformer.h
         src/mutations/pass_entity_class_ir_transformer.cpp src/mutations/pass_entity_class_ir_transformer.h
+        src/mutations/pass_entity_class_method_resolution.cpp src/mutations/pass_entity_class_method_resolution.h
         src/pass_manager.cpp src/pass_manager.h
         )
 

@@ -52,6 +52,8 @@ namespace scc::ast::ir {
     };
 
     struct nstruct_function_call : public expression {
+        expression_ref expression;
+        std::string name;
         std::list<expression_ref> arguments;
 
         void to_json(json &j) override;
