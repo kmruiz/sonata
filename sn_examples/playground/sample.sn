@@ -9,8 +9,8 @@ entity class EntityTest(first: boolean, second: boolean) {
 }
 
 let x = EntityTest_spawn()
-EntityTest_print(x)
-EntityTest_do1(x)
-EntityTest_print(x)
-EntityTest_do2(x)
-EntityTest_print(x)
+x.print()
+x.do1()
+x.print()
+x.do2()
+x.print()
