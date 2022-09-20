@@ -27,6 +27,7 @@ namespace scc::parser {
     static tuple<node_ref, token_stream_iterator> parse_let_function_definition(const string &name, bool external, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<type_constraints, token_stream_iterator> parse_type_constraints(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<shared_ptr<ntype>, token_stream_iterator> parse_type(token_stream_iterator tokens, token_stream_iterator end);
+    static tuple<expression_ref, token_stream_iterator> parse_member_access(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_class(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref , token_stream_iterator> parse_self_expression(token_stream_iterator tokens, token_stream_iterator end);
@@ -202,12 +203,14 @@ namespace scc::parser {
         }
 
         next_tokens = skip_whitespace_no_newline(next_tokens, end);
-        auto paren_or_else = (*next_tokens);
-        if (paren_or_else == nullptr) {
+        auto paren_or_dot_or_else = (*next_tokens);
+        if (paren_or_dot_or_else == nullptr) {
             return make_tuple(result, next_tokens);
         }
 
-        if (paren_or_else->type == token_type::OPEN_PAREN) {
+        if (paren_or_dot_or_else->type == token_type::DOT) {
+            tie(result, next_tokens) = parse_member_access(result, next_tokens, end);
+        } else if (paren_or_dot_or_else->type == token_type::OPEN_PAREN) {
             tie(result, next_tokens) = parse_function_call(result, next_tokens, end);
         }
 
@@ -450,6 +453,46 @@ namespace scc::parser {
 
         tie(type->constraints, next_tokens) = parse_type_constraints(next_tokens, end);
         return make_tuple(type, next_tokens);
+    }
+
+    static tuple<expression_ref, token_stream_iterator> parse_member_access(const expression_ref &left, token_stream_iterator next_tokens, token_stream_iterator end) {
+        auto result = std::make_shared<nmethod_call>();
+        result->left = left;
+
+        next_tokens = skip_whitespace(++next_tokens, end);
+        if ((*next_tokens)->type == token_type::IDENTIFIER) {
+            result->method = get<info_identifier>((*next_tokens)->metadata).content;
+            next_tokens++;
+
+            if ((*next_tokens)->type == token_type::OPEN_PAREN) {
+                next_tokens = skip_whitespace(++next_tokens, end);
+                while ((*next_tokens)->type != token_type::CLOSE_PAREN) {
+                    // check if it's a named argument
+                    auto maybe_named_tokens = skip_whitespace(next_tokens, end);
+                    const auto name_p = (*maybe_named_tokens);
+                    maybe_named_tokens = (skip_whitespace(maybe_named_tokens, end));
+                    ++maybe_named_tokens;
+                    const auto equal_p = (*maybe_named_tokens);
+
+                    if (name_p->type == token_type::IDENTIFIER && equal_p->type == token_type::EQUALS) {
+                        auto named_arg = std::make_shared<nfunction_call_named_argument>();
+                        named_arg->name = get<info_identifier>(name_p->metadata).content;
+                        tie(named_arg->expression, next_tokens) = parse_expression(++maybe_named_tokens, end);
+                        result->arguments.emplace_back(named_arg);
+                    } else {
+                        expression_ref arg;
+                        tie(arg, next_tokens) = parse_expression(next_tokens, end);
+                        result->arguments.emplace_back(arg);
+                    }
+
+                    if ((*next_tokens)->type == token_type::COMMA) {
+                        next_tokens = ++next_tokens;
+                    }
+                }
+            }
+        }
+
+        return make_tuple(result, ++next_tokens);
     }
 
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator next_tokens, token_stream_iterator end) {
