@@ -70,7 +70,7 @@ namespace scc::backend::llvm {
             throw std::exception();
         }
 
-        auto CPU = "generic";
+        auto CPU = "x86-64-v4";
         auto Features = "";
 
         TargetOptions opt;

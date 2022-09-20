@@ -91,6 +91,7 @@ namespace scc::backend::llvm {
         shared_ptr<FunctionPassManager> _pass_manager;
         map<string, Value *> _locals;
         map<string, Value *> _params;
+        map<string, Value *> _strings;
         map<string, Type *> _types;
         shared_ptr<type_registry> _sonata_types;
     };

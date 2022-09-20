@@ -126,7 +126,13 @@ namespace scc::backend::llvm {
             }
             case ast::nconstant_type::STRING: {
                 auto value = get<info_string>(expr->content).content;
-                return _builder->CreateGlobalStringPtr(value);
+                if (_strings.contains(value)) {
+                    return _strings[value];
+                } else {
+                    auto global_ptr = _builder->CreateGlobalStringPtr(value);
+                    _strings[value] = global_ptr;
+                    return global_ptr;
+                }
             }
         }
 
@@ -144,7 +150,7 @@ namespace scc::backend::llvm {
 
     void ir_builder::register_extern_function(const shared_ptr<ast::nlet_function> &nletfn) {
         std::vector<Type *> parameters;
-        for (auto p: nletfn->parameters) {
+        for (auto &p: nletfn->parameters) {
             parameters.emplace_back(PointerType::getUnqual(Type::getInt32Ty(*_context)));
         }
 
