@@ -29,6 +29,7 @@ namespace scc::parser {
     static tuple<shared_ptr<ntype>, token_stream_iterator> parse_type(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_member_access(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_function_call(const expression_ref &left, token_stream_iterator tokens, token_stream_iterator end);
+    static tuple<expression_ref, token_stream_iterator> parse_spawn_call(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_class(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref , token_stream_iterator> parse_self_expression(token_stream_iterator tokens, token_stream_iterator end);
 
@@ -188,6 +189,8 @@ namespace scc::parser {
                 result = nconst;
             } else if (ncontent.content == "self") {
                 return parse_self_expression(tokens, end);
+            } else if (ncontent.content == "spawn") {
+                return parse_spawn_call(tokens, end);
             } else {
                 auto nident = std::make_shared<nidentifier>();
                 nident->name = ncontent.content;
@@ -500,6 +503,42 @@ namespace scc::parser {
         result->left = left;
 
         ++next_tokens;
+        while ((*next_tokens)->type != token_type::CLOSE_PAREN) {
+            // check if it's a named argument
+            auto maybe_named_tokens = skip_whitespace(next_tokens, end);
+            const auto name_p = (*maybe_named_tokens);
+            maybe_named_tokens = (skip_whitespace(maybe_named_tokens, end));
+            ++maybe_named_tokens;
+            const auto equal_p = (*maybe_named_tokens);
+
+            if (name_p->type == token_type::IDENTIFIER && equal_p->type == token_type::EQUALS) {
+                auto named_arg = std::make_shared<nfunction_call_named_argument>();
+                named_arg->name = get<info_identifier>(name_p->metadata).content;
+                tie(named_arg->expression, next_tokens) = parse_expression(++maybe_named_tokens, end);
+                result->arguments.emplace_back(named_arg);
+            } else {
+                expression_ref arg;
+                tie(arg, next_tokens) = parse_expression(next_tokens, end);
+                result->arguments.emplace_back(arg);
+            }
+
+            if ((*next_tokens)->type == token_type::COMMA) {
+                next_tokens = ++next_tokens;
+            }
+        }
+
+        return make_tuple(result, ++next_tokens);
+    }
+
+    static tuple<expression_ref, token_stream_iterator> parse_spawn_call(token_stream_iterator next_tokens, token_stream_iterator end) {
+        next_tokens = skip_whitespace(++next_tokens, end);
+        const auto entity_name_p = (*next_tokens);
+        ++next_tokens;
+
+        auto result = std::make_shared<nspawn_entity>();
+        result->entity_name = get<info_identifier>(entity_name_p->metadata).content;
+
+        next_tokens = skip_whitespace(++next_tokens, end);
         while ((*next_tokens)->type != token_type::CLOSE_PAREN) {
             // check if it's a named argument
             auto maybe_named_tokens = skip_whitespace(next_tokens, end);

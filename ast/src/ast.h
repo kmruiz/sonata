@@ -7,6 +7,7 @@
 #include "nidentifier.h"
 #include "nlet.h"
 #include "nmethod_call.h"
+#include "nspawn_entity.h"
 #include "ntype.h"
 
 #include "ir/nstruct.h"

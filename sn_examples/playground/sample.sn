@@ -8,7 +8,7 @@ entity class EntityTest(first: boolean, second: boolean) {
     let print() = printbb(self, 'first', 'second', '*', '*', '*', '*', '*', '*')
 }
 
-let x = EntityTest_spawn()
+let x = spawn EntityTest()
 x.print()
 x.do1()
 x.print()

@@ -91,6 +91,24 @@ namespace scc::parser::test {
 
     template <int ChildIndex, class ArgType>
     inline std::shared_ptr<typename std::enable_if<not std::is_same<ArgType, nfunction_call_named_argument>::value, ArgType>::type>
+    argument_nth(const shared_ptr<ast::nspawn_entity> &root) {
+        int idx = 0;
+        for (auto &x : root->arguments) {
+            if (idx == ChildIndex) {
+                if (std::holds_alternative<expression_ref>(x)) {
+                    return std::dynamic_pointer_cast<ArgType>(std::get<expression_ref>(x));
+                }
+                break;
+            }
+
+            idx++;
+        }
+
+        return nullptr;
+    }
+
+    template <int ChildIndex, class ArgType>
+    inline std::shared_ptr<typename std::enable_if<not std::is_same<ArgType, nfunction_call_named_argument>::value, ArgType>::type>
     argument_nth(const shared_ptr<ast::nmethod_call> &root) {
         int idx = 0;
         for (auto &x : root->arguments) {
@@ -110,6 +128,25 @@ namespace scc::parser::test {
     template <int ChildIndex, class ArgType>
     shared_ptr<typename std::enable_if<std::is_same<ArgType, nfunction_call_named_argument>::value, ArgType>::type>
     inline argument_nth(const shared_ptr<ast::nfunction_call> &root) {
+        int idx = 0;
+        for (auto &x : root->arguments) {
+            if (idx == ChildIndex) {
+                if (std::holds_alternative<nfunction_call_named_argument_ref>(x)) {
+                    return std::get<nfunction_call_named_argument_ref>(x);
+                }
+
+                break;
+            }
+
+            idx++;
+        }
+
+        return nullptr;
+    }
+
+    template <int ChildIndex, class ArgType>
+    shared_ptr<typename std::enable_if<std::is_same<ArgType, nfunction_call_named_argument>::value, ArgType>::type>
+    inline argument_nth(const shared_ptr<ast::nspawn_entity> &root) {
         int idx = 0;
         for (auto &x : root->arguments) {
             if (idx == ChildIndex) {

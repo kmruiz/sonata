@@ -20,6 +20,7 @@ add_executable(parser_tests
         src/parser_class.test.cpp
         src/parser_function_call.test.cpp
         src/parser_method_call.test.cpp
+        src/parser_spawn.test.cpp
         src/parser_let.test.cpp
         src/parser_type.test.cpp
         src/test-includes/includes.hpp

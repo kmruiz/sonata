@@ -107,7 +107,7 @@ value class Amount(value: double, currency: 'USD' | 'EUR')
 | currency | --- | --- | --- | --- | --- | --- | --- | value |
 
 Note the padding, to ensure that all direct mappings are padded at the byte level. If we have more elements
-that can fit de bit bag, they will be optimised into the bit bag even if there are direct mappings.
+that can fit the bit bag, they will be optimised into the bit bag even if there are direct mappings.
 
 ```sn
 value class Amount(value: double, currency: 'USD' | 'EUR', debt: boolean)
