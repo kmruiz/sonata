@@ -10,7 +10,6 @@ using json = nlohmann::json;
 
 static std::unique_ptr<scc::diagnostic::diagnostic> S_diagnostic;
 static std::shared_ptr<scc::diagnostic::diagnostic_phase> S_current_phase;
-static const char *TM_FMT = "%OH:%OM:%OS";
 static bool had_error = false;
 
 using std::cout;
@@ -19,9 +18,9 @@ using std::put_time;
 
 using namespace std::chrono;
 
-static std::tm now() {
-    std::time_t t = std::time(nullptr);
-    return *std::localtime(&t);
+static unsigned long now() {
+    auto now = std::chrono::high_resolution_clock::now();
+    return now.time_since_epoch().count();
 }
 
 static const char *phase_id_to_string(scc::diagnostic::diagnostic_phase_id id) {
@@ -44,6 +43,8 @@ static const char *phase_id_to_string(scc::diagnostic::diagnostic_phase_id id) {
             return "PASS_VALUE_CLASS_IR_TRANSFORMER";
         case scc::diagnostic::diagnostic_phase_id::PASS_ENTITY_CLASS_IR_TRANSFORMER:
             return "PASS_ENTITY_CLASS_IR_TRANSFORMER";
+        case scc::diagnostic::diagnostic_phase_id::PASS_ENTITY_METHOD_RESOLUTION:
+            return "PASS_ENTITY_METHOD_RESOLUTION";
         case scc::diagnostic::diagnostic_phase_id::EMIT_LLVM:
             return "EMIT_LLVM";
     }
@@ -148,16 +149,16 @@ namespace scc::diagnostic {
         dump["allowed_level"] = log_level_to_string_unpad(S_diagnostic->allowed_level);
         dump["scc_version"] = S_diagnostic->scc_version;
         dump["os_version"] = S_diagnostic->os_version;
-        dump["start"] = mktime(&S_diagnostic->start);
-        dump["end"] = mktime(&S_diagnostic->end);
+        dump["start"] = S_diagnostic->start;
+        dump["end"] = S_diagnostic->start;
         dump["total_errors"] = S_diagnostic->total_errors;
         dump["total_warnings"] = S_diagnostic->total_warnings;
         std::vector<json> phases;
         for (const auto &phase : S_diagnostic->phases) {
             auto pj = json();
             pj["phase"] = phase_id_to_string(phase->id);
-            pj["start"] = mktime(&phase->start);
-            pj["end"] = mktime(&phase->end);
+            pj["start"] = S_diagnostic->start;
+            pj["end"] = S_diagnostic->start;
             pj["errors"] = phase->errors;
             pj["warnings"] = phase->warnings;
 
@@ -165,7 +166,7 @@ namespace scc::diagnostic {
             for (const auto &log : phase->logs) {
                 json lj = json();
                 lj["level"] = log_level_to_string_unpad(log->level);
-                lj["when"] = mktime(&log->when);
+                lj["when"] = log->when;
                 lj["message"] = log->message;
 
                 std::vector<json> markers;
@@ -191,13 +192,13 @@ namespace scc::diagnostic {
     }
 
     void print_user_diagnostic() {
-        cout << "[" << put_time(&S_diagnostic->start, TM_FMT) << "] GLOBAL     : scc version " << S_diagnostic->scc_version << " and os version " << S_diagnostic->os_version << endl;
+        cout << "[" << S_diagnostic->start << "] GLOBAL     : scc version " << S_diagnostic->scc_version << " and os version " << S_diagnostic->os_version << endl;
         for (const auto &phase : S_diagnostic->phases) {
             auto phase_name = phase_id_to_string(phase->id);
 
             for (const auto &log : phase->logs) {
                 if (log->level >= S_diagnostic->allowed_level) {
-                    cout << "[" << put_time(&log->when, TM_FMT) << "] " << log_level_to_string(log->level) << " " << phase_name << ": " << log->message << " | ";
+                    cout << "[" << log->when << "] " << log_level_to_string(log->level) << " " << phase_name << ": " << log->message << " | ";
                     for (const auto &marker : log->markers) {
                         cout << marker.key << "=" << marker.value << " | ";
                     }
@@ -206,11 +207,13 @@ namespace scc::diagnostic {
             }
         }
 
-        auto end = mktime(&S_diagnostic->end);
-        auto start = mktime(&S_diagnostic->start);
+        auto end = S_diagnostic->end;
+        auto start = S_diagnostic->start;
 
-        auto seconds = (unsigned long) difftime(end, start);
-        cout << "[" << put_time(&S_diagnostic->start, TM_FMT) << "] GLOBAL     : Compilation finished ";
+        double seconds = ((double) end - (double) start) / 1000.0 / 1000.0 / 1000.0;
+        seconds = ceil(seconds * 100.0) / 100.0;
+
+        cout << "[" << S_diagnostic->start << "] GLOBAL     : Compilation finished ";
 
         if (S_diagnostic->total_errors > 0) {
             cout << "with " << S_diagnostic->total_errors << " errors ";

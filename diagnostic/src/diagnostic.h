@@ -41,7 +41,7 @@ namespace scc::diagnostic {
 
     struct diagnostic_log {
         diagnostic_log_level level;
-        tm when;
+        unsigned long when;
 
         string message;
         list<diagnostic_log_marker> markers;
@@ -49,8 +49,8 @@ namespace scc::diagnostic {
 
     struct diagnostic_phase {
         diagnostic_phase_id id;
-        tm start;
-        tm end;
+        unsigned long start;
+        unsigned long end;
 
         count_t errors;
         count_t warnings;
@@ -63,8 +63,8 @@ namespace scc::diagnostic {
         string scc_version;
         string os_version;
 
-        tm start;
-        tm end;
+        unsigned long start;
+        unsigned long end;
 
         count_t total_errors;
         count_t total_warnings;

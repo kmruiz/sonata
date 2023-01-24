@@ -6,4 +6,4 @@ entity class File(path: String) requires (io: IO) {
 
 entity class Service(file: File)
 
-let x = Service(myFile) with IO(path='/tmp')
+let x = spawn Service(myFile) with IO(path='/tmp')
