@@ -5,6 +5,10 @@
 namespace scc::ast {
     using std::vector;
 
+    void node_qualified_context::to_json(json &j) {
+        j["name"] = this->name;
+    }
+
     void root::to_json(json &j) {
         j["id"] = this->id;
         j["type"] = "root";
@@ -17,6 +21,7 @@ namespace scc::ast {
         }
 
         j["children"] = childrenj;
+        this->context.to_json(j["context"]);
     }
 
     void block::to_json(json &j) {

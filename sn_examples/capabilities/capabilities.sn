@@ -1,4 +1,4 @@
-capability class IO(path: String = '/')
+capability class IO(allowed: Boolean, path: String = '/')
 
 entity class File(path: String) requires (io: IO) {
     require io.allowed && Path(io.path).parentOf(path)
@@ -6,4 +6,4 @@ entity class File(path: String) requires (io: IO) {
 
 entity class Service(file: File)
 
-let x = spawn Service(myFile) with IO(path='/tmp')
+let x = spawn Service('/tmp/example') with IO(path='/tmp')

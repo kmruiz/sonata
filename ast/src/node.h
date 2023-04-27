@@ -55,8 +55,15 @@ namespace scc::ast {
     typedef std::shared_ptr<node> node_ref;
     typedef std::shared_ptr<expression> expression_ref;
 
+    struct node_qualified_context {
+        list<string> name;
+
+        void to_json(json &j);
+    };
+
     struct root : node {
         list<node_ref> children;
+        node_qualified_context context;
 
         void to_json(json &j) override;
     };

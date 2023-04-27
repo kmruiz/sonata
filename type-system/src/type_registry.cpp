@@ -30,7 +30,6 @@ namespace scc::type_system {
     }
 
     std::list<std::shared_ptr<type>> type_registry::all_types() {
-        // [](const MyMap::value_type& val){return val.second;
         std::list<std::shared_ptr<type>> return_value;
         std::transform(map.begin(), map.end(), std::back_inserter(return_value), [](const map_registry_entry &entry) {
             return entry.second;

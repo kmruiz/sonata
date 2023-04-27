@@ -16,11 +16,11 @@ namespace scc::parser {
     using std::tie;
     using std::make_tuple;
 
-    static const token_stream_iterator skip_whitespace(token_stream_iterator tokens, token_stream_iterator end);
-    static const token_stream_iterator skip_whitespace_no_newline(token_stream_iterator tokens, token_stream_iterator end);
-    static const token_stream_iterator panic(token_stream_iterator tokens, token_stream_iterator end);
-    static const token_stream_iterator assert_token_keyword(const string &kw, token_stream_iterator tokens, token_stream_iterator end);
-    static const token_stream_iterator assert_token_type(const token_type &type, token_stream_iterator tokens, token_stream_iterator end);
+    static token_stream_iterator skip_whitespace(token_stream_iterator tokens, token_stream_iterator end);
+    static token_stream_iterator skip_whitespace_no_newline(token_stream_iterator tokens, token_stream_iterator end);
+    static token_stream_iterator panic(token_stream_iterator tokens, token_stream_iterator end);
+    static token_stream_iterator assert_token_keyword(const string &kw, token_stream_iterator tokens, token_stream_iterator end);
+    static token_stream_iterator assert_token_type(const token_type &type, token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_node(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<expression_ref, token_stream_iterator> parse_expression(token_stream_iterator tokens, token_stream_iterator end);
     static tuple<node_ref, token_stream_iterator> parse_let_expression(token_stream_iterator tokens, token_stream_iterator end);
@@ -61,7 +61,7 @@ namespace scc::parser {
         return _root;
     }
 
-    static const token_stream_iterator skip_whitespace(token_stream_iterator tokens, token_stream_iterator end) {
+    static token_stream_iterator skip_whitespace(token_stream_iterator tokens, token_stream_iterator end) {
         for (; tokens != end; tokens++) {
             if ((*tokens)->type == token_type::WHITESPACE || (*tokens)->type == token_type::NEW_LINE) {
                 continue;
@@ -73,7 +73,7 @@ namespace scc::parser {
         return end;
     }
 
-    static const token_stream_iterator skip_whitespace_no_newline(token_stream_iterator tokens, token_stream_iterator end) {
+    static token_stream_iterator skip_whitespace_no_newline(token_stream_iterator tokens, token_stream_iterator end) {
         for (; tokens != end; tokens++) {
             if ((*tokens)->type == token_type::WHITESPACE) {
                 continue;
@@ -86,7 +86,7 @@ namespace scc::parser {
     }
 
 
-    static const token_stream_iterator panic(token_stream_iterator tokens, token_stream_iterator end) {
+    static token_stream_iterator panic(token_stream_iterator tokens, token_stream_iterator end) {
         for (; tokens != end; tokens++) {
             if ((*tokens)->type == token_type::NEW_LINE) {
                 return tokens;
@@ -96,7 +96,7 @@ namespace scc::parser {
         return end;
     }
 
-    static const token_stream_iterator assert_token_keyword(const string &kw, token_stream_iterator tokens, token_stream_iterator end) {
+    static token_stream_iterator assert_token_keyword(const string &kw, token_stream_iterator tokens, token_stream_iterator end) {
         auto next_tokens = skip_whitespace_no_newline(tokens, end);
 
         const auto &current = (*next_tokens);
@@ -122,7 +122,7 @@ namespace scc::parser {
         return panic(tokens, end);
     }
 
-    static const token_stream_iterator assert_token_type(const token_type &type, token_stream_iterator tokens, token_stream_iterator end) {
+    static token_stream_iterator assert_token_type(const token_type &type, token_stream_iterator tokens, token_stream_iterator end) {
         auto next_tokens = skip_whitespace_no_newline(tokens, end);
         const auto &current = (*next_tokens);
         if (current->type == type) {
