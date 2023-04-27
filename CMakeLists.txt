@@ -11,6 +11,7 @@ add_subdirectory(discovery)
 add_subdirectory(lexer)
 add_subdirectory(parser)
 add_subdirectory(passes)
+add_subdirectory(runtime)
 add_subdirectory(type-system)
 
 include_directories(ast/src)
