@@ -33,6 +33,7 @@ namespace vm::mailbox {
     private:
         concurrency::spin_lock lock;
         std::list<std::unique_ptr<message>> queue;
+        bool released;
     };
 
 }

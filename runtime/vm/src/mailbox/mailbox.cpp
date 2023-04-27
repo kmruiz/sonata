@@ -7,7 +7,7 @@
 using namespace vm::mailbox;
 
 mailbox::mailbox() {
-
+    this->released = false;
 }
 
 mailbox::~mailbox() {
@@ -15,6 +15,10 @@ mailbox::~mailbox() {
 }
 
 void mailbox::enqueue(std::unique_ptr<message> message) {
+    if (released) {
+        return;
+    }
+
     auto ref = lock.lock();
     queue.push_back(std::move(message));
 }
