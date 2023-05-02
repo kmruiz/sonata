@@ -29,7 +29,6 @@ namespace vm::mailbox {
 
         void enqueue(std::unique_ptr<message> message);
         std::unique_ptr<message> dequeue();
-        void release();
     private:
         concurrency::spin_lock lock;
         std::list<std::unique_ptr<message>> queue;

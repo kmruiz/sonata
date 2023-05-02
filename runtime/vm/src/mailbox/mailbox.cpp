@@ -33,7 +33,3 @@ std::unique_ptr<message> mailbox::dequeue() {
     queue.pop_front();
     return value;
 }
-
-void mailbox::release() {
-
-}

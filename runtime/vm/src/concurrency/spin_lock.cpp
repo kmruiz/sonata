@@ -4,8 +4,7 @@
 #include <utility>
 
 namespace vm::concurrency {
-    spin_lock_ref::spin_lock_ref(spin_lock_latch ref) {
-        this->ref = ref;
+    spin_lock_ref::spin_lock_ref(spin_lock_latch ref) : ref(std::move(ref)) {
     }
 
     spin_lock_ref::~spin_lock_ref() {
@@ -20,12 +19,11 @@ namespace vm::concurrency {
         this->latch = std::make_shared<std::atomic_bool>(false);
     }
 
-    spin_lock::~spin_lock() {
-    }
+    spin_lock::~spin_lock() = default;
 
     spin_lock_ref spin_lock::lock() {
         bool unlatched = false;
-        while (!latch->compare_exchange_weak(unlatched, true, std::memory_order_acquire)) {
+        while (!latch->compare_exchange_strong(unlatched, true, std::memory_order_acquire)) {
             unlatched = false;
         }
 
