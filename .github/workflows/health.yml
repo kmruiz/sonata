@@ -88,3 +88,18 @@ jobs:
         run: |
           chmod +x ./type-system/type-system_tests
           ./type-system/type-system_tests
+
+  RunSonataRuntimeTests:
+    runs-on: ubuntu-latest
+    needs: BuildProject
+    steps:
+      - name: Download Build
+        uses: actions/download-artifact@master
+        with:
+          name: cmake-build
+          path: .
+
+      - name: Run Tests
+        run: |
+          chmod +x ./runtime/vm/sonata-rt_tests
+          ./runtime/vm/sonata-rt_tests

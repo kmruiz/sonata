@@ -3,7 +3,6 @@ project(runtime_vm)
 
 set(CMAKE_CXX_STANDARD 20)
 
-
 add_library(sonata-rt
         src/mailbox/mailbox.cpp
         src/mailbox/mailbox.h

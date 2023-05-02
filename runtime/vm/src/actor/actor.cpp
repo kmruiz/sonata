@@ -17,10 +17,7 @@ namespace vm::actor {
 
     }
 
-
-    actor::~actor() {
-
-    }
+    actor::~actor() = default;
 
     void actor::push_from(std::unique_ptr<message> msg) {
         bound_mailbox->enqueue(std::move(msg));
