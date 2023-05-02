@@ -1,6 +1,7 @@
 #include "actor.h"
 
 #include <utility>
+#include "actor_type.h"
 
 namespace vm::actor {
     actor::actor(address addr,
@@ -28,7 +29,10 @@ namespace vm::actor {
     }
 
     actor_message_process_result actor::process_message(std::unique_ptr<message> message) {
-        return FAILED;
+        auto name = message->message;
+        auto call = self_type->resolve(name);
+
+        return call(this, std::move(message));
     }
 
     template<class State>

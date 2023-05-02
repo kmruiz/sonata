@@ -5,13 +5,13 @@
 #include "../core/address.h"
 #include "../mailbox/mailbox.h"
 #include "../concurrency/spin_lock.h"
-#include "actor_type.h"
 
 namespace vm::actor {
     using vm::mailbox::message;
     using vm::mailbox::mailbox;
     using vm::core::address;
 
+    struct actor_type;
     struct base_actor_state {};
 
     enum actor_message_process_result {
