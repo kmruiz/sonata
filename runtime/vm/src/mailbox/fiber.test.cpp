@@ -49,7 +49,7 @@ TEST(fiber, processes_a_message_for_an_actor) {
     auto enqueued_message = std::make_unique<vm::mailbox::message>();
     mock->push_from(std::move(enqueued_message));
 
-    std::this_thread::sleep_for(1ms);
+    std::this_thread::sleep_for(100us);
     fb->stop();
 
     auto state = mock->state_as<actor_state>();
