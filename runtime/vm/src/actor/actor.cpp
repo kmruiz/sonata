@@ -1,6 +1,8 @@
 #include "actor.h"
 
 #include <utility>
+
+#include "actor_system.h"
 #include "actor_type.h"
 
 namespace vm::actor {
@@ -8,14 +10,15 @@ namespace vm::actor {
                  address supervisor,
                  std::unique_ptr<base_actor_state> initial_state,
                  std::shared_ptr<mailbox> mailbox,
-                 std::shared_ptr<actor_type> type
+                 std::shared_ptr<actor_type> type,
+                 std::shared_ptr<actor_system> system
     ) :
             self_address(addr),
             self_supervisor(supervisor),
             self_state(std::move(initial_state)),
             bound_mailbox(std::move(mailbox)),
-            self_type(std::move(type)) {
-
+            self_type(std::move(type)),
+            system(std::move(system)) {
     }
 
     actor::~actor() = default;
@@ -25,7 +28,8 @@ namespace vm::actor {
     }
 
     void actor::send(std::unique_ptr<message> msg, address receiver) {
-
+        auto receiver_actor = system->resolve_by_address(receiver);
+        receiver_actor->push_from(std::move(msg));
     }
 
     actor_message_process_result actor::process_message(std::unique_ptr<message> message) {
