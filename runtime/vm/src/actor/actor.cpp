@@ -28,6 +28,12 @@ namespace vm::actor {
     }
 
     void actor::send(std::unique_ptr<message> msg, address receiver) {
+        auto trace = vm::mailbox::message_trace {
+            .stepped_actor = self_address,
+            .message = msg->message
+        };
+
+        msg->traces.push_back(trace);
         auto receiver_actor = system->resolve_by_address(receiver);
         receiver_actor->push_from(std::move(msg));
     }

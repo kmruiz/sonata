@@ -78,3 +78,42 @@ TEST(actor, sends_messages_to_other_actors) {
     auto state = instance->state_as<actor_state>();
     ASSERT_EQ(state->called, true);
 }
+
+TEST(actor, that_a_trace_is_added) {
+    auto system = std::make_shared<vm::actor::actor_system>();
+    auto mb = std::make_shared<vm::actor::mailbox>();
+    auto msg = std::make_unique<vm::mailbox::message>();
+    msg->message = "hello";
+
+    const vm::core::address &receiver_address = vm::core::make_address();
+    const vm::core::address &sender_address = vm::core::make_address();
+
+    auto instance = std::make_shared<vm::actor::actor>(
+            receiver_address,
+            vm::core::make_address(),
+            std::make_unique<vm::actor::base_actor_state>(actor_state { .called = false }),
+            mb,
+            nullptr,
+            system
+    );
+
+    auto sender = std::make_shared<vm::actor::actor>(
+            sender_address,
+            vm::core::make_address(),
+            std::make_unique<vm::actor::base_actor_state>(actor_state { .called = false }),
+            mb,
+            nullptr,
+            system
+    );
+
+    system->register_actor(instance);
+    sender->send(std::move(msg), receiver_address);
+
+    auto msg_in_mb = mb->dequeue();
+
+    ASSERT_EQ(msg_in_mb->traces.size(), 1);
+
+    auto trace = msg_in_mb->traces.front();
+    ASSERT_EQ(trace.message, "hello");
+    ASSERT_EQ(trace.stepped_actor.id, sender_address.id);
+}
