@@ -10,7 +10,7 @@ namespace scc::backend::llvm {
             shared_ptr<FunctionPassManager> &pass_manager,
             shared_ptr<type_registry> &sonata_types)
             : _context(context), _builder(ir), _module(module), _pass_manager(pass_manager),
-              _sonata_types(sonata_types) {
+              _sonata_types(sonata_types), _rt(context, module) {
 
     }
 
@@ -23,10 +23,7 @@ namespace scc::backend::llvm {
         BasicBlock *BB = BasicBlock::Create(*_context, "entry", F);
         _builder->SetInsertPoint(BB);
 
-        auto mkactorsystem = _module->getOrInsertFunction("mkactorsystem", FunctionType::get(Type::getVoidTy(*_context), { Type::getInt8Ty(*_context) }, false));
-        auto dlactorsystem = _module->getOrInsertFunction("dlactorsystem", FunctionType::get(Type::getVoidTy(*_context), {}, false));
-
-        _builder->CreateCall(mkactorsystem, ConstantInt::get(*_context, APInt(8, 1)));
+        _rt.mkactorsystem(_builder, ConstantInt::get(*_context, APInt(8, 1)));
 
         for (const auto &node: document->children) {
             if (std::dynamic_pointer_cast<ast::nfunction_call>(node) != nullptr) {
@@ -63,7 +60,8 @@ namespace scc::backend::llvm {
             }
         }
 
-        _builder->CreateCall(dlactorsystem);
+        _rt.dlactorsystem(_builder);
+
         _builder->CreateRet(ConstantInt::get(*_context, APInt(32, 0)));
         verifyFunction(*F);
         D_END_PHASE();
@@ -185,60 +183,23 @@ namespace scc::backend::llvm {
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_malloc> &expr) {
-        auto mkaddress = _module->getOrInsertFunction(
-                "mkaddress",
-                FunctionType::get(Type::getInt64Ty(*_context), {}, false)
-        );
+        auto addressval = _rt.mkaddress(_builder);
 
-        auto getactorsystem = _module->getOrInsertFunction(
-                "getactorsystem",
-                FunctionType::get(Type::getInt32PtrTy(*_context), {}, false)
-        );
-
-        auto getmailbox = _module->getOrInsertFunction(
-                "getmailbox",
-                FunctionType::get(Type::getInt32PtrTy(*_context), {}, false)
-        );
-
-        auto addressval = _builder->CreateCall(mkaddress);
-
-        std::vector<Type *> parameters {Type::getInt32Ty(*_context) };
-        auto malloc = _module->getOrInsertFunction("malloc", FunctionType::get(Type::getInt32Ty(*_context), parameters, false));
         auto type_def = _sonata_types->resolve(expr->type);
         auto mem_layout = type_def->layout;
 
-        auto actor_state = _builder->CreateCall(malloc, {ConstantInt::get(*_context, APInt(32, mem_layout.size_in_bytes))});
-
-        auto mkactor = _module->getOrInsertFunction(
-                "mkactor",
-                FunctionType::get(Type::getInt32PtrTy(*_context), {
-                        Type::getInt64Ty(*_context), // actor address
-                        Type::getInt64Ty(*_context), // actor supervisor address
-                        Type::getInt32PtrTy(*_context), // initial state pointer
-                        Type::getInt32PtrTy(*_context), // mailbox pointer
-                        Type::getInt32PtrTy(*_context), // type pointer
-                }, false)
-        );
-
-        auto actor_instance = _builder->CreateCall(mkactor, {
-            addressval,
+        auto actor_instance = _rt.mkactor(_builder, addressval,
             ConstantInt::get(*_context, APInt(64, 0)),
-            actor_state,
-            _builder->CreateCall(getmailbox),
-            _builder->CreateCall(getactorsystem),
-        });
+            _rt.extern_malloc(_builder, mem_layout.size_in_bytes),
+            _rt.getmailbox(_builder),
+            _rt.getactorsystem(_builder)
+        );
 
         return actor_instance;
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_free> &expr) {
-        auto parent = _params["self"];
-
-        std::vector<Type *> parameters{Type::getInt32Ty(*_context)};
-        auto free = _module->getOrInsertFunction("dlactor",
-                                                 FunctionType::get(Type::getInt32Ty(*_context), parameters, false));
-
-        return _builder->CreateCall(free, { parent });
+        return _rt.dlactor(_builder, _params["self"]);
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_function_call> &expr) {

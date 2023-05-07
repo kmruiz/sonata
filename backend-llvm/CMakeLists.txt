@@ -27,7 +27,7 @@ add_library(backend-llvm
         src/ir_builder.cpp
         src/ir_builder.h
         src/intrinsics/intrinsics.h
-)
+        src/runtime/runtime.h)
 
 target_link_libraries(backend-llvm ${LIBS} ${SYS_LIBS} ${LDF} diagnostic ast type-system)
 

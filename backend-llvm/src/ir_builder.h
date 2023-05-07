@@ -36,6 +36,7 @@
 
 #include "ast.h"
 #include "type_registry.h"
+#include "runtime/runtime.h"
 
 namespace scc::backend::llvm {
     using namespace ::llvm;
@@ -94,6 +95,7 @@ namespace scc::backend::llvm {
         map<string, Value *> _strings;
         map<string, Type *> _types;
         shared_ptr<type_registry> _sonata_types;
+        runtime::runtime _rt;
     };
 }
 
