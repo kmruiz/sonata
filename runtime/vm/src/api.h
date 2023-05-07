@@ -26,7 +26,7 @@ extern "C" {
 
     // Actor API
     vmc::address mkaddress();
-    vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system);
+    vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type);
     void dlactor(vma::actor *actor);
     void actor_receive(vma::actor *rcv, vmm::message *msg);
     void actor_send(vma::actor *actor, vmm::message *msg, vmc::address &rcv);
@@ -37,8 +37,8 @@ extern "C" {
     vma::actor_system *getactorsystem();
     vmm::mailbox *getmailbox();
     void dlactorsystem();
-    vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vmc::address &addr);
-    void actorsystem_register_actor(vma::actor_system *system, vma::actor *actor);
+    vma::actor *actorsystem_resolve_by_address(const vmc::address &addr);
+    void actorsystem_register_actor(vma::actor *actor);
 
     // Actor Type API
     vma::actor_type *mkactortype(const char *name);

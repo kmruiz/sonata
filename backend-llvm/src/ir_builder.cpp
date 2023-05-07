@@ -217,7 +217,6 @@ namespace scc::backend::llvm {
                         Type::getInt32PtrTy(*_context), // initial state pointer
                         Type::getInt32PtrTy(*_context), // mailbox pointer
                         Type::getInt32PtrTy(*_context), // type pointer
-                        Type::getInt32PtrTy(*_context), // actor system pointer
                 }, false)
         );
 
@@ -227,7 +226,6 @@ namespace scc::backend::llvm {
             actor_state,
             _builder->CreateCall(getmailbox),
             _builder->CreateCall(getactorsystem),
-            _builder->CreateCall(getactorsystem)
         });
 
         return actor_instance;

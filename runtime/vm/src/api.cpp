@@ -18,8 +18,8 @@ vmc::address mkaddress() {
     return vmc::make_address();
 }
 
-vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system) {
-    return new vma::actor(addr, supervisor, std::unique_ptr<vma::base_actor_state>(state), std::shared_ptr<vmm::mailbox>(mb), std::shared_ptr<vma::actor_type>(type), std::shared_ptr<vma::actor_system>(system));
+vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type) {
+    return new vma::actor(addr, supervisor, std::unique_ptr<vma::base_actor_state>(state), std::shared_ptr<vmm::mailbox>(mb), std::shared_ptr<vma::actor_type>(type), std::shared_ptr<vma::actor_system>(CURRENT_ACTOR_SYSTEM));
 }
 
 void dlactor(vma::actor *actor) {
@@ -52,15 +52,18 @@ vma::actor_system *mkactorsystem(thread_count_t count) {
     }
 
     CURRENT_FIBERS_COUNT = count;
+    CURRENT_MAILBOXES_COUNT = count;
     CURRENT_FIBERS = new vmm::fiber*[count];
+    CURRENT_MAILBOXES = new vmm::mailbox*[count];
+    CURRENT_MAILBOX = 0;
 
     auto using_system = [actor_system](vm::actor::address addr) -> std::shared_ptr<vm::actor::actor> {
         return actor_system->resolve_by_address(addr);
     };
 
     for (auto i = 0; i < count; i++) {
-        auto mb = new vmm::mailbox();
-        CURRENT_FIBERS[i] = new vmm::fiber(std::shared_ptr<vmm::mailbox>(mb), using_system);
+        CURRENT_MAILBOXES[i] = new vmm::mailbox();
+        CURRENT_FIBERS[i] = new vmm::fiber(std::shared_ptr<vmm::mailbox>(CURRENT_MAILBOXES[i]), using_system);
     }
 
     CURRENT_ACTOR_SYSTEM = actor_system;
@@ -89,12 +92,12 @@ void dlactorsystem() {
     delete CURRENT_ACTOR_SYSTEM;
 }
 
-vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vmc::address &addr) {
-    return system->resolve_by_address(addr).get();
+vma::actor *actorsystem_resolve_by_address(const vmc::address &addr) {
+    return CURRENT_ACTOR_SYSTEM->resolve_by_address(addr).get();
 }
 
-void actorsystem_register_actor(vma::actor_system *system, vma::actor *actor) {
-    system->register_actor(std::shared_ptr<vma::actor>(actor));
+void actorsystem_register_actor(vma::actor *actor) {
+    CURRENT_ACTOR_SYSTEM->register_actor(std::shared_ptr<vma::actor>(actor));
 }
 
 vma::actor_type *mkactortype(const char *name) {
