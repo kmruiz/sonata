@@ -18,7 +18,8 @@ add_library(sonata-rt
         src/actor/actor_system.h
         src/mailbox/fiber.cpp
         src/mailbox/fiber.h
-)
+        src/api.cpp
+        src/api.h)
 
 enable_testing()
 find_package(GTest REQUIRED)
