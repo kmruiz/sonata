@@ -2,7 +2,6 @@
 
 #include <utility>
 
-#include "../actor/actor.cpp"
 #include "../actor/actor.h"
 #include "../actor/actor_system.h"
 #include "fiber.h"
@@ -26,7 +25,7 @@ public:
 
     vm::actor::actor_message_process_result process_message(std::unique_ptr<vm::mailbox::message> message) override {
         auto ref = this->processing_lock.lock();
-        auto state = this->state_as<actor_state>();
+        auto state = std::reinterpret_pointer_cast<actor_state>(this->state_as());
         state->did_run = true;
         return vm::actor::OK;
     }
@@ -56,6 +55,6 @@ TEST(fiber, processes_a_message_for_an_actor) {
     std::this_thread::sleep_for(100us);
     fb->stop();
 
-    auto state = mock->state_as<actor_state>();
+    auto state = std::reinterpret_pointer_cast<actor_state>(mock->state_as());
     ASSERT_EQ(state->did_run, true);
 }

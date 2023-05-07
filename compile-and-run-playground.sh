@@ -9,7 +9,7 @@ echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid > /dev/null
 cmake --build cmake-build-debug --target scc -j 12
 ./cmake-build-debug/scc -D./cmake-build-debug/debug-diagnostic.json -LDEBUG sn_examples/playground
 clang -c sn_examples/playground/extern/printbb.c -o lib.o
-clang -no-pie output.o lib.o
+clang++ -no-pie output.o lib.o ./cmake-build-debug/runtime/vm/libsonata-rt.a
 echo '---------------------------------------------------------------------------------------'
 perf record ./a.out
 echo

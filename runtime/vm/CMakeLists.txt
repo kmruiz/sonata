@@ -21,6 +21,8 @@ add_library(sonata-rt
         src/api.cpp
         src/api.h)
 
+target_compile_options(sonata-rt PRIVATE -fpie)
+
 enable_testing()
 find_package(GTest REQUIRED)
 include(GoogleTest)

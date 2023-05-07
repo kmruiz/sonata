@@ -36,8 +36,7 @@ namespace vm::actor {
         void send(std::unique_ptr<message> msg, address receiver);
         virtual actor_message_process_result process_message(std::unique_ptr<message> message);
 
-        template<class State>
-        std::shared_ptr<State> state_as();
+        std::shared_ptr<base_actor_state> state_as();
 
     protected:
         friend class actor_system;

@@ -18,7 +18,8 @@ TEST(actor, dispatches_messages) {
     auto instance_type = std::make_shared<vm::actor::actor_type>();
     instance_type->class_name = "Greeter";
     instance_type->dispatch_table["hello"] = [](vm::actor::actor *i, std::unique_ptr<vm::mailbox::message> msg) -> vm::actor::actor_message_process_result {
-        i->state_as<actor_state>()->called = true;
+        auto ptr_state = std::reinterpret_pointer_cast<actor_state>(i->state_as());
+        ptr_state->called = true;
         return vm::actor::OK;
     };
 
@@ -32,7 +33,7 @@ TEST(actor, dispatches_messages) {
     );
 
     instance->process_message(std::move(msg));
-    auto state = instance->state_as<actor_state>();
+    auto state = std::reinterpret_pointer_cast<actor_state>(instance->state_as());
     ASSERT_EQ(state->called, true);
 }
 
@@ -45,7 +46,9 @@ TEST(actor, sends_messages_to_other_actors) {
     auto instance_type = std::make_shared<vm::actor::actor_type>();
     instance_type->class_name = "Greeter";
     instance_type->dispatch_table["hello"] = [](vm::actor::actor *i, std::unique_ptr<vm::mailbox::message> msg) -> vm::actor::actor_message_process_result {
-        i->state_as<actor_state>()->called = true;
+        auto ptr_state = std::reinterpret_pointer_cast<actor_state>(i->state_as());
+        ptr_state->called = true;
+
         return vm::actor::OK;
     };
 
@@ -75,7 +78,7 @@ TEST(actor, sends_messages_to_other_actors) {
     auto msg_in_mb = mb->dequeue();
     instance->process_message(std::move(msg_in_mb));
 
-    auto state = instance->state_as<actor_state>();
+    auto state = std::reinterpret_pointer_cast<actor_state>(instance->state_as());
     ASSERT_EQ(state->called, true);
 }
 

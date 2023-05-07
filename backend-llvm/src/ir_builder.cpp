@@ -179,7 +179,14 @@ namespace scc::backend::llvm {
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_malloc> &expr) {
-        std::vector<Type *> parameters{Type::getInt32Ty(*_context)};
+        auto mkaddress = _module->getOrInsertFunction(
+                "mkaddress",
+                FunctionType::get(Type::getInt64Ty(*_context), {}, false)
+        );
+
+        auto addressval = _builder->CreateCall(mkaddress);
+
+        std::vector<Type *> parameters {Type::getInt32Ty(*_context) };
         auto malloc = _module->getOrInsertFunction("malloc",
                                                    FunctionType::get(Type::getInt32Ty(*_context), parameters, false));
 

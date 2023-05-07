@@ -7,7 +7,11 @@ vma::actor_system *CURRENT_ACTOR_SYSTEM = nullptr;
 vmm::fiber** CURRENT_FIBERS = nullptr;
 thread_count_t CURRENT_FIBERS_COUNT = 0;
 
-vma::actor *mkactor(vma::address addr, vma::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system) {
+vmc::address mkaddress() {
+    return vmc::make_address();
+}
+
+vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system) {
     return new vma::actor(addr, supervisor, std::unique_ptr<vma::base_actor_state>(state), std::shared_ptr<vmm::mailbox>(mb), std::shared_ptr<vma::actor_type>(type), std::shared_ptr<vma::actor_system>(system));
 }
 
@@ -19,12 +23,12 @@ void actor_receive(vma::actor *rcv, vmm::message *msg) {
     rcv->push_from(std::unique_ptr<vmm::message>(msg));
 }
 
-void actor_send(vma::actor *actor, vmm::message *msg, vma::address &rcv) {
+void actor_send(vma::actor *actor, vmm::message *msg, vmc::address &rcv) {
     actor->send(std::unique_ptr<vmm::message>(msg), rcv);
 }
 
 void *actor_state(vma::actor *actor) {
-    auto state = actor->state_as<vma::base_actor_state>();
+    auto state = actor->state_as();
     return static_cast<void *>(state.get());
 }
 
@@ -70,7 +74,7 @@ void dlactorsystem(vma::actor_system *system) {
     delete CURRENT_ACTOR_SYSTEM;
 }
 
-vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vma::address &addr) {
+vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vmc::address &addr) {
     return system->resolve_by_address(addr).get();
 }
 

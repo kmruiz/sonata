@@ -9,6 +9,7 @@
 
 namespace vma = vm::actor;
 namespace vmm = vm::mailbox;
+namespace vmc = vm::core;
 
 /**
  * Sonata Runtime API
@@ -24,17 +25,19 @@ extern "C" {
     typedef uint8_t thread_count_t;
 
     // Actor API
-    vma::actor *mkactor(vma::address addr, vma::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system);
+    vmc::address mkaddress();
+
+    vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system);
     void dlactor(vma::actor *actor);
     void actor_receive(vma::actor *rcv, vmm::message *msg);
-    void actor_send(vma::actor *actor, vmm::message *msg, vma::address &rcv);
+    void actor_send(vma::actor *actor, vmm::message *msg, vmc::address &rcv);
     void *actor_state(vma::actor *actor); // actor state is only "typed" at the C++ level.
 
     // Actor System API
     vma::actor_system *mkactorsystem(thread_count_t count);
     vma::actor_system *getactorsystem();
     void dlactorsystem(vma::actor_system *system);
-    vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vma::address &addr);
+    vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vmc::address &addr);
     void actorsystem_register_actor(vma::actor_system *system, vma::actor *actor);
 
     // Actor Type API

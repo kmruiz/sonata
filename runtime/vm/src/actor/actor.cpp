@@ -45,8 +45,7 @@ namespace vm::actor {
         return call(this, std::move(message));
     }
 
-    template<class State>
-    std::shared_ptr<State> actor::state_as() {
-        return std::static_pointer_cast<State>(this->self_state);
+    std::shared_ptr<base_actor_state> actor::state_as() {
+        return this->self_state;
     }
 }
