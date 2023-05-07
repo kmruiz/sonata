@@ -23,6 +23,11 @@ namespace scc::backend::llvm {
         BasicBlock *BB = BasicBlock::Create(*_context, "entry", F);
         _builder->SetInsertPoint(BB);
 
+        auto mkactorsystem = _module->getOrInsertFunction("mkactorsystem", FunctionType::get(Type::getVoidTy(*_context), { Type::getInt8Ty(*_context) }, false));
+        auto dlactorsystem = _module->getOrInsertFunction("dlactorsystem", FunctionType::get(Type::getVoidTy(*_context), {}, false));
+
+        _builder->CreateCall(mkactorsystem, ConstantInt::get(*_context, APInt(8, 1)));
+
         for (const auto &node: document->children) {
             if (std::dynamic_pointer_cast<ast::nfunction_call>(node) != nullptr) {
                 to_value(node);
@@ -58,6 +63,7 @@ namespace scc::backend::llvm {
             }
         }
 
+        _builder->CreateCall(dlactorsystem);
         _builder->CreateRet(ConstantInt::get(*_context, APInt(32, 0)));
         verifyFunction(*F);
         D_END_PHASE();
@@ -184,16 +190,47 @@ namespace scc::backend::llvm {
                 FunctionType::get(Type::getInt64Ty(*_context), {}, false)
         );
 
+        auto getactorsystem = _module->getOrInsertFunction(
+                "getactorsystem",
+                FunctionType::get(Type::getInt32PtrTy(*_context), {}, false)
+        );
+
+        auto getmailbox = _module->getOrInsertFunction(
+                "getmailbox",
+                FunctionType::get(Type::getInt32PtrTy(*_context), {}, false)
+        );
+
         auto addressval = _builder->CreateCall(mkaddress);
 
         std::vector<Type *> parameters {Type::getInt32Ty(*_context) };
-        auto malloc = _module->getOrInsertFunction("malloc",
-                                                   FunctionType::get(Type::getInt32Ty(*_context), parameters, false));
-
+        auto malloc = _module->getOrInsertFunction("malloc", FunctionType::get(Type::getInt32Ty(*_context), parameters, false));
         auto type_def = _sonata_types->resolve(expr->type);
         auto mem_layout = type_def->layout;
 
-        return _builder->CreateCall(malloc, {ConstantInt::get(*_context, APInt(32, mem_layout.size_in_bytes))});
+        auto actor_state = _builder->CreateCall(malloc, {ConstantInt::get(*_context, APInt(32, mem_layout.size_in_bytes))});
+
+        auto mkactor = _module->getOrInsertFunction(
+                "mkactor",
+                FunctionType::get(Type::getInt32PtrTy(*_context), {
+                        Type::getInt64Ty(*_context), // actor address
+                        Type::getInt64Ty(*_context), // actor supervisor address
+                        Type::getInt32PtrTy(*_context), // initial state pointer
+                        Type::getInt32PtrTy(*_context), // mailbox pointer
+                        Type::getInt32PtrTy(*_context), // type pointer
+                        Type::getInt32PtrTy(*_context), // actor system pointer
+                }, false)
+        );
+
+        auto actor_instance = _builder->CreateCall(mkactor, {
+            addressval,
+            ConstantInt::get(*_context, APInt(64, 0)),
+            actor_state,
+            _builder->CreateCall(getmailbox),
+            _builder->CreateCall(getactorsystem),
+            _builder->CreateCall(getactorsystem)
+        });
+
+        return actor_instance;
     }
 
     Value *ir_builder::to_value(const shared_ptr<ast::ir::nstruct_free> &expr) {

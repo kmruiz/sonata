@@ -1,11 +1,18 @@
 #include <thread>
 
+#include "concurrency/spin_lock.h"
 #include "mailbox/fiber.h"
 #include "api.h"
 
+namespace vmc_ = vm::concurrency;
+
 vma::actor_system *CURRENT_ACTOR_SYSTEM = nullptr;
+vmm::mailbox** CURRENT_MAILBOXES = nullptr;
 vmm::fiber** CURRENT_FIBERS = nullptr;
 thread_count_t CURRENT_FIBERS_COUNT = 0;
+thread_count_t CURRENT_MAILBOXES_COUNT = 0;
+thread_count_t CURRENT_MAILBOX = 0;
+vmc_::spin_lock MAILBOX_LIST_LOCK;
 
 vmc::address mkaddress() {
     return vmc::make_address();
@@ -64,7 +71,15 @@ vma::actor_system *getactorsystem() {
     return CURRENT_ACTOR_SYSTEM;
 }
 
-void dlactorsystem(vma::actor_system *system) {
+vmm::mailbox *getmailbox() {
+    auto _lock = MAILBOX_LIST_LOCK.lock();
+    auto next_mailbox = (CURRENT_MAILBOX + 1) % CURRENT_MAILBOXES_COUNT;
+    auto mb = CURRENT_MAILBOXES[CURRENT_MAILBOX];
+    CURRENT_MAILBOX = next_mailbox;
+    return mb;
+}
+
+void dlactorsystem() {
     for (auto i = 0; i < CURRENT_FIBERS_COUNT; i++) {
         CURRENT_FIBERS[i]->stop();
         delete CURRENT_FIBERS[i];

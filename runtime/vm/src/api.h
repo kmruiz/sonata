@@ -26,7 +26,6 @@ extern "C" {
 
     // Actor API
     vmc::address mkaddress();
-
     vma::actor *mkactor(vmc::address addr, vmc::address supervisor, vma::base_actor_state *state, vmm::mailbox *mb, vma::actor_type *type, vma::actor_system *system);
     void dlactor(vma::actor *actor);
     void actor_receive(vma::actor *rcv, vmm::message *msg);
@@ -36,7 +35,8 @@ extern "C" {
     // Actor System API
     vma::actor_system *mkactorsystem(thread_count_t count);
     vma::actor_system *getactorsystem();
-    void dlactorsystem(vma::actor_system *system);
+    vmm::mailbox *getmailbox();
+    void dlactorsystem();
     vma::actor *actorsystem_resolve_by_address(vma::actor_system *system, const vmc::address &addr);
     void actorsystem_register_actor(vma::actor_system *system, vma::actor *actor);
 
