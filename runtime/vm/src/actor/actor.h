@@ -37,6 +37,9 @@ namespace vm::actor {
         virtual actor_message_process_result process_message(std::unique_ptr<message> message);
 
         std::shared_ptr<base_actor_state> state_as();
+        inline address get_address() {
+            return self_address;
+        }
 
     protected:
         friend class actor_system;

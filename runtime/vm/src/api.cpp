@@ -107,3 +107,30 @@ vma::actor_type *mkactortype(const char *name) {
 void actortype_register(vma::actor_type *type, const char *msg, const vma::dispatch_message &dispatch) {
     type->dispatch_table[std::string(msg)] = dispatch;
 }
+
+vmm::message *mkmsg(vma::actor *sender, const char *name) {
+    auto msg = new vmm::message();
+    msg->sender = sender->get_address();
+    msg->message = std::string(name);
+
+    return msg;
+}
+
+void message_set_metadata(vmm::message *msg, const char *name, const char *value) {
+    msg->metadata[std::string(name)] = std::string(value);
+}
+
+void message_push_arg(vmm::message *msg, const char *name) {
+    msg->arguments.emplace_back(name);
+}
+
+void *message_pop_arg(vmm::message *msg) {
+    auto arg = msg->arguments.back();
+    msg->arguments.pop_back();
+
+    return (void *) arg.c_str();
+}
+
+void message_send(vma::actor *sender, vmm::message *msg, vma::address &address) {
+    sender->send(std::unique_ptr<vmm::message>(msg), address);
+}

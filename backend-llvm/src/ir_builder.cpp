@@ -235,7 +235,7 @@ namespace scc::backend::llvm {
         auto parent = _params["self"];
 
         std::vector<Type *> parameters{Type::getInt32Ty(*_context)};
-        auto free = _module->getOrInsertFunction("free",
+        auto free = _module->getOrInsertFunction("dlactor",
                                                  FunctionType::get(Type::getInt32Ty(*_context), parameters, false));
 
         return _builder->CreateCall(free, { parent });

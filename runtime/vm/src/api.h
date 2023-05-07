@@ -43,4 +43,11 @@ extern "C" {
     // Actor Type API
     vma::actor_type *mkactortype(const char *name);
     void actortype_register(vma::actor_type *type, const char *msg, const vma::dispatch_message &dispatch);
+
+    // Message API
+    vmm::message *mkmsg(vma::actor *sender, const char *name);
+    void message_set_metadata(vmm::message *msg, const char *name, const char *value);
+    void message_push_arg(vmm::message *msg, const char *name);
+    void *message_pop_arg(vmm::message *msg);
+    void message_send(vma::actor *sender, vmm::message *msg, vma::address &address);
 }
