@@ -31,3 +31,17 @@ TEST(mailbox, acts_as_fifo) {
     ASSERT_EQ(dmsg2->message, "2");
     ASSERT_FALSE(mb.dequeue());
 }
+
+TEST(mailbox, returns_a_reply_if_any) {
+    auto mb = vm::mailbox::mailbox();
+    auto emsg1 = std::make_unique<vm::mailbox::message>();
+
+    emsg1->message = "1";
+    emsg1->reply_on = 0;
+
+    mb.wait_for_reply(std::move(emsg1));
+    mb.reply(0, "hey");
+
+    auto dmsg = mb.dequeue();
+    ASSERT_EQ(dmsg->reply, "hey");
+}
